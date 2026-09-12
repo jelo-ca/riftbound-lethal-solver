@@ -443,11 +443,15 @@ def relocate_unit(state: GameState, instance_id: int, from_zone: Zone, to_zone: 
         return replace_player(state, player_index, new_player)
 
     bf = _battlefield(state, to_zone)
-    if bf.units:
+    if any(u.controller != player_index for u in bf.units):
         raise NotImplementedError(
-            "relocate_unit: destination has units present — combat resolution "
-            "isn't implemented yet (see design/03-action-space.md's combat section)"
+            "relocate_unit: destination has enemy units present — combat resolution "
+            "isn't implemented here (see design/03-action-space.md's combat section); "
+            "callers must route enemy-occupied destinations through ResolveCombat instead"
         )
+    # Destination is empty or already ours — either way the mover joins
+    # whatever's there and control (already ours, or newly established if
+    # it was open) doesn't need to change here beyond staying/being ours.
     new_bf = dataclasses.replace(bf, units=bf.units | {moved_unit}, controller=player_index)
     return replace_battlefield(state, new_bf)
 
