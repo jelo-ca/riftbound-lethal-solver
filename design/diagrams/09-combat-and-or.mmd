@@ -1,8 +1,8 @@
 flowchart TD
-    A[MoveUnit onto a Defender-controlled\nbattlefield with units present] --> B[Sum Attacker Might, Defender Might]
-    B --> C{Attacker assignment\nchoices}
-    C -->|OR: try each| D[For this Attacker choice,\nenumerate ALL Defender\nassignment choices]
-    D --> E{Every Defender choice\nleads to a win?}
-    E -->|AND: yes to all| F[This Attacker choice\nis validated]
-    E -->|no: at least one fails| G[Try the next\nAttacker choice]
+    A[A move causes combat\n— either our unit moved in,\nor our effect moved an enemy\nunit onto ground we hold] --> B[Determine Attacker/Defender\nby whose unit moved;\nsum each side's Might\nincl. Assault/Shield bonuses]
+    B --> C{Our side's\nassignment choices}
+    C -->|OR: try each| D[For this choice,\nenumerate ALL of the\nopponent's assignment choices]
+    D --> E{Every opponent choice\nleads to a win?}
+    E -->|AND: yes to all| F[This choice\nis validated]
+    E -->|no: at least one fails| G[Try our next choice]
     F --> H[Continue search from\nany one resulting state\n— player adapts to\nwhichever occurs]

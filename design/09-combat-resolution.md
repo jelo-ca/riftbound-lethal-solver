@@ -6,7 +6,9 @@ Design for the piece flagged as deferred since `03-action-space.md`'s first draf
 
 **Attacker/Defender designation** (rule ~464): *"The Attacker is the player whose unit(s) applied the Contested status to the Battlefield... The Defender is the player who did not apply the Contested status."* — i.e. whoever moved in is the Attacker, whoever already held the battlefield is the Defender.
 
-**Scope simplification specific to this project:** since puzzles are single-turn and the opponent is tapped out (never takes actions), **the searched player (`state.turn_player`) is always the Attacker, and the opponent is always the Defender.** The opponent never initiates a move, so it can never be the Attacker. This matters a lot for what follows.
+**Correction — we are NOT always the Attacker.** The designation is about which unit *moved and caused the Contested status*, not about who took the action. Since the opponent is tapped out, we're the only one who ever *acts* — but our own effects can move an *enemy* unit (Charm: "Move an enemy unit"; Blitzcrank: "you may move an enemy unit to here"). If we use such an effect to move an enemy unit onto a battlefield **we** already control, that enemy unit is the one applying Contested status — so **the opponent becomes the Attacker and we become the Defender**, even though we're the one who took the action. Puzzle concept 6 ("Redirection") is exactly this case: Blitzcrank pulls the opponent's blocker onto a battlefield we hold, and the resulting combat has the opponent attacking, us defending.
+
+The role that actually matters for the AND/OR split below isn't the Attacker/Defender label — it's **whose controller is doing the assigning**. Our own side's damage assignment (whether we're nominally Attacker or Defender) is always our choice (OR). The opponent's side's assignment (whether they're nominally Attacker or Defender) is always adversarial (AND). The Attacker/Defender label still matters for two other things: rule 465.2's "Starting with the Attacker" assignment order, and any keyword that reads off the designation directly (Assault: "+Might while I'm an attacker"; Shield: "+Might while I'm a defender"; Tank: "must be assigned combat damage first" — this one doesn't care which side, just applies within whichever side it's on). Might sums for the Combat Damage Step must include these bonuses, which means each unit's Attacker/Defender designation for the current combat needs to be known at Might-summing time, not just at the end.
 
 **The Combat Damage Step** (rule ~465.2): *"Sum the Might of all Attacking Units. Sum the Might of all Defending Units. Starting with the Attacker, each player assigns an amount of damage equal to their summed Might among the other's Units."* Both sides assign damage — not just the attacker. Each side's full summed Might must be assigned (mandatory), distributed among the opposing side's units however the assigning player chooses, subject to:
 
@@ -14,10 +16,10 @@ Design for the piece flagged as deferred since `03-action-space.md`'s first draf
 
 ## The asymmetry that matters
 
-- **Our damage assignment** (Attacker, assigning among the Defender's units): this is **our choice**. When we have 2+ attacking units or the defender has 2+ units to distribute across, this is a normal search branch point — an OR-node, exactly like every other choice in this solver. We only need one assignment to lead to a win.
-- **The opponent's damage assignment** (Defender, assigning among our attacking units): this is **not our choice**, and — critically — not something a real puzzle-solving player can predict or control either. A puzzle's stated solution has to hold up no matter which of our units the opponent chooses to kill. This is the "sometimes it's better not to kill a unit" case: the opponent, choosing how to split damage among *our* units, might deliberately spare the unit that would help us if it survived and instead kill a different one that hurts us more — and our solution must still work regardless.
+- **Our side's damage assignment** (whichever of Attacker/Defender we are this combat, assigning among the opponent's units): this is **our choice**. When our side has 2+ units, or the opponent's side has 2+ units to distribute across, this is a normal search branch point — an OR-node, exactly like every other choice in this solver. We only need one assignment to lead to a win.
+- **The opponent's side's damage assignment** (whichever of Attacker/Defender they are, assigning among our units): this is **not our choice**, and — critically — not something a real puzzle-solving player can predict or control either. A puzzle's stated solution has to hold up no matter which of our units the opponent chooses to kill. This is the "sometimes it's better not to kill a unit" case: the opponent, choosing how to split damage among *our* units, might deliberately spare the unit that would help us if it survived and instead kill a different one that hurts us more — and our solution must still work regardless.
 
-This is a **localized adversarial (AND) node** inside an otherwise single-player (OR) search — not a general minimax opponent (that stays explicitly out of scope, `07-scope-and-cut-list.md`). It only ever arises at the moment of defender damage assignment, and only when the defender actually has a real choice (2+ units at the contested battlefield). Both of the currently-sketched puzzles needing combat (5 and 6) have a **single-unit defender**, where there's no choice to make at all — the assignment is forced, so the AND-node collapses to a single branch trivially. Building the general mechanism correctly now means it's already right whenever a future puzzle does give the defender a real choice, without a special case that needs revisiting.
+This is a **localized adversarial (AND) node** inside an otherwise single-player (OR) search — not a general minimax opponent (that stays explicitly out of scope, `07-scope-and-cut-list.md`). It only ever arises at the moment of the opponent's damage assignment, and only when the opponent's side actually has a real choice (2+ units at the contested battlefield). Both of the currently-sketched puzzles needing combat (5 and 6) have a **single-unit opponent side**, where there's no choice to make at all — the assignment is forced, so the AND-node collapses to a single branch trivially. Building the general mechanism correctly now means it's already right whenever a future puzzle does give the opponent a real choice (on either side of the Attacker/Defender line, including a Blitzcrank-style redirection like puzzle 6), without a special case that needs revisiting.
 
 ## Damage assignment enumeration
 
@@ -34,32 +36,33 @@ For v0's tiny unit counts (puzzle-scale, not real 40-card-deck-scale), this is c
 
 ```mermaid
 flowchart TD
-    A[MoveUnit onto a Defender-controlled\nbattlefield with units present] --> B[Sum Attacker Might, Defender Might]
-    B --> C{Attacker assignment\nchoices}
-    C -->|OR: try each| D[For this Attacker choice,\nenumerate ALL Defender\nassignment choices]
-    D --> E{Every Defender choice\nleads to a win?}
-    E -->|AND: yes to all| F[This Attacker choice\nis validated]
-    E -->|no: at least one fails| G[Try the next\nAttacker choice]
+    A[A move causes combat\n— either our unit moved in,\nor our effect moved an enemy\nunit onto ground we hold] --> B[Determine Attacker/Defender\nby whose unit moved;\nsum each side's Might\nincl. Assault/Shield bonuses]
+    B --> C{Our side's\nassignment choices}
+    C -->|OR: try each| D[For this choice,\nenumerate ALL of the\nopponent's assignment choices]
+    D --> E{Every opponent choice\nleads to a win?}
+    E -->|AND: yes to all| F[This choice\nis validated]
+    E -->|no: at least one fails| G[Try our next choice]
     F --> H[Continue search from\nany one resulting state\n— player adapts to\nwhichever occurs]
 ```
 
 Source: [`diagrams/09-combat-and-or.mmd`](diagrams/09-combat-and-or.mmd)
 
-`_dfs` needs a new case: when the current action is a combat-triggering `MoveUnit`, it doesn't simply apply one deterministic child and recurse. Instead:
+`_dfs` needs a new case: when the current action triggers combat, it doesn't simply apply one deterministic child and recurse. Instead:
 
-1. For each Attacker (our) assignment choice `a`:
-   - For each Defender (opponent) assignment choice `d` given `a`:
+1. Determine Attacker/Defender by whose unit's move caused the Contested status (not by who took the action).
+2. For each of *our* assignment choices `a` (on whichever side is ours):
+   - For each of the *opponent's* assignment choices `d` given `a` (on whichever side is theirs):
      - Compute the resulting state (apply both assignments, remove dead units, resolve control per the existing rule 466.7.b logic).
      - Recurse: does `_dfs` from this resulting state, at `remaining - 1`, find a win?
    - If **every** `d` produced a win: choice `a` is validated. Return a path built from `a` and (for path-reporting purposes) one representative `d`'s continuation.
    - If any `d` failed: try the next `a`.
-2. If no `a` survives all its `d`s, this combat-triggering action fails at this depth (same as any other action with no winning continuation) — feeds into the existing transposition-table FAIL caching unchanged.
+3. If no `a` survives all its `d`s, this combat-triggering action fails at this depth (same as any other action with no winning continuation) — feeds into the existing transposition-table FAIL caching unchanged.
 
 ## Structural implication: `solve()`'s return type
 
-`solve()` currently returns a flat `list[Action]`. That's still correct and sufficient **whenever a puzzle's combat never gives the defender a real choice** (single-unit defenders, like puzzles 5 and 6 as currently sketched) — the AND-node collapses to exactly one branch, so the flat list stays accurate as "the" continuation.
+`solve()` currently returns a flat `list[Action]`. That's still correct and sufficient **whenever a puzzle's combat never gives the opponent's side a real choice** (single-unit opposing side, like puzzles 5 and 6 as currently sketched) — the AND-node collapses to exactly one branch, so the flat list stays accurate as "the" continuation.
 
-**Proposed for now:** keep `solve()`'s flat-list return type, since no currently-sketched puzzle needs anything richer, and note explicitly that it's only guaranteed accurate for puzzles where the defender's damage assignment is forced (0 or 1 meaningful units at the contested battlefield). If a future puzzle wants a genuinely branching defender choice, `solve()`'s return type needs to grow into something that can represent a strategy (a subtree of the DAG, not a flat list) rather than a single path — `export.py`'s DAG output already handles this fine (it's building the full graph regardless), so the gap is specifically in `solve()`'s convenience return value, not in the exported puzzle data. Flagging this now rather than discovering it mid-implementation of a puzzle that needs it.
+**Proposed for now:** keep `solve()`'s flat-list return type, since no currently-sketched puzzle needs anything richer, and note explicitly that it's only guaranteed accurate for puzzles where the opponent's damage assignment is forced (0 or 1 meaningful units on their side of the contested battlefield). If a future puzzle wants a genuinely branching opponent choice, `solve()`'s return type needs to grow into something that can represent a strategy (a subtree of the DAG, not a flat list) rather than a single path — `export.py`'s DAG output already handles this fine (it's building the full graph regardless), so the gap is specifically in `solve()`'s convenience return value, not in the exported puzzle data. Flagging this now rather than discovering it mid-implementation of a puzzle that needs it.
 
 ## What this does NOT do
 
