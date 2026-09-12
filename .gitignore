@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# Node
+node_modules/
+dist/
+.astro/
+.next/
+
+# Editors / OS
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Planning docs (session-local, not project deliverables)
+task_plan.md
+findings.md
+progress.md

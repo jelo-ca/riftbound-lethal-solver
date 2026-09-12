@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "Write-Output 'SessionStart hook context: For this project (rb-puzzles), at the start of every session run the caveman skill (/caveman:caveman) to keep responses token-efficient, and run the planning-with-files skill (/planning-with-files:plan) to set up task_plan.md, findings.md, and progress.md before starting substantive work.'"
+          }
+        ]
+      }
+    ]
+  }
+}
