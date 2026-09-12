@@ -25,6 +25,12 @@ class RunePool:
     domain_counts: Mapping[Domain, int]   # available (untapped) runes by domain
     exhausted_count: int                   # runes exhausted this turn (for Energy), recoverable next Awaken
     # recycled runes are simply removed from the pool entirely (Power cost = permanent loss)
+    # a card effect that generates a rune mid-turn (e.g. "when you play me, add a rune") just
+    # produces a child GameState with an updated RunePool like any other effect — no separate
+    # mechanic needed. legal_actions() is always recomputed fresh from state (03), so a
+    # newly-granted rune is immediately visible to every action-legality check later in that
+    # DFS branch. Flag whether the granted rune enters untapped or already-exhausted, and its
+    # domain, per the specific card's text when it's added to the whitelist.
 
 @dataclass(frozen=True)
 class BattlefieldState:

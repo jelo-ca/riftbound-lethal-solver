@@ -10,6 +10,7 @@ The explicit boundary of what this solver implements. Every mechanic on the OUT 
 - Full information, no randomness, no hidden zones.
 - Action types: `PlayUnit`, `MoveUnit` (+ auto-resolved combat), `PlaySpell`, `PlayGear`.
 - Scoring paths: Conquer, Hold, and at most one card-effect scoring path if a chosen puzzle needs it.
+- Card effects that generate/add runes mid-turn (e.g. "when you play me, add a rune") — in scope, handled generically since the effect just mutates `RunePool` on the child state like any other field; no special solver logic required (see `02-state-model.md`). Still needs per-card review during whitelisting: untapped vs. exhausted, and domain.
 - Keywords: whichever minimal set the whitelist actually needs, added one at a time as puzzles are authored — not a general keyword engine.
 
 ## OUT (this project, not just "later")
