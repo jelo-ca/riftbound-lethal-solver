@@ -27,6 +27,7 @@ Full detail: [`07-scope-and-cut-list.md`](07-scope-and-cut-list.md).
 | [`06-export-schema.md`](06-export-schema.md) | Puzzle JSON DAG format shipped to the web layer |
 | [`07-scope-and-cut-list.md`](07-scope-and-cut-list.md) | Explicit v0 boundaries and open rules questions needing verification |
 | [`08-puzzle-concepts.md`](08-puzzle-concepts.md) | 6 sketched puzzle concepts (real Origins cards) that bound the whitelist and keyword set |
+| [`09-combat-resolution.md`](09-combat-resolution.md) | Combat damage assignment, and the AND-node needed for adversarial defender choice |
 
 ## System diagram
 

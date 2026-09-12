@@ -1,0 +1,8 @@
+flowchart TD
+    A[MoveUnit onto a Defender-controlled\nbattlefield with units present] --> B[Sum Attacker Might, Defender Might]
+    B --> C{Attacker assignment\nchoices}
+    C -->|OR: try each| D[For this Attacker choice,\nenumerate ALL Defender\nassignment choices]
+    D --> E{Every Defender choice\nleads to a win?}
+    E -->|AND: yes to all| F[This Attacker choice\nis validated]
+    E -->|no: at least one fails| G[Try the next\nAttacker choice]
+    F --> H[Continue search from\nany one resulting state\n— player adapts to\nwhichever occurs]
