@@ -30,6 +30,33 @@ from .cards import CardDef
 from .state import GameState
 
 RIDE_THE_WIND = "ogn-173-298"  # 2 Energy, 1 Chaos Power: "Move a friendly unit and ready it."
+YASUO_WINDRIDER = "ogn-205-298"  # [Ganking] "The third time I move in a turn, you score 1 point."
+
+# card_id -> move count that grants the point (checked for an exact match,
+# not "every Nth move" - Yasuo's text fires once, at exactly the third).
+MOVE_COUNT_TRIGGERS: dict[str, int] = {YASUO_WINDRIDER: 3}
+
+
+def apply_move_triggers(state: GameState, moved_instance_id: int) -> GameState:
+    """Call after ANY move completes (Standard Move, a spell-granted move,
+    or moving into/as part of combat) on `moved_instance_id`. A no-op
+    unless that unit's card has a registered move-count trigger and its
+    new count exactly matches — e.g. Yasuo - Windrider's card-effect point
+    (rule 473: unrestricted by the Final Point rule, unlike Conquer),
+    needed for design/08-puzzle-concepts.md's puzzle 3 "The Long Way
+    Around". Only the mover's own controller benefits (rule text is
+    "you score," referring to the card's controller).
+    """
+    located = find_unit_at_any_battlefield(state, moved_instance_id)
+    if located is None:
+        located = (find_unit(state, moved_instance_id, "base"), "base")
+    unit = located[0]
+    if unit is None or unit.controller != state.turn_player:
+        return state
+    threshold = MOVE_COUNT_TRIGGERS.get(unit.card_id)
+    if threshold is not None and unit.moved_this_turn == threshold:
+        return scoring.grant_card_effect_point(state)
+    return state
 CAITLYN_PATROLLING = "ogn-068-298"  # Exhaust: Deal damage equal to my Might to a unit at a battlefield.
 BLITZCRANK_IMPASSIVE = "ogn-067-298"  # When you play me to a battlefield, you may move an enemy unit to here.
 
@@ -70,7 +97,7 @@ def _ride_the_wind_effect(state: GameState, action: PlaySpell) -> GameState:
     new_state = relocate_unit(state, instance_id, from_zone, destination, exhausted_after=False)
     if destination != "base":
         new_state = scoring.resolve_control_change(state, new_state, destination)
-    return new_state
+    return apply_move_triggers(new_state, instance_id)
 
 
 def _ride_the_wind_candidates(state: GameState) -> list[tuple[int, str]]:
@@ -226,10 +253,12 @@ def _blitzcrank_effect(state_after_play: GameState, action: PlayUnit) -> list[Ga
     if combat.is_combat_triggered(state_after_play, unit, to_zone):
         our_assignment = action.trigger_params[1]
         outcomes = combat.enumerate_combat_outcomes(state_after_play, unit, from_zone, to_zone, our_assignment)
-        return [scoring.resolve_control_change(state_after_play, o, to_zone) for o in outcomes]
+        outcomes = [scoring.resolve_control_change(state_after_play, o, to_zone) for o in outcomes]
+        return [apply_move_triggers(o, enemy_id) for o in outcomes]
 
     moved = relocate_unit(state_after_play, enemy_id, from_zone, to_zone, exhausted_after=True)
-    return [scoring.resolve_control_change(state_after_play, moved, to_zone)]
+    moved = scoring.resolve_control_change(state_after_play, moved, to_zone)
+    return [apply_move_triggers(moved, enemy_id)]
 
 
 def _blitzcrank_candidates(state: GameState, base_action: PlayUnit, card: CardDef) -> list[tuple]:

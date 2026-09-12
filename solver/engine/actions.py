@@ -423,7 +423,7 @@ def relocate_unit(state: GameState, instance_id: int, from_zone: Zone, to_zone: 
     player_index = state.turn_player
     unit = find_unit(state, instance_id, from_zone)
     assert unit is not None
-    moved_unit = dataclasses.replace(unit, exhausted=exhausted_after)
+    moved_unit = dataclasses.replace(unit, exhausted=exhausted_after, moved_this_turn=unit.moved_this_turn + 1)
 
     if from_zone == "base":
         player = state.players[player_index]

@@ -181,7 +181,7 @@ def apply_combat(state: GameState, mover: UnitInstance, from_zone: str, destinat
     control-establishing action.
     """
     destination = next(bf for bf in state.battlefields if bf.battlefield_id == destination_id)
-    moved_mover = dataclasses.replace(mover, exhausted=exhausted_after)
+    moved_mover = dataclasses.replace(mover, exhausted=exhausted_after, moved_this_turn=mover.moved_this_turn + 1)
     attacker_units = frozenset({moved_mover})
     defender_units = destination.units
 

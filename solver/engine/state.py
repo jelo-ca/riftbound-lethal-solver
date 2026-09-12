@@ -24,6 +24,13 @@ class UnitInstance:
     exhausted: bool
     damage: int
     is_token: bool
+    # How many times this unit has moved this turn (Standard Move, a
+    # spell-granted move, or moving into/as part of combat all count -
+    # rule 456.1: "Spells, Abilities, or other effects may cause a Move").
+    # Needed for cards whose own text counts moves (e.g. Yasuo - Windrider:
+    # "The third time I move in a turn, you score 1 point") - default 0
+    # since most units never reference it.
+    moved_this_turn: int = 0
 
 
 @dataclass(frozen=True)
@@ -69,6 +76,7 @@ def _canonical_unit(unit: UnitInstance) -> tuple:
         unit.exhausted,
         unit.damage,
         unit.is_token,
+        unit.moved_this_turn,
     )
 
 

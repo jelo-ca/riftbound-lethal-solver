@@ -127,7 +127,7 @@ def apply(state: GameState, action: Action, cards: dict[str, CardDef]) -> GameSt
         new_state = apply_move_unit(state, action)
         if action.to_zone != "base":
             new_state = scoring.resolve_control_change(state, new_state, action.to_zone)
-        return new_state
+        return abilities.apply_move_triggers(new_state, action.instance_id)
 
     if isinstance(action, PlaySpell):
         return abilities.apply_spell(state, action, cards[action.card_id])
@@ -198,6 +198,7 @@ def _resolve_combat_search(state: GameState, action: ResolveCombat, remaining: i
     mover = find_unit(state, action.instance_id, action.from_zone)
     outcomes = combat.enumerate_combat_outcomes(state, mover, action.from_zone, action.to_zone, action.our_assignment)
     outcomes = [scoring.resolve_control_change(state, o, action.to_zone) for o in outcomes]
+    outcomes = [abilities.apply_move_triggers(o, action.instance_id) for o in outcomes]
     return _and_or_search(state, action, outcomes, remaining, cards, ttable)
 
 

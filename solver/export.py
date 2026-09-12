@@ -109,7 +109,8 @@ def _resolve_action_outcomes(state: GameState, action: Action, cards: dict[str, 
     if isinstance(action, ResolveCombat):
         mover = find_unit(state, action.instance_id, action.from_zone)
         outcomes = combat.enumerate_combat_outcomes(state, mover, action.from_zone, action.to_zone, action.our_assignment)
-        return [scoring.resolve_control_change(state, o, action.to_zone) for o in outcomes]
+        outcomes = [scoring.resolve_control_change(state, o, action.to_zone) for o in outcomes]
+        return [abilities.apply_move_triggers(o, action.instance_id) for o in outcomes]
     if isinstance(action, PlayUnit) and action.trigger_params:
         return abilities.resolve_unit_play_trigger_outcomes(state, action, cards[action.card_id])
     return [apply(state, action, cards)]
