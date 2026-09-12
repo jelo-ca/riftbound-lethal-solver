@@ -265,12 +265,19 @@ def is_legal_move_unit(state: GameState, action: MoveUnit) -> bool:
 
 
 def apply_move_unit(state: GameState, action: MoveUnit) -> GameState:
-    """Board mechanics only: relocates the unit and exhausts it (rule
-    145.1). Does NOT resolve combat and does NOT establish control —
-    callers must not use this for a destination with enemy units present
-    (combat resolution isn't implemented yet); control establishment on an
-    open/friendly destination is handled by the caller composing this with
-    the scoring module once it exists.
+    """Board mechanics: relocates the unit, exhausts it (rule 145.1), and
+    updates `BattlefieldState.controller` as a plain board-state fact —
+    rule 466.7.b (the player left with units present Establishes Control)
+    and rule 468 (a battlefield with no units from any player becomes
+    Uncontrolled). Does NOT resolve combat: callers must not use this for a
+    destination with enemy units present (combat resolution isn't
+    implemented yet, see the module docstring).
+
+    Whether a resulting control change counts as a scoring Conquer (rule
+    469.1: only if the player hasn't already Scored this battlefield this
+    turn) is scoring.resolve_conquer's job, not this function's — the
+    solver calls it when it sees `battlefields[i].controller` change to
+    `state.turn_player`.
     """
     player_index = state.turn_player
     unit = _find_unit(state, action.instance_id, action.from_zone)
@@ -284,7 +291,12 @@ def apply_move_unit(state: GameState, action: MoveUnit) -> GameState:
         state = replace_player(state, player_index, new_player)
     else:
         bf = _battlefield(state, action.from_zone)
-        state = _replace_battlefield(state, dataclasses.replace(bf, units=bf.units - {unit}))
+        remaining_units = bf.units - {unit}
+        # rule 468: no units from any player left here -> Uncontrolled.
+        new_controller = bf.controller if remaining_units else None
+        state = _replace_battlefield(
+            state, dataclasses.replace(bf, units=remaining_units, controller=new_controller)
+        )
 
     # Add to destination.
     if action.to_zone == "base":
@@ -298,7 +310,10 @@ def apply_move_unit(state: GameState, action: MoveUnit) -> GameState:
             "apply_move_unit: destination has units present — combat resolution "
             "isn't implemented yet (see design/03-action-space.md's combat section)"
         )
-    new_bf = dataclasses.replace(bf, units=bf.units | {moved_unit})
+    # rule 466.7.b: the mover is the only player with units here now, so
+    # they Establish Control (regardless of whether this also scores a
+    # point, which resolve_conquer decides separately).
+    new_bf = dataclasses.replace(bf, units=bf.units | {moved_unit}, controller=player_index)
     return _replace_battlefield(state, new_bf)
 
 

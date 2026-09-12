@@ -175,6 +175,31 @@ def test_move_battlefield_to_base_always_legal():
     assert is_legal_move_unit(state, action)
 
 
+def test_move_to_open_battlefield_establishes_control():
+    unit = make_unit(instance_id=1, exhausted=False)
+    state = make_state(base_units=frozenset({unit}))
+    action = MoveUnit(instance_id=1, from_zone="base", to_zone="left")
+    new_state = apply_move_unit(state, action)
+    assert new_state.battlefields[0].controller == 0
+
+
+def test_move_away_leaving_battlefield_empty_clears_control():
+    unit = make_unit(instance_id=1, exhausted=False)
+    state = make_state(bf0_units=frozenset({unit}), bf0_controller=0)
+    action = MoveUnit(instance_id=1, from_zone="left", to_zone="base")
+    new_state = apply_move_unit(state, action)
+    assert new_state.battlefields[0].controller is None
+
+
+def test_move_away_leaving_teammate_unit_keeps_control():
+    mover = make_unit(instance_id=1, exhausted=False)
+    stayer = make_unit(instance_id=2, exhausted=True)  # same controller, stays behind
+    state = make_state(bf0_units=frozenset({mover, stayer}), bf0_controller=0)
+    action = MoveUnit(instance_id=1, from_zone="left", to_zone="base")
+    new_state = apply_move_unit(state, action)
+    assert new_state.battlefields[0].controller == 0
+
+
 def test_move_onto_occupied_battlefield_not_implemented():
     mover = make_unit(instance_id=1, exhausted=False)
     blocker = make_unit(card_id="blocker", instance_id=2, controller=1)
