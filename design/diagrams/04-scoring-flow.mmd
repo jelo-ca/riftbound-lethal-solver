@@ -1,14 +1,15 @@
 flowchart TD
-    A[Action resolves] --> B{Conquer, Hold,\nor card effect?}
-    B -->|Conquer| C[+1 pt, mark battlefield\nin scored_this_turn]
-    B -->|Hold, start of turn| D[+1 pt per uncontested\nheld battlefield]
-    B -->|Card effect| E[+1 pt, no restriction]
-    C --> F{New score == 8?}
-    D --> H{New score == 8?}
-    E --> H
-    F -->|yes| G{Both battlefields\nin scored_this_turn?}
-    F -->|no| Z[Continue]
-    G -->|yes| WIN[Win]
+    A[Action resolves] --> B{Conquer or\ncard effect?}
+    B -->|Conquer, battlefield not\nyet Scored this turn| C[Mark battlefield in\nscored_this_turn]
+    B -->|Card effect| E[Gain 1 pt, no restriction]
+    C --> F{Current score >= 7?\nrule 474/475: "1 point from\nVictory Score or higher"}
+    F -->|no| Z[Gain 1 pt, continue]
+    F -->|yes, this is the\nFinal Point attempt| G{scored_this_turn ==\nall battlefields?}
+    G -->|yes| WIN[Gain Final Point — Win]
     G -->|no| DRAW[No point — draw a card instead]
-    H -->|yes| WIN
-    H -->|no| Z
+    E --> H{New total >= Victory Score\nand highest?}
+    H -->|yes| WIN2[Win]
+    H -->|no| Z2[Continue]
+
+    S[Start of turn\npre-resolved, not searched] -.-> D[Hold: for each battlefield\ncontrolled + not yet Scored\nthis turn, gain 1 pt, mark Scored]
+    D -.-> A

@@ -1,13 +1,16 @@
 # State Model
 
-Confirmed against rules research (2026-09-11): **2 battlefields per game** (not configurable in v0 — matches `riftbound-lethal-puzzle-plan.md`). Sources: riftbound.gg scoring guide, danireon.com rules summary.
+Confirmed against the official Core Rules PDF (2026-09-11 research pass, rule citations inline): **2 battlefields per game** (not configurable in v0 — matches `riftbound-lethal-puzzle-plan.md`).
 
-Two open items below (rune payment, base-vs-battlefield deployment) are flagged **unverified** — confirm against the official Core Rules PDF before Week 1 code freezes this model. See [`07-scope-and-cut-list.md`](07-scope-and-cut-list.md#open-questions).
+**Puzzles are single-turn** (per the existing 6-week plan: "a fixed starting position with a fixed energy budget"). This removes a whole category of multi-turn bookkeeping from the model:
+- No Channel Phase in-search — the starting rune pool is fixed as part of puzzle authoring, not generated mid-solve. `ChannelRune` is not an action (see `03-action-space.md`).
+- No Awaken/rune-recovery logic — there's no next turn inside the puzzle horizon, so whether a spent rune would theoretically recover later is irrelevant. `RunePool` only needs to track what's still available *this* turn.
+- Hold points are pre-resolved into the starting position (Hold triggers at the Beginning Phase, before the puzzle's live turn begins) — not something the solver enacts as an action. Only Conquer and card-effect scoring happen as live search outcomes.
 
 ## Types
 
 ```python
-Domain = Literal["Fury", "Calm", "Mind", "Body", "Chaos", "Order"]  # confirm exact 6 vs actual card data
+Domain = Literal["Fury", "Calm", "Mind", "Body", "Chaos", "Order"]  # confirmed: rule 164 lists exactly these 6 Basic Rune domains
 
 @dataclass(frozen=True)
 class UnitInstance:
@@ -16,21 +19,29 @@ class UnitInstance:
     controller: int           # 0 or 1
     might: int                # current effective might (base + active modifiers)
     keywords: frozenset[str]  # resolved keyword set, including granted keywords
-    exhausted: bool
-    damage: int                # marked damage, cleared per rules (verify: end of turn? not at all in v0 tapped-out model?)
+    exhausted: bool            # newly-played units enter exhausted (rule 143.4.a) — a unit played this
+                                # turn generally can't MoveUnit the same turn unless a keyword like
+                                # Accelerate grants ready-on-play
+    damage: int                # marked damage this turn — single-turn puzzle horizon means we never need
+                                # cross-turn cleanup timing for this field, only within-turn accumulation
     is_token: bool
 
 @dataclass(frozen=True)
 class RunePool:
-    domain_counts: Mapping[Domain, int]   # available (untapped) runes by domain
-    exhausted_count: int                   # runes exhausted this turn (for Energy), recoverable next Awaken
-    # recycled runes are simply removed from the pool entirely (Power cost = permanent loss)
+    # single-turn puzzle: no next-turn recovery to model, so this is just "what's left to spend."
+    # rule 164.2.b: a rune produces EITHER Energy (Exhaust) OR Power of its own domain (Recycle) —
+    # never both from the same rune. Paying a combined Energy+Power cost draws from separate runes.
+    available: tuple[Domain, ...]   # one entry per untapped rune still on the board this turn
+    # spending a rune for Energy or Power both just remove it from `available` for the rest of
+    # this puzzle's single turn — the distinction only matters for which runes can satisfy a
+    # Power cost (domain-matched) vs an Energy cost (any domain).
+    #
     # a card effect that generates a rune mid-turn (e.g. "when you play me, add a rune") just
-    # produces a child GameState with an updated RunePool like any other effect — no separate
+    # appends to `available` on the child state like any other field mutation — no separate
     # mechanic needed. legal_actions() is always recomputed fresh from state (03), so a
     # newly-granted rune is immediately visible to every action-legality check later in that
-    # DFS branch. Flag whether the granted rune enters untapped or already-exhausted, and its
-    # domain, per the specific card's text when it's added to the whitelist.
+    # DFS branch. Flag whether the granted rune enters ready or exhausted (rule 430.4.b shows
+    # both are possible depending on the card's wording) when it's added to the whitelist.
 
 @dataclass(frozen=True)
 class BattlefieldState:
@@ -41,21 +52,29 @@ class BattlefieldState:
 
 @dataclass(frozen=True)
 class PlayerState:
-    base_units: frozenset[UnitInstance]    # units not on a battlefield (verify: is this the correct default zone — see open questions)
+    base_units: frozenset[UnitInstance]    # units not on a battlefield. Confirmed (rule 355.7/355.8):
+                                             # units CAN be played directly to a battlefield the controller
+                                             # already controls, not just to Base — so base_units is not the
+                                             # only entry point, PlayUnit can target either zone (03).
     hand: tuple[str, ...]                  # card_ids; order doesn't matter for hashing but keep tuple for display
     runes: RunePool
     score: int
 
 @dataclass(frozen=True)
 class GameState:
-    turn_player: int                        # 0 or 1
+    turn_player: int                        # 0 or 1 — always 0 in v0, single-turn puzzles have no turn hand-off
     players: tuple[PlayerState, PlayerState]
     battlefields: tuple[BattlefieldState, BattlefieldState]
-    scored_this_turn: frozenset[str]        # battlefield_ids the turn_player has *conquered* this turn — resets at start of each of their turns
+    scored_this_turn: frozenset[str]        # battlefield_ids the turn_player has SCORED this turn — via
+                                             # Conquer OR Hold (rule 471.1.b: "a player may only Score, from
+                                             # either method, once per battlefield per turn"). Hold-scored
+                                             # battlefields are seeded into this set as part of the starting
+                                             # position (Hold is pre-resolved, not a live search action — see
+                                             # note above); Conquer adds to it during search.
     cards_played_this_turn: int             # needed for Legion-style "if you've played another card this turn" keywords (seen live in Vanguard Captain)
 ```
 
-`scored_this_turn` is the field a naive model forgets and the one the last-point rule depends on entirely — carried over verbatim from the existing 6-week plan's design note.
+`scored_this_turn` is the field a naive model forgets and the one the last-point rule depends on entirely. **Correction from the initial design pass:** it tracks *Scored* (Conquer or Hold), not Conquer alone — confirmed against rule 472-476, which checks "has the player Scored every Battlefield this turn," and rule 471.1.b's definition of Scoring as either method. Two independent blog sources both said "conquered every battlefield," which is stricter than the actual rule — see `04-scoring-rules.md`.
 
 ## Canonical hash
 
@@ -68,7 +87,9 @@ def canonical_hash(state: GameState) -> bytes:
     # 2. battlefields are NOT sortable relative to each other — battlefield identity/effect
     #    can differ (e.g. a named battlefield raising win threshold), so battlefield_id order is fixed
     # 3. hand order doesn't matter -> sort card_ids
-    # 4. everything else hashes as-is
+    # 4. RunePool.available is a multiset (which physical rune is which doesn't matter, only
+    #    domain counts) -> sort the tuple before hashing
+    # 5. everything else hashes as-is
     ...
 ```
 
@@ -89,8 +110,7 @@ classDiagram
         score: int
     }
     class RunePool {
-        domain_counts: dict~Domain,int~
-        exhausted_count: int
+        available: tuple~Domain~
     }
     class BattlefieldState {
         battlefield_id: str

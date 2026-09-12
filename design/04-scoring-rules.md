@@ -2,53 +2,53 @@
 
 This module gates everything downstream. Per the existing 6-week plan's kill criteria: if this isn't passing tests by end of Week 2, the project pivots. Write it with unit tests before any search code exists.
 
-## Confirmed rules (2026-09-11 research pass)
+## Confirmed rules (2026-09-11, verified against the official Core Rules PDF)
 
-Sources: [riftbound.gg scoring guide](https://riftbound.gg/the-in-depth-guide-to-scoring-in-riftbound/), [danireon.com win-conditions summary](https://www.danireon.com/en-us/blogs/news/how-to-win-riftbound-scoring-system-win-conditions), cross-checked and agreeing.
+PDF: `https://cmsassets.rgpub.io/sanity/files/dsfx7636/news_live/e9ac8e3d33e0f78cef296f5945aba7bc1313b086.pdf` (via playriftbound.com/en-us/rules-hub/, last updated 2026-07-16). Rule numbers below are cited from that document (extracted via `pdftotext`, grepped by section).
 
-- **2 battlefields per game.** Win at 8 points (1v1).
-- **Conquer:** move a unit onto a battlefield you don't control, take control → +1 point immediately. Mark that battlefield in `scored_this_turn` for the turn player.
-- **Hold:** at the start of your turn, for each battlefield you control uncontested → +1 point per battlefield held.
-- **Card-effect points:** some effects grant points directly, bypassing the battlefield system entirely.
-- **Last-point restriction (the trap mechanic this whole project is built around):** if a Conquer would take you from 7 to 8, it only counts if **you have conquered both battlefields this turn**. Otherwise: no point, draw a card instead. Confirmed near-verbatim on both sources: *"8th Point by Conquer → you must have scored both Battlefields that turn to win."*
-- **This restriction applies only to the Conquer path.** Hold and card-effect points at 8 win instantly, no additional condition. Both sources agree on this.
+- **2 battlefields per game.** Win at 8 points (1v1) — Victory Score, rule 198.1.
+- **Scoring (rule 469.1/471):** a player Scores a battlefield in one of two ways — **Conquer** (gain Control of a battlefield not yet Scored this turn) or **Hold** (maintain Control of a battlefield not yet Scored this turn, checked during the Beginning Phase). **A battlefield can only be Scored once per player per turn, by either method** (rule 471.1.b) — Conquer and Hold both feed the *same* `scored_this_turn` tracking, they are not separate counters.
+- **Card-effect points:** some effects grant points directly, bypassing the battlefield system entirely (rule 473).
+- **Last-point restriction (rule 472-476, the trap mechanic this whole project is built around):** when a Conquer would gain a point while the player's total is 1 point from Victory Score or higher: **if the player has Scored every battlefield this turn, they gain the Final Point; otherwise they draw a card instead.**
+  - **Correction from the initial design pass:** the condition is "Scored every battlefield" (Conquer *or* Hold), not "Conquered every battlefield." Two blog sources both said Conquer specifically — that's stricter than the actual rule. Concretely: Holding one battlefield this turn and Conquering the other satisfies the condition; you don't need to Conquer both.
+- **This restriction applies only to points gained through Conquer** (rule 473: "points Gained from sources that are not Conquer are not beholden to these restrictions"). Hold and card-effect points at 8 win instantly, no additional condition.
+- **Single-turn puzzle scope (per `02-state-model.md`):** Hold is checked during the Beginning Phase, before the puzzle's live turn starts — so any Hold-driven entries in `scored_this_turn` (and any resulting score) are part of the puzzle's starting position, not a live search outcome. Only Conquer and card-effect scoring are things the solver's action sequence can produce.
 
-## Unverified — confirm against official Core Rules PDF before locking the test suite
+## Still open (lower stakes — didn't chase further this pass)
 
-Official PDF (couldn't fetch full text this session — 10MB+, blocked tools): `https://cmsassets.rgpub.io/sanity/files/dsfx7636/news_live/e9ac8e3d33e0f78cef296f5945aba7bc1313b086.pdf` (via playriftbound.com/en-us/rules-hub/, last updated 2026-07-16).
-
-1. Is `scored_this_turn` reset exactly at the start of the turn player's own turn, or at some other point (e.g. cleanup of the *previous* turn)?
-2. Damage/state cleanup timing (does marked damage on units clear each turn, and when?) — affects whether `UnitInstance.damage` needs to persist across the turn boundary in the state model.
-3. Whether "battlefield you don't control" for Conquer means literally empty/opponent-controlled, or has an uncontested/contested distinction independent of `controller`.
-
-Do not write the test suite against blog paraphrases for these three — get the primary source first.
+1. Exact instant `scored_this_turn` is considered "for this turn" relative to cleanup boundaries — doesn't matter for a single-turn puzzle (there's no next turn to reset into), but worth a sanity check when writing the scoring test suite.
+2. Marked-damage cleanup timing — when/whether damage clears. Minor for v0 given the tapped-out assumption and single-turn horizon; revisit only if a whitelisted puzzle card cares.
 
 ## Decision flow
 
 ```mermaid
 flowchart TD
-    A[Action resolves] --> B{Conquer, Hold,\nor card effect?}
-    B -->|Conquer| C[+1 pt, mark battlefield\nin scored_this_turn]
-    B -->|Hold, start of turn| D[+1 pt per uncontested\nheld battlefield]
-    B -->|Card effect| E[+1 pt, no restriction]
-    C --> F{New score == 8?}
-    D --> H{New score == 8?}
-    E --> H
-    F -->|yes| G{Both battlefields\nin scored_this_turn?}
-    F -->|no| Z[Continue]
-    G -->|yes| WIN[Win]
+    A[Action resolves] --> B{Conquer or\ncard effect?}
+    B -->|Conquer, battlefield not\nyet Scored this turn| C[Mark battlefield in\nscored_this_turn]
+    B -->|Card effect| E[Gain 1 pt, no restriction]
+    C --> F{Current score >= 7?\nrule 474/475: "1 point from\nVictory Score or higher"}
+    F -->|no| Z[Gain 1 pt, continue]
+    F -->|yes, this is the\nFinal Point attempt| G{scored_this_turn ==\nall battlefields?}
+    G -->|yes| WIN[Gain Final Point — Win]
     G -->|no| DRAW[No point — draw a card instead]
-    H -->|yes| WIN
-    H -->|no| Z
+    E --> H{New total >= Victory Score\nand highest?}
+    H -->|yes| WIN2[Win]
+    H -->|no| Z2[Continue]
+
+    S[Start of turn\npre-resolved, not searched] -.-> D[Hold: for each battlefield\ncontrolled + not yet Scored\nthis turn, gain 1 pt, mark Scored]
+    D -.-> A
 ```
+
+Hold is drawn dashed/pre-resolved: it seeds the puzzle's starting `scored_this_turn` and score, it isn't an action the solver's search takes.
 
 Source: [`diagrams/04-scoring-flow.mmd`](diagrams/04-scoring-flow.mmd)
 
 ## Test suite plan (Week 1 gate, per existing 6-week plan)
 
-Source the actual test cases from RiftJudge rulings and the official rules once question set above is resolved — not fabricated here. Categories to cover once sourced:
-- Conquer to exactly 8 with both battlefields conquered this turn → win
-- Conquer to exactly 8 with only one battlefield conquered this turn → draw-a-card, no win, score stays at 7
-- Hold to exactly 8 → win, no battlefield-count restriction
-- Card effect to exactly 8 → win, no restriction
-- `scored_this_turn` correctly resets between turns (regression test for the field most likely to be implemented wrong)
+Rules are now sourced from the official Core Rules PDF (rule numbers cited above), not blog paraphrase — safe to write the real test suite against these. Categories:
+- Conquer to exactly 8 with `scored_this_turn` already covering the *other* battlefield via **Hold** (not Conquer) this turn → win. This is the case that would have been missed entirely if the model had kept the "must Conquer both" assumption from the blog sources.
+- Conquer to exactly 8 with `scored_this_turn` covering both battlefields via Conquer → win.
+- Conquer to exactly 8 with neither/only-this battlefield in `scored_this_turn` → no point, draw a card instead, score stays at 7.
+- Card effect to exactly 8 → win, no restriction, regardless of `scored_this_turn` state.
+- A battlefield already in `scored_this_turn` cannot be Scored again this turn by either method (rule 471.1.b) — Conquering or Holding it a second time in the same turn is a no-op for scoring purposes.
+- RiftJudge rulings (if any exist for edge cases beyond what the core rules text covers) — check separately, not sourced in this pass.

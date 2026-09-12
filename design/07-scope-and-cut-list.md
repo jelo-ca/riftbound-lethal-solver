@@ -22,17 +22,17 @@ The explicit boundary of what this solver implements. Every mechanic on the OUT 
 - RiftScribe integration — Riftcodex is sufficient and verified live; RiftScribe stays an unwired fallback.
 - Adversarial/minimax opponent — the state model leaves room for it (per the existing plan's architecture note) but v0 does not implement it.
 
-## Open questions — verify before Week 1 code freezes the state model
+## Resolved (2026-09-11, verified against the official Core Rules PDF)
 
-Source for all of these: official Core Rules PDF, linked via `playriftbound.com/en-us/rules-hub/` (direct asset link in [`01-data-sources.md`](01-data-sources.md) history — too large to fetch and summarize in this session, ~10MB+). Do not lock these from blog paraphrases.
+All five items originally listed here as open are now resolved by pulling and grepping the actual Core Rules PDF (`https://cmsassets.rgpub.io/sanity/files/dsfx7636/news_live/e9ac8e3d33e0f78cef296f5945aba7bc1313b086.pdf`, ~43MB, extracted via `pdftotext`). Two of the five overturned what blog sources had said:
 
-1. **Base vs. battlefield deployment** — do units enter play at a base zone and then move to a battlefield, or can `PlayUnit` target a battlefield directly? Affects `02-state-model.md`'s `PlayerState.base_units` field and `03-action-space.md`'s `PlayUnit` legality.
-2. **Rune channeling** — is gaining runes each turn a mandatory automatic step, or a chosen action with a domain decision? Affects whether `ChannelRune` belongs in the action space at all.
-3. **Dual-cost rune payment** — can one physical rune satisfy both a card's Energy and Power cost in the same payment, or must they draw from separate runes? Affects `RunePool` legality-check logic for `PlayUnit`/`PlaySpell`/`PlayGear`.
-4. **`scored_this_turn` reset timing** — confirmed it resets each turn, not confirmed exactly when (start of the turn player's turn vs. end of previous turn — likely equivalent but worth confirming there's no edge case at the turn boundary).
-5. **Marked damage cleanup timing** — when does damage on units clear, if at all under the tapped-out assumption? Affects whether `UnitInstance.damage` needs to persist state across turns.
+1. **Base vs. battlefield deployment** (rule 355.7/355.8) — units can be played to Base **or** directly to a battlefield the controller already controls. They enter exhausted (rule 143.4.a). `02-state-model.md` and `03-action-space.md` updated.
+2. **Rune channeling** (rule 315.4/431) — mandatory automatic step, 2 runes off the top of the Rune Deck, no domain choice. **Not a chosen action**, and moot anyway for single-turn puzzles (starting rune pool is fixed at puzzle authoring time). `ChannelRune` removed from `03-action-space.md`.
+3. **Dual-cost rune payment (correction)** — a rune produces Energy (Exhaust) **or** Power of its own domain (Recycle), never both (rule 164.2.b). The blog source claiming "same rune pays both" was wrong. `RunePool` and the action space's `rune_payment` field updated to reflect this.
+4. **`scored_this_turn` semantics (correction)** — tracks *Scored* (Conquer or Hold), not Conquer alone (rule 471.1.b, 472-476). Two blog sources both said "must Conquer every battlefield," which is stricter than the actual rule — Holding one and Conquering the other satisfies the Final Point condition. `02-state-model.md` and `04-scoring-rules.md` updated.
+5. **Marked damage / turn-boundary cleanup timing** — not fully chased down (lower stakes given the single-turn puzzle horizon and tapped-out assumption); noted as a minor remaining item in `04-scoring-rules.md`.
 
-**Resolved with confidence** (two independent sources agreeing, see [`04-scoring-rules.md`](04-scoring-rules.md)): 2 battlefields, Conquer/Hold/card-effect scoring paths, and the last-point restriction applying only to Conquer.
+**Single-turn puzzle horizon** (confirmed by the user, consistent with the existing 6-week plan's "fixed starting position with a fixed energy budget"): removes Channel Phase, Awaken/rune-recovery, and Hold-as-a-live-action from the search entirely — see `02-state-model.md`.
 
 ## Review checkpoints
 
