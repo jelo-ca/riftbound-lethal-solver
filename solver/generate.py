@@ -68,11 +68,30 @@ MIN_STRATEGY_SIZE = 4
 MAX_SOLVE_DEPTH = 6
 MAX_SOLUTION_COUNT = 3
 MAX_EXPORT_BYTES = 2 * 1024 * 1024
+CARD_COPY_CAP = 3  # standard format: max 3 copies of the same card in a deck
 
 
-def _sample_hand_and_runes(rng: random.Random) -> tuple[tuple[str, ...], RunePool]:
+def _sample_with_cap(rng: random.Random, pool: list[str], n: int, counts: dict[str, int]) -> list[str]:
+    """Draws `n` card ids from `pool`, never letting any single card_id's
+    running count in `counts` exceed CARD_COPY_CAP — `counts` is shared
+    across both the board and hand draws for one position, since the cap
+    is per-deck, not per-zone. Draws fewer than `n` if the pool is
+    exhausted under the cap (never happens in practice at these sample
+    sizes against a 7-card pool, but safe either way)."""
+    result = []
+    for _ in range(n):
+        available = [c for c in pool if counts.get(c, 0) < CARD_COPY_CAP]
+        if not available:
+            break
+        card_id = rng.choice(available)
+        counts[card_id] = counts.get(card_id, 0) + 1
+        result.append(card_id)
+    return result
+
+
+def _sample_hand_and_runes(rng: random.Random, card_counts: dict[str, int]) -> tuple[tuple[str, ...], RunePool]:
     num_hand = rng.randint(0, 2)
-    hand = tuple(rng.choice(HAND_SPELL_POOL) for _ in range(num_hand))
+    hand = tuple(_sample_with_cap(rng, HAND_SPELL_POOL, num_hand, card_counts))
 
     total_energy = 0
     power_needs: dict[str, int] = {}
@@ -103,8 +122,9 @@ def sample_position(rng: random.Random) -> tuple[GameState, dict[str, CardDef]]:
         next_id[0] += 1
         return value
 
+    card_counts: dict[str, int] = {}
     num_our_units = rng.randint(2, 4)
-    remaining_our = [rng.choice(OUR_UNIT_POOL) for _ in range(num_our_units)]
+    remaining_our = _sample_with_cap(rng, OUR_UNIT_POOL, num_our_units, card_counts)
     used_card_ids = set(remaining_our)
 
     battlefields = []
@@ -138,7 +158,7 @@ def sample_position(rng: random.Random) -> tuple[GameState, dict[str, CardDef]]:
                                             might=card.might, keywords=card.keywords,
                                             exhausted=False, damage=0, is_token=False))
 
-    hand, runes = _sample_hand_and_runes(rng)
+    hand, runes = _sample_hand_and_runes(rng, card_counts)
     used_card_ids |= set(hand)
 
     root = GameState(
