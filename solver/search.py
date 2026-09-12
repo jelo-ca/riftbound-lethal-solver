@@ -20,10 +20,10 @@ from __future__ import annotations
 
 from typing import Optional
 
-from . import scoring
-from .actions import Action, MoveUnit, PlayUnit, apply_move_unit, apply_play_unit, legal_actions
-from .cards import CardDef
-from .state import GameState, canonical_key
+from .engine import scoring
+from .engine.actions import Action, MoveUnit, PlayUnit, apply_move_unit, apply_play_unit, legal_actions
+from .engine.cards import CardDef
+from .engine.state import GameState, canonical_key
 
 
 def apply(state: GameState, action: Action, cards: dict[str, CardDef]) -> GameState:

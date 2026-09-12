@@ -1,6 +1,6 @@
 from solver.engine.actions import MoveUnit
-from solver.engine.search import solve
 from solver.engine.state import BattlefieldState, GameState, PlayerState, RunePool, UnitInstance
+from solver.search import solve
 
 
 def make_unit(instance_id, controller=0, might=2, exhausted=False):
