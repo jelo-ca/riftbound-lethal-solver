@@ -184,13 +184,17 @@ def is_legal_play_unit(state: GameState, action: PlayUnit, card: CardDef) -> boo
     if action.target_zone == "base":
         return True
     # rule 355.7/355.8: a battlefield is only a valid PlayUnit target if the
-    # controller already controls it. An open or opponent-controlled
-    # battlefield is not a valid direct-play target.
+    # controller already controls it, UNLESS the card's own text grants an
+    # exception (e.g. Sneaky Deckhand: "You may play me to an open
+    # battlefield") — rule 170.11.c: "open" means unoccupied AND
+    # uncontrolled, not merely uncontrolled.
     try:
         bf = _battlefield(state, action.target_zone)
     except KeyError:
         return False
-    return bf.controller == state.turn_player
+    if bf.controller == state.turn_player:
+        return True
+    return card.can_play_to_open_battlefield and bf.controller is None and not bf.units
 
 
 def apply_play_unit(state: GameState, action: PlayUnit, card: CardDef) -> GameState:
@@ -224,7 +228,12 @@ def apply_play_unit(state: GameState, action: PlayUnit, card: CardDef) -> GameSt
     new_player = dataclasses.replace(player, hand=tuple(new_hand), runes=new_runes)
     state = replace_player(state, player_index, new_player)
     bf = _battlefield(state, action.target_zone)
-    new_bf = dataclasses.replace(bf, units=bf.units | {new_unit})
+    # rule 466.7.b: playing to an open battlefield (via can_play_to_open_
+    # battlefield) establishes control, same as MoveUnit does — playing to
+    # a battlefield already controlled by this player is a no-op for
+    # controller (it's already theirs).
+    new_controller = bf.controller if bf.controller is not None else player_index
+    new_bf = dataclasses.replace(bf, units=bf.units | {new_unit}, controller=new_controller)
     return _replace_battlefield(state, new_bf)
 
 
@@ -323,7 +332,8 @@ def apply_move_unit(state: GameState, action: MoveUnit) -> GameState:
 def legal_actions(state: GameState, cards: dict[str, CardDef]) -> list[Action]:
     """PlayUnit and MoveUnit candidates only — PlaySpell/PlayGear/
     ActivateAbility generation is deferred until their apply() exists (see
-    module docstring)."""
+    module docstring). PlayUnit candidates include open battlefields for
+    cards with can_play_to_open_battlefield set."""
     actions: list[Action] = []
     player = state.players[state.turn_player]
 
@@ -336,10 +346,16 @@ def legal_actions(state: GameState, cards: dict[str, CardDef]) -> list[Action]:
         card = cards.get(card_id)
         if card is None or card.card_type != "Unit":
             continue
+        candidate_zones = ["base"] + controlled_battlefields
+        if card.can_play_to_open_battlefield:
+            candidate_zones += [
+                bf.battlefield_id for bf in state.battlefields
+                if bf.controller is None and not bf.units
+            ]
         for payment in generate_rune_payments(
             player.runes, card.energy_cost, card.power_cost, card.power_domain
         ):
-            for zone in ["base"] + controlled_battlefields:
+            for zone in candidate_zones:
                 action = PlayUnit(card_id=card_id, target_zone=zone, rune_payment=payment)
                 if is_legal_play_unit(state, action, card):
                     actions.append(action)

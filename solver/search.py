@@ -1,12 +1,11 @@
 """IDDFS solver. See design/05-dfs-solver.md.
 
 Scope note: pruning here is just the depth cap + transposition table (no
-separate "no path to score" dead-end heuristic yet). With only PlayUnit and
-MoveUnit-onto-an-open-battlefield implemented so far (see actions.py),
-branching is already small enough that full search at each depth is cheap,
-and writing a speculative pruning rule against action types that don't
-exist yet (spells, gear, combat) risks encoding wrong logic no test can
-meaningfully check. Revisit once the action space is richer.
+separate "no path to score" dead-end heuristic yet). Branching is still
+small enough that full search at each depth is cheap, and writing a
+speculative pruning rule against action types not yet exercised by a real
+puzzle risks encoding wrong logic no test can meaningfully check. Revisit
+once the action space is richer.
 
 `legal_actions()` reflects pure rules legality (actions.py's job) and can
 include moves apply() can't resolve yet (e.g. MoveUnit onto a battlefield
@@ -26,31 +25,39 @@ from .engine.cards import CardDef
 from .engine.state import GameState, canonical_key
 
 
+def _resolve_control_change(state: GameState, new_state: GameState, battlefield_id: str) -> GameState:
+    """If `battlefield_id`'s controller changed to `state.turn_player` as a
+    result of the action that produced `new_state` from `state`, resolve
+    the scoring consequences (rule 469.1: establishing control only scores
+    if not already Scored this turn — scoring.resolve_conquer handles
+    that check). Shared by PlayUnit (open-battlefield deploy) and MoveUnit
+    — both can establish control, per actions.py.
+    """
+    turn_player = state.turn_player
+    old_controller = next(bf.controller for bf in state.battlefields if bf.battlefield_id == battlefield_id)
+    if old_controller == turn_player:
+        return new_state
+    new_bf = next(bf for bf in new_state.battlefields if bf.battlefield_id == battlefield_id)
+    if new_bf.controller != turn_player:
+        return new_state
+    return scoring.resolve_conquer(new_state, battlefield_id)
+
+
 def apply(state: GameState, action: Action, cards: dict[str, CardDef]) -> GameState:
     """Board mechanics + scoring consequences for one action — composes
     actions.py (board state) with scoring.py (points); see both modules'
     docstrings for why the split exists.
     """
     if isinstance(action, PlayUnit):
-        # PlayUnit can only target Base or a battlefield already controlled
-        # by the player (rule 355.7/355.8), so it never changes control —
-        # no scoring consequence to resolve.
-        return apply_play_unit(state, action, cards[action.card_id])
+        new_state = apply_play_unit(state, action, cards[action.card_id])
+        if action.target_zone != "base":
+            new_state = _resolve_control_change(state, new_state, action.target_zone)
+        return new_state
 
     if isinstance(action, MoveUnit):
-        turn_player = state.turn_player
-        old_controller = None
-        if action.to_zone != "base":
-            old_controller = next(
-                bf.controller for bf in state.battlefields if bf.battlefield_id == action.to_zone
-            )
         new_state = apply_move_unit(state, action)
-        if action.to_zone != "base" and old_controller != turn_player:
-            new_bf = next(
-                bf for bf in new_state.battlefields if bf.battlefield_id == action.to_zone
-            )
-            if new_bf.controller == turn_player:
-                new_state = scoring.resolve_conquer(new_state, action.to_zone)
+        if action.to_zone != "base":
+            new_state = _resolve_control_change(state, new_state, action.to_zone)
         return new_state
 
     raise NotImplementedError(
