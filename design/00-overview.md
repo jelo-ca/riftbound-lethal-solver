@@ -26,6 +26,7 @@ Full detail: [`07-scope-and-cut-list.md`](07-scope-and-cut-list.md).
 | [`05-dfs-solver.md`](05-dfs-solver.md) | IDDFS algorithm, transposition table, pruning |
 | [`06-export-schema.md`](06-export-schema.md) | Puzzle JSON DAG format shipped to the web layer |
 | [`07-scope-and-cut-list.md`](07-scope-and-cut-list.md) | Explicit v0 boundaries and open rules questions needing verification |
+| [`08-puzzle-concepts.md`](08-puzzle-concepts.md) | 6 sketched puzzle concepts (real Origins cards) that bound the whitelist and keyword set |
 
 ## System diagram
 

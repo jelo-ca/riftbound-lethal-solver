@@ -4,7 +4,7 @@ The explicit boundary of what this solver implements. Every mechanic on the OUT 
 
 ## IN
 
-- Origins (`OGN`) set only, and within it, only a hand-picked **whitelist** of ~15-30 cards chosen to support the first ~6 puzzles (Week 3 of the existing 6-week plan). Not full-set coverage.
+- Origins (`OGN`) set only, and within it, only a hand-picked **whitelist** of ~15-30 cards chosen to support the first ~6 puzzles (Week 3 of the existing 6-week plan). Not full-set coverage. First-pass whitelist (~14 cards) and the 6 puzzle concepts it's derived from: [`08-puzzle-concepts.md`](08-puzzle-concepts.md).
 - 2 battlefields, no special battlefield effects in v0 puzzles (no "Aspirant's Climb"-style score modifiers).
 - Opponent tapped out — no defender-choice branching beyond required combat resolution.
 - Full information, no randomness, no hidden zones.
