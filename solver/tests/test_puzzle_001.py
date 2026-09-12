@@ -9,7 +9,14 @@ def test_puzzle_001_solves_in_two_moves():
     root = build_root()
     result = export_puzzle("puzzle-001-one-point-short", root, cards={})
     assert len(result["solution"]) == 2
-    assert set(result["terminal"].values()) == {"win"}
+    # Both "split across battlefields" orderings win; piling both units
+    # onto the SAME battlefield is a real, correctly-explored dead end
+    # (only one battlefield gets conquered — a relocate_unit bug used to
+    # silently hide this branch by raising on any friendly co-location,
+    # not just enemy-occupied destinations; fixed alongside puzzle 3).
+    assert "win" in result["terminal"].values()
+    assert "dead_end" in result["terminal"].values()
+    assert set(result["terminal"].values()) <= {"win", "dead_end"}
 
 
 def test_puzzle_001_the_trap_a_single_conquer_does_not_win():

@@ -1,6 +1,8 @@
-from solver.engine.actions import MoveUnit
+from solver.engine.actions import MoveUnit, PlayUnit
+from solver.engine.cards import CardDef
+from solver.engine.scoring import is_winning
 from solver.engine.state import BattlefieldState, GameState, PlayerState, RunePool, UnitInstance
-from solver.search import solve
+from solver.search import apply, solve
 
 
 def make_unit(instance_id, controller=0, might=2, exhausted=False):
@@ -39,11 +41,12 @@ def test_solves_conquer_both_battlefields_for_final_point():
     # Point and is legal because both battlefields got Scored this turn).
     units = frozenset({make_unit(1), make_unit(2)})
     root = make_state(units, score=6)
-    solution = solve(root, cards={}, max_depth=4)
-    assert solution is not None
-    assert len(solution) == 2
-    assert all(isinstance(a, MoveUnit) for a in solution)
-    targets = {a.to_zone for a in solution}
+    strategy = solve(root, cards={}, max_depth=4)
+    assert strategy is not None
+    assert len(strategy) == 2
+    actions = list(strategy.values())
+    assert all(isinstance(a, MoveUnit) for a in actions)
+    targets = {a.to_zone for a in actions}
     assert targets == {"left", "right"}
 
 
@@ -54,14 +57,14 @@ def test_single_conquer_at_7_is_unsolvable_alone():
     # genuinely unsolvable position within the modeled action space.
     units = frozenset({make_unit(1)})
     root = make_state(units, score=7)
-    solution = solve(root, cards={}, max_depth=4)
-    assert solution is None
+    strategy = solve(root, cards={}, max_depth=4)
+    assert strategy is None
 
 
 def test_already_winning_state_returns_empty_solution():
     root = make_state(frozenset(), score=8)
-    solution = solve(root, cards={}, max_depth=4)
-    assert solution == []
+    strategy = solve(root, cards={}, max_depth=4)
+    assert strategy == {}
 
 
 def test_finds_shortest_solution_first():
@@ -71,5 +74,37 @@ def test_finds_shortest_solution_first():
     # happens to work).
     units = frozenset({make_unit(1), make_unit(2), make_unit(3)})
     root = make_state(units, score=6)
-    solution = solve(root, cards={}, max_depth=4)
-    assert len(solution) == 2
+    strategy = solve(root, cards={}, max_depth=4)
+    assert len(strategy) == 2
+
+
+OPEN_DEPLOY_CARD = CardDef(card_id="ogn-176-298", card_type="Unit", energy_cost=0,
+                            power_cost=0, might=2, keywords=frozenset(),
+                            can_play_to_open_battlefield=True)
+
+
+def test_apply_play_unit_to_open_battlefield_resolves_conquer_via_search():
+    """search.apply() must detect control changes from PlayUnit (open-
+    battlefield deploy), not just MoveUnit — regression for the refactor
+    that generalized _resolve_control_change to both action types."""
+    root = GameState(
+        turn_player=0,
+        players=(
+            PlayerState(base_units=frozenset(), hand=("ogn-176-298",),
+                        runes=RunePool(available=()), score=7),
+            PlayerState(base_units=frozenset(), hand=(), runes=RunePool(available=()), score=0),
+        ),
+        battlefields=(
+            BattlefieldState("left", None, frozenset(), None),
+            BattlefieldState("right", 0, frozenset({make_unit(1)}), None),
+        ),
+        scored_this_turn=frozenset({"right"}),
+        cards_played_this_turn=0,
+    )
+    from solver.engine.actions import RunePayment
+    action = PlayUnit(card_id="ogn-176-298", target_zone="left",
+                       rune_payment=RunePayment(energy_runes=(), power_runes=()))
+    cards = {"ogn-176-298": OPEN_DEPLOY_CARD}
+    new_state = apply(root, action, cards)
+    assert is_winning(new_state)
+    assert new_state.players[0].score == 8

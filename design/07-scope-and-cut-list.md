@@ -17,10 +17,10 @@ The explicit boundary of what this solver implements. Every mechanic on the OUT 
 
 - Legend/champion activated abilities, except a hand-picked whitelist entry if a specific puzzle needs one.
 - Multi-set interactions (Origins only, permanently, per the existing plan's policy posture).
-- Damage-assignment complexity beyond single-blocker combat, until a whitelisted card actually forces the issue.
 - General keyword rules coverage — keywords are added to the engine on demand per puzzle, never speculatively.
 - RiftScribe integration — Riftcodex is sufficient and verified live; RiftScribe stays an unwired fallback.
-- Adversarial/minimax opponent — the state model leaves room for it (per the existing plan's architecture note) but v0 does not implement it.
+- **General adversarial/minimax opponent** (turn-taking, spell-casting, blocking decisions) — still out of scope. What *is* now implemented (`09-combat-resolution.md`) is a narrow, localized exception: the opponent's damage-assignment choice during combat is adversarial (an AND-node), since it's a mandatory rules procedure the opponent must go through even while otherwise tapped out — not a general opponent AI.
+- **Resolved (2026-09-12):** "when you play me" triggers that move an *enemy* unit onto ground we hold (Blitzcrank), causing combat where we're the Defender, are now implemented via `abilities.UNIT_PLAY_TRIGGERS` — a generic, reusable "when played" registry (`PlayUnit.trigger_params`), not a one-off for this single card. `combat.py`'s "we are Defender" logic (written generically since the design pass) is now reachable through real action generation, proven by tests using the actual Blitzcrank wiring rather than a synthetic construction. Unblocks puzzle 6 ("Redirection"). `PlaySpell`-triggered enemy-unit moves (e.g. Charm) still aren't wired — same registry pattern would apply whenever a puzzle needs one.
 
 ## Resolved (2026-09-11, verified against the official Core Rules PDF)
 
@@ -33,6 +33,14 @@ All five items originally listed here as open are now resolved by pulling and gr
 5. **Marked damage / turn-boundary cleanup timing** — not fully chased down (lower stakes given the single-turn puzzle horizon and tapped-out assumption); noted as a minor remaining item in `04-scoring-rules.md`.
 
 **Single-turn puzzle horizon** (confirmed by the user, consistent with the existing 6-week plan's "fixed starting position with a fixed energy budget"): removes Channel Phase, Awaken/rune-recovery, and Hold-as-a-live-action from the search entirely — see `02-state-model.md`.
+
+## Resolved (2026-09-12, per direct rules clarification)
+
+6. **Does Ganking's Battlefield→Battlefield restriction apply to spell-granted "Move" effects?** No — confirmed. Ganking's restriction (rule 810) is specific to a unit's own Standard Move. Spell-granted "Move" effects (Ride The Wind, Charm) default to moving a unit to any zone, including Battlefield→Battlefield, with no Ganking requirement — a spell states explicitly when it's narrower (e.g. Fight or Flight: "Move a unit from a battlefield to its base," restricted to that one direction). Implemented as `is_legal_ability_move_destination` in `actions.py`, separate from `is_legal_destination` (which still gates the unit's own Standard Move on Ganking).
+
+## New open item (2026-09-12, flagged for whenever combat resolution gets built)
+
+7. **"When I attack" / "when I defend" triggered-ability ordering.** Not yet relevant — combat resolution isn't implemented (puzzles 5 "Clear the Way" and 6 "Redirection" need it, `design/03-action-space.md`'s combat section). Flagging now so it isn't rediscovered late: when combat resolution is actually built, the order these triggers fire in relative to each other and to damage assignment needs to be nailed down explicitly, not assumed. Revisit `05-dfs-solver.md`'s damage-assignment-branching notes at that point.
 
 ## Review checkpoints
 

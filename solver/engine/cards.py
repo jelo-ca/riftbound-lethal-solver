@@ -25,3 +25,7 @@ class CardDef:
     power_domain: Optional[Domain] = None  # None iff power_cost == 0
     might: Optional[int] = None  # Units only
     keywords: frozenset[str] = field(default_factory=frozenset)
+    # Some units grant an exception to rule 355.8's default PlayUnit target
+    # rule (Base or an already-controlled battlefield) via their own text —
+    # e.g. Sneaky Deckhand: "You may play me to an open battlefield."
+    can_play_to_open_battlefield: bool = False

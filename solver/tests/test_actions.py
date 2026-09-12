@@ -9,7 +9,7 @@ from solver.engine.actions import (
     generate_rune_payments,
     is_legal_move_unit,
     is_legal_play_unit,
-    legal_actions,
+    legal_board_actions,
 )
 from solver.engine.cards import CardDef
 from solver.engine.state import (
@@ -135,6 +135,41 @@ def test_play_unit_wrong_power_domain_illegal():
     assert payments == []
 
 
+OPEN_DEPLOY_UNIT = CardDef(card_id="ogn-176-298", card_type="Unit", energy_cost=3,
+                            power_cost=0, might=2, keywords=frozenset(),
+                            can_play_to_open_battlefield=True)
+
+
+def test_play_unit_to_open_battlefield_illegal_without_flag():
+    state = make_state(hand=("ogn-010-298",), runes=("Fury", "Fury"), bf0_controller=None)
+    payment = generate_rune_payments(state.players[0].runes, 2, 0, None)[0]
+    action = PlayUnit(card_id="ogn-010-298", target_zone="left", rune_payment=payment)
+    assert not is_legal_play_unit(state, action, CHEAP_UNIT)  # no can_play_to_open_battlefield
+
+
+def test_play_unit_to_open_battlefield_legal_with_flag_and_establishes_control():
+    state = make_state(hand=("ogn-176-298",), runes=("Fury", "Fury", "Fury"), bf0_controller=None)
+    payment = generate_rune_payments(state.players[0].runes, 3, 0, None)[0]
+    action = PlayUnit(card_id="ogn-176-298", target_zone="left", rune_payment=payment)
+    assert is_legal_play_unit(state, action, OPEN_DEPLOY_UNIT)
+
+    new_state = apply_play_unit(state, action, OPEN_DEPLOY_UNIT)
+    assert new_state.battlefields[0].controller == 0
+
+
+def test_play_unit_to_open_battlefield_illegal_if_occupied():
+    # rule 170.11.c: "open" means unoccupied AND uncontrolled — a
+    # battlefield with units present isn't "open" even if uncontrolled
+    # doesn't apply here since a unit's presence implies its controller
+    # controls it, but this guards the not-bf.units check directly.
+    occupant = make_unit(card_id="occupant", instance_id=99, controller=1)
+    state = make_state(hand=("ogn-176-298",), runes=("Fury", "Fury", "Fury"),
+                        bf0_units=frozenset({occupant}), bf0_controller=None)
+    payment = generate_rune_payments(state.players[0].runes, 3, 0, None)[0]
+    action = PlayUnit(card_id="ogn-176-298", target_zone="left", rune_payment=payment)
+    assert not is_legal_play_unit(state, action, OPEN_DEPLOY_UNIT)
+
+
 # --- MoveUnit ---
 
 
@@ -209,7 +244,7 @@ def test_move_onto_occupied_battlefield_not_implemented():
         apply_move_unit(state, action)
 
 
-# --- legal_actions orchestration ---
+# --- legal_board_actions orchestration ---
 
 
 def test_legal_actions_includes_play_and_move():
@@ -217,7 +252,7 @@ def test_legal_actions_includes_play_and_move():
     state = make_state(hand=("ogn-010-298",), runes=("Fury", "Fury"),
                         base_units=frozenset({unit}))
     cards = {"ogn-010-298": CHEAP_UNIT}
-    actions = legal_actions(state, cards)
+    actions = legal_board_actions(state, cards)
     assert any(isinstance(a, PlayUnit) for a in actions)
     assert any(isinstance(a, MoveUnit) for a in actions)
 
@@ -225,5 +260,5 @@ def test_legal_actions_includes_play_and_move():
 def test_legal_actions_excludes_unaffordable_cards():
     state = make_state(hand=("ogn-218-298",), runes=("Fury",))  # can't afford
     cards = {"ogn-218-298": DOMAIN_UNIT}
-    actions = legal_actions(state, cards)
+    actions = legal_board_actions(state, cards)
     assert not any(isinstance(a, PlayUnit) for a in actions)

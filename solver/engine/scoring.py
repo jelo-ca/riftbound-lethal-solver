@@ -65,6 +65,25 @@ def resolve_conquer(state: GameState, battlefield_id: str) -> GameState:
     return dataclasses.replace(state, scored_this_turn=new_scored_this_turn)
 
 
+def resolve_control_change(state: GameState, new_state: GameState, battlefield_id: str) -> GameState:
+    """If `battlefield_id`'s controller changed to `state.turn_player`
+    between `state` and `new_state`, resolve the scoring consequences via
+    resolve_conquer. Shared by every action/effect that can establish
+    control (PlayUnit's open-battlefield deploy, MoveUnit, and spell
+    effects like Ride The Wind that relocate a unit — see search.py and
+    abilities.py), so the same rule 469.1 check happens exactly once
+    regardless of which board mechanic produced the control change.
+    """
+    turn_player = state.turn_player
+    old_controller = next(bf.controller for bf in state.battlefields if bf.battlefield_id == battlefield_id)
+    if old_controller == turn_player:
+        return new_state
+    new_bf = next(bf for bf in new_state.battlefields if bf.battlefield_id == battlefield_id)
+    if new_bf.controller != turn_player:
+        return new_state
+    return resolve_conquer(new_state, battlefield_id)
+
+
 def grant_card_effect_point(state: GameState) -> GameState:
     """rule 473: points gained from sources that are not Conquer (card
     effects) are not subject to the Final Point restriction, and per the
