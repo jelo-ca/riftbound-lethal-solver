@@ -18,7 +18,7 @@ Good early regression-style puzzle: cheap to author, directly exercises the corr
 
 ## 3. "The Long Way Around" — a card-effect point sidesteps the restriction entirely
 
-**Yasuo - Windrider** (`ogn-205-298`, 5E, [Ganking] — can move battlefield-to-battlefield freely): *"The third time I move in a turn, you score 1 point."* That's a card-effect point (rule 473 — exempt from the Conquer restriction). Setup: player at 7, can't feasibly clear both battlefields' defenders this turn, but *can* shuttle Yasuo between the two battlefields three times if enough energy/actions remain. Teaches: not every point needs Conquer or Hold — direct effects bypass the trap mechanic entirely.
+**Yasuo - Windrider** (`ogn-205-298`, 5E, [Ganking] — can move battlefield-to-battlefield): *"The third time I move in a turn, you score 1 point."* That's a card-effect point (rule 473 — exempt from the Conquer restriction). **Correction:** moving exhausts a unit (rule 145.1) — Ganking only removes the Battlefield→Battlefield destination restriction, it doesn't make moves free. So 3 moves in a turn isn't just "shuttle back and forth"; it needs 2 additional ready effects between moves (e.g. Ride The Wind, First Mate) to actually get 3 moves out of one turn. That makes this a genuinely harder puzzle than first sketched — good, since it also doubles as a second demonstration of concept 4's "extra action" trick, applied to a different payoff. Teaches: not every point needs Conquer or Hold — direct effects bypass the trap mechanic entirely.
 
 ## 4. "Extra Innings" — the hidden extra action
 
