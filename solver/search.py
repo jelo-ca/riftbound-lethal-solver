@@ -7,40 +7,55 @@ speculative pruning rule against action types not yet exercised by a real
 puzzle risks encoding wrong logic no test can meaningfully check. Revisit
 once the action space is richer.
 
-`legal_actions()` reflects pure rules legality (actions.py's job) and can
-include moves apply() can't resolve yet (e.g. MoveUnit onto a battlefield
-with enemy units — combat resolution isn't implemented). The search catches
-that `NotImplementedError` and skips the action rather than crashing, which
-correctly limits what puzzles this solver can currently solve without
-actions.py's legality check having to lie about what the rules allow.
+`legal_actions()` here composes actions.py's board-only legality
+(legal_board_actions — PlayUnit/MoveUnit) with abilities.py's registered
+spell candidates, since generating PlaySpell candidates needs abilities.py
+and abilities.py imports from actions.py, so it can't live in actions.py
+without a circular import. It can include moves apply() can't resolve yet
+(e.g. MoveUnit onto a battlefield with enemy units — combat resolution
+isn't implemented). The search catches that `NotImplementedError` and
+skips the action rather than crashing, which correctly limits what
+puzzles this solver can currently solve without the legality checks
+having to lie about what the rules allow.
 """
 
 from __future__ import annotations
 
 from typing import Optional
 
-from .engine import scoring
-from .engine.actions import Action, MoveUnit, PlayUnit, apply_move_unit, apply_play_unit, legal_actions
+from .engine import abilities, scoring
+from .engine.actions import (
+    Action,
+    MoveUnit,
+    PlaySpell,
+    PlayUnit,
+    apply_move_unit,
+    apply_play_unit,
+    generate_rune_payments,
+    legal_board_actions,
+)
 from .engine.cards import CardDef
 from .engine.state import GameState, canonical_key
 
 
-def _resolve_control_change(state: GameState, new_state: GameState, battlefield_id: str) -> GameState:
-    """If `battlefield_id`'s controller changed to `state.turn_player` as a
-    result of the action that produced `new_state` from `state`, resolve
-    the scoring consequences (rule 469.1: establishing control only scores
-    if not already Scored this turn — scoring.resolve_conquer handles
-    that check). Shared by PlayUnit (open-battlefield deploy) and MoveUnit
-    — both can establish control, per actions.py.
-    """
-    turn_player = state.turn_player
-    old_controller = next(bf.controller for bf in state.battlefields if bf.battlefield_id == battlefield_id)
-    if old_controller == turn_player:
-        return new_state
-    new_bf = next(bf for bf in new_state.battlefields if bf.battlefield_id == battlefield_id)
-    if new_bf.controller != turn_player:
-        return new_state
-    return scoring.resolve_conquer(new_state, battlefield_id)
+def legal_actions(state: GameState, cards: dict[str, CardDef]) -> list[Action]:
+    result = list(legal_board_actions(state, cards))
+    player = state.players[state.turn_player]
+    for card_id in set(player.hand):
+        card = cards.get(card_id)
+        if card is None:
+            continue
+        entry = abilities.SPELL_EFFECTS.get(card_id)
+        if entry is None:
+            continue
+        _, _, generate_candidates = entry
+        payments = generate_rune_payments(player.runes, card.energy_cost, card.power_cost, card.power_domain)
+        for payment in payments:
+            for params in generate_candidates(state):
+                action = PlaySpell(card_id=card_id, params=params, rune_payment=payment)
+                if abilities.is_legal_play_spell(state, action, card):
+                    result.append(action)
+    return result
 
 
 def apply(state: GameState, action: Action, cards: dict[str, CardDef]) -> GameState:
@@ -51,14 +66,17 @@ def apply(state: GameState, action: Action, cards: dict[str, CardDef]) -> GameSt
     if isinstance(action, PlayUnit):
         new_state = apply_play_unit(state, action, cards[action.card_id])
         if action.target_zone != "base":
-            new_state = _resolve_control_change(state, new_state, action.target_zone)
+            new_state = scoring.resolve_control_change(state, new_state, action.target_zone)
         return new_state
 
     if isinstance(action, MoveUnit):
         new_state = apply_move_unit(state, action)
         if action.to_zone != "base":
-            new_state = _resolve_control_change(state, new_state, action.to_zone)
+            new_state = scoring.resolve_control_change(state, new_state, action.to_zone)
         return new_state
+
+    if isinstance(action, PlaySpell):
+        return abilities.apply_spell(state, action, cards[action.card_id])
 
     raise NotImplementedError(
         f"apply: {type(action).__name__} not supported yet (see design/03-action-space.md)"

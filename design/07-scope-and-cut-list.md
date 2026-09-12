@@ -34,6 +34,10 @@ All five items originally listed here as open are now resolved by pulling and gr
 
 **Single-turn puzzle horizon** (confirmed by the user, consistent with the existing 6-week plan's "fixed starting position with a fixed energy budget"): removes Channel Phase, Awaken/rune-recovery, and Hold-as-a-live-action from the search entirely — see `02-state-model.md`.
 
+## New open question (2026-09-12, found while implementing PlaySpell effects)
+
+6. **Does Ganking's Battlefield→Battlefield restriction apply to spell-granted "Move" effects, or only the Standard Move action?** Rule 810 ties Ganking specifically to "a Unit's Standard Move." Ride The Wind ("Move a friendly unit and ready it") currently applies the same Ganking gate as a Standard Move (conservative — if wrong, this is too strict, not too permissive) — see `solver/engine/abilities.py`'s `_ride_the_wind_is_legal`. Verify against the official rules before authoring a puzzle that depends on the answer either way.
+
 ## Review checkpoints
 
 This whole `design/` set is meant to be reviewed before any `solver/engine/` code is written. Suggested order: `00` → `04` (rules-correctness track, since a wrong scoring module invalidates every puzzle) → `05` (solver mechanics) → `01`/`02`/`03`/`06` (plumbing). Flag disagreements per-doc; the open questions above are the known gaps, not the only things worth pushback on.

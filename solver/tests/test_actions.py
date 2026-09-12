@@ -9,7 +9,7 @@ from solver.engine.actions import (
     generate_rune_payments,
     is_legal_move_unit,
     is_legal_play_unit,
-    legal_actions,
+    legal_board_actions,
 )
 from solver.engine.cards import CardDef
 from solver.engine.state import (
@@ -244,7 +244,7 @@ def test_move_onto_occupied_battlefield_not_implemented():
         apply_move_unit(state, action)
 
 
-# --- legal_actions orchestration ---
+# --- legal_board_actions orchestration ---
 
 
 def test_legal_actions_includes_play_and_move():
@@ -252,7 +252,7 @@ def test_legal_actions_includes_play_and_move():
     state = make_state(hand=("ogn-010-298",), runes=("Fury", "Fury"),
                         base_units=frozenset({unit}))
     cards = {"ogn-010-298": CHEAP_UNIT}
-    actions = legal_actions(state, cards)
+    actions = legal_board_actions(state, cards)
     assert any(isinstance(a, PlayUnit) for a in actions)
     assert any(isinstance(a, MoveUnit) for a in actions)
 
@@ -260,5 +260,5 @@ def test_legal_actions_includes_play_and_move():
 def test_legal_actions_excludes_unaffordable_cards():
     state = make_state(hand=("ogn-218-298",), runes=("Fury",))  # can't afford
     cards = {"ogn-218-298": DOMAIN_UNIT}
-    actions = legal_actions(state, cards)
+    actions = legal_board_actions(state, cards)
     assert not any(isinstance(a, PlayUnit) for a in actions)

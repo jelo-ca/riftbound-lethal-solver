@@ -17,10 +17,10 @@ from __future__ import annotations
 import hashlib
 
 from .engine import scoring
-from .engine.actions import Action, MoveUnit, PlayGear, PlaySpell, PlayUnit, legal_actions
+from .engine.actions import Action, MoveUnit, PlayGear, PlaySpell, PlayUnit
 from .engine.cards import CardDef
 from .engine.state import BattlefieldState, GameState, PlayerState, UnitInstance, canonical_key
-from .search import apply, solve
+from .search import apply, legal_actions, solve
 
 SCHEMA_VERSION = 1
 
@@ -83,7 +83,7 @@ def render_action(action: Action, action_id: str) -> dict:
     elif isinstance(action, MoveUnit):
         label = f"Move unit {action.instance_id} from {action.from_zone} to {action.to_zone}"
     elif isinstance(action, PlaySpell):
-        label = f"Play {action.card_id}"
+        label = f"Play {action.card_id} ({', '.join(str(p) for p in action.params)})"
     elif isinstance(action, PlayGear):
         label = f"Play {action.card_id} on unit {action.target_unit}"
     else:
