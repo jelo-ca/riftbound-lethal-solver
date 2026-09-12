@@ -1,0 +1,34 @@
+classDiagram
+    class GameState {
+        turn_player: int
+        scored_this_turn: frozenset~str~
+        cards_played_this_turn: int
+    }
+    class PlayerState {
+        base_units: frozenset~UnitInstance~
+        hand: tuple~str~
+        score: int
+    }
+    class RunePool {
+        domain_counts: dict~Domain,int~
+        exhausted_count: int
+    }
+    class BattlefieldState {
+        battlefield_id: str
+        controller: int
+        effect_id: str
+    }
+    class UnitInstance {
+        card_id: str
+        instance_id: int
+        controller: int
+        might: int
+        keywords: frozenset~str~
+        exhausted: bool
+        damage: int
+    }
+    GameState "1" *-- "2" PlayerState
+    GameState "1" *-- "2" BattlefieldState
+    PlayerState "1" *-- "1" RunePool
+    PlayerState "1" o-- "*" UnitInstance : base_units
+    BattlefieldState "1" o-- "*" UnitInstance : units

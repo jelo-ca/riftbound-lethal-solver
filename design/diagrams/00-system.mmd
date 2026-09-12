@@ -1,0 +1,32 @@
+flowchart LR
+    subgraph Data["Data pipeline (01)"]
+        API[Riftcodex API]
+        RAW[cards_raw.json]
+        WL[Hand-authored whitelist\n+ ability overrides]
+        CUR[cards_curated.json]
+        API --> RAW --> CUR
+        WL --> CUR
+    end
+
+    subgraph Engine["Rules engine"]
+        STATE[GameState + canonical hash\n(02)]
+        ACT[Action space\n(03)]
+        SCORE[Scoring module\n(04)]
+    end
+
+    subgraph Search["Solver (05)"]
+        IDDFS[IDDFS + transposition table]
+    end
+
+    subgraph Author["Authoring (Week 3, not this doc set)"]
+        HAND[Hand-authored positions]
+    end
+
+    EXPORT[export.py\nDAG -> JSON (06)]
+    WEB[Web graph walker\n(unchanged, Week 4 plan)]
+
+    CUR --> STATE
+    HAND --> STATE
+    STATE --> ACT --> IDDFS
+    STATE --> SCORE --> IDDFS
+    IDDFS --> EXPORT --> WEB

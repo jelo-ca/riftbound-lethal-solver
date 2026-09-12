@@ -1,0 +1,14 @@
+flowchart TD
+    A[Action resolves] --> B{Conquer, Hold,\nor card effect?}
+    B -->|Conquer| C[+1 pt, mark battlefield\nin scored_this_turn]
+    B -->|Hold, start of turn| D[+1 pt per uncontested\nheld battlefield]
+    B -->|Card effect| E[+1 pt, no restriction]
+    C --> F{New score == 8?}
+    D --> H{New score == 8?}
+    E --> H
+    F -->|yes| G{Both battlefields\nin scored_this_turn?}
+    F -->|no| Z[Continue]
+    G -->|yes| WIN[Win]
+    G -->|no| DRAW[No point — draw a card instead]
+    H -->|yes| WIN
+    H -->|no| Z

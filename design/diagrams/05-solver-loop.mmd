@@ -1,0 +1,18 @@
+flowchart TD
+    Start([solve depth=1..max]) --> DFS[dfs state, remaining, path]
+    DFS --> Win{is_winning?}
+    Win -->|yes| Return[Return path]
+    Win -->|no| Depth{remaining == 0?}
+    Depth -->|yes| Fail1[Return None]
+    Depth -->|no| TT{In transposition\ntable as FAIL?}
+    TT -->|yes| Fail2[Return None]
+    TT -->|no| Gen[ordered_legal_actions]
+    Gen --> Loop[For each action]
+    Loop --> Prune{is_dead_end child?}
+    Prune -->|yes| Loop
+    Prune -->|no| Recurse[dfs child, remaining-1, path+action]
+    Recurse --> Found{Result found?}
+    Found -->|yes| Return
+    Found -->|no| Loop
+    Loop -->|exhausted| Record[Record FAIL in ttable]
+    Record --> Fail3[Return None]
