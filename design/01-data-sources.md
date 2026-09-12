@@ -8,6 +8,7 @@ No official Riot API access. Relying on community/fan-built open APIs, per `rift
 - No authentication required for reads (confirmed live).
 - Fan project operating under Riot's "Legal Jibber Jabber" policy — same legal notice already in the repo README covers use of this data.
 - Rate limits: not documented. Treat as unknown — cache aggressively, never call it at solve-time or puzzle-render-time, only during the one-time ingestion step.
+- **Requires a `User-Agent` header.** Requests with no UA or a bare default (e.g. Python's `urllib` default) get a `403 Forbidden` — confirmed while writing `fetch_cards.py`. `curl`'s default UA works fine, which is why the earlier live-verification pass in this doc didn't catch it. Any client hitting this API needs to set an explicit UA string.
 
 ### Endpoints used
 
