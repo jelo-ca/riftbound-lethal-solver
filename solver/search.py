@@ -202,6 +202,82 @@ def _resolve_combat_search(state: GameState, action: ResolveCombat, remaining: i
     return _and_or_search(state, action, outcomes, remaining, cards, ttable)
 
 
+def count_winning_strategies(root: GameState, cards: dict[str, CardDef], max_depth: int = 12) -> int:
+    """How many DISTINCT complete winning strategies exist from `root`
+    within the shortest possible depth — the generation pipeline's
+    solution-count filter (design/10-generation-pipeline.md). This counts
+    full lines to lethal, not just root's first move: a puzzle with one
+    forced opener that then branches into several correct follow-ups is
+    still "easy" in the sense this filter cares about, so branching at any
+    point in the line counts, not just at the root.
+
+    At an adversarial (AND) node, our own play must still work against
+    EVERY opponent response, so a "strategy" through that node fixes one
+    continuation per response — the count contributed is the PRODUCT of
+    the continuation counts across responses (only valid, i.e. counted at
+    all, if every response has at least one continuation). This can grow
+    quickly if a puzzle has heavy combat branching, but every puzzle in
+    scope so far is small enough for this not to matter.
+
+    A count of 0 means `root` isn't solvable within `max_depth` (or is
+    already winning, a degenerate case that shouldn't occur for a sampled
+    puzzle). Recomputes the shortest depth the same way solve() does
+    internally (len(solve(...)) isn't the right proxy — it counts every
+    state across the whole strategy map, not the ply-depth of root's own
+    shortest path).
+    """
+    if scoring.is_winning(root):
+        return 0
+
+    d_star = None
+    for depth_limit in range(1, max_depth + 1):
+        if _dfs(root, depth_limit, cards, {}) is not None:
+            d_star = depth_limit
+            break
+    if d_star is None:
+        return 0
+
+    memo: dict[tuple, int] = {}
+    return _count_solutions(root, d_star, cards, memo)
+
+
+def _count_solutions(state: GameState, remaining: int, cards: dict[str, CardDef],
+                      memo: dict[tuple, int]) -> int:
+    if scoring.is_winning(state):
+        return 1
+    if remaining == 0:
+        return 0
+
+    key = (canonical_key(state), remaining)
+    if key in memo:
+        return memo[key]
+
+    total = 0
+    for action in legal_actions(state, cards):
+        if isinstance(action, ResolveCombat):
+            mover = find_unit(state, action.instance_id, action.from_zone)
+            outcomes = combat.enumerate_combat_outcomes(state, mover, action.from_zone, action.to_zone, action.our_assignment)
+            outcomes = [scoring.resolve_control_change(state, o, action.to_zone) for o in outcomes]
+            outcomes = [abilities.apply_move_triggers(o, action.instance_id) for o in outcomes]
+        elif isinstance(action, PlayUnit) and action.trigger_params:
+            outcomes = abilities.resolve_unit_play_trigger_outcomes(state, action, cards[action.card_id])
+        else:
+            try:
+                outcomes = [apply(state, action, cards)]
+            except NotImplementedError:
+                continue
+
+        counts = [_count_solutions(o, remaining - 1, cards, memo) for o in outcomes]
+        if all(c > 0 for c in counts):
+            product = 1
+            for c in counts:
+                product *= c
+            total += product
+
+    memo[key] = total
+    return total
+
+
 def _and_or_search(state: GameState, action: Action, outcomes: list[GameState], remaining: int,
                     cards: dict[str, CardDef], ttable: dict[tuple, bool]) -> Optional[Strategy]:
     """The AND-node: `action` already bakes in our own choice (a specific

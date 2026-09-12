@@ -1,0 +1,225 @@
+"""Puzzle generation pipeline: sample -> solve -> filter. See
+design/10-generation-pipeline.md.
+
+Samples random single-turn positions from the verified card pool (the 3
+vanilla stat-sticks + Sneaky Deckhand + the 4 cards with registered
+mechanics — everything else is unregistered and simply can't be sampled),
+keeps only positions that are solvable, long enough (>=4 actions), and
+have a small number of correct first moves (1-3), then exports survivors
+through the same export.py used for the hand-authored puzzles.
+
+Run with: python -m solver.generate --count 5
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import random
+from pathlib import Path
+from typing import Optional
+
+from .engine.abilities import BLITZCRANK_IMPASSIVE, CAITLYN_PATROLLING, RIDE_THE_WIND, YASUO_WINDRIDER
+from .engine.cards import CardDef
+from .engine.state import BattlefieldState, GameState, PlayerState, RunePool, UnitInstance
+from .export import export_puzzle
+from .search import count_winning_strategies, solve
+
+OUTPUT_DIR = Path(__file__).parent.parent / "puzzles" / "generated"
+
+# --- Verified card pool (design/10-generation-pipeline.md) -----------------
+
+LEGION_REARGUARD = "ogn-010-298"
+FAITHFUL_MANUFACTOR = "ogn-211-298"
+VANGUARD_CAPTAIN = "ogn-218-298"
+SNEAKY_DECKHAND = "ogn-176-298"
+
+CARD_POOL: dict[str, CardDef] = {
+    LEGION_REARGUARD: CardDef(card_id=LEGION_REARGUARD, card_type="Unit", energy_cost=2,
+                               power_cost=0, might=2, keywords=frozenset()),
+    FAITHFUL_MANUFACTOR: CardDef(card_id=FAITHFUL_MANUFACTOR, card_type="Unit", energy_cost=2,
+                                  power_cost=0, might=2, keywords=frozenset()),
+    VANGUARD_CAPTAIN: CardDef(card_id=VANGUARD_CAPTAIN, card_type="Unit", energy_cost=2,
+                               power_cost=1, power_domain="Order", might=3, keywords=frozenset()),
+    SNEAKY_DECKHAND: CardDef(card_id=SNEAKY_DECKHAND, card_type="Unit", energy_cost=3,
+                              power_cost=0, might=2, keywords=frozenset(),
+                              can_play_to_open_battlefield=True),
+    CAITLYN_PATROLLING: CardDef(card_id=CAITLYN_PATROLLING, card_type="Unit", energy_cost=3,
+                                 power_cost=0, might=3, keywords=frozenset()),
+    BLITZCRANK_IMPASSIVE: CardDef(card_id=BLITZCRANK_IMPASSIVE, card_type="Unit", energy_cost=5,
+                                   power_cost=0, might=5, keywords=frozenset({"Tank"})),
+    YASUO_WINDRIDER: CardDef(card_id=YASUO_WINDRIDER, card_type="Unit", energy_cost=2,
+                              power_cost=0, might=2, keywords=frozenset({"Ganking"})),
+    RIDE_THE_WIND: CardDef(card_id=RIDE_THE_WIND, card_type="Spell", energy_cost=2,
+                            power_cost=1, power_domain="Chaos", keywords=frozenset()),
+}
+
+# Units that can be sampled onto the board (pre-placed) or into hand.
+OUR_UNIT_POOL = [LEGION_REARGUARD, FAITHFUL_MANUFACTOR, VANGUARD_CAPTAIN,
+                  SNEAKY_DECKHAND, CAITLYN_PATROLLING, BLITZCRANK_IMPASSIVE, YASUO_WINDRIDER]
+# Only Ride The Wind is played out of hand today (design/10-generation-
+# pipeline.md's card pool table) - the mechanic units above are sampled
+# pre-placed on the board, not into hand, since PlayUnit's own candidate
+# generation already covers "play a unit this turn" for anything at Base.
+HAND_SPELL_POOL = [RIDE_THE_WIND]
+
+STARTING_SCORE = 6  # design decision: forces a two-point turn, see doc
+MIN_STRATEGY_SIZE = 4
+MAX_SOLVE_DEPTH = 6
+MAX_SOLUTION_COUNT = 3
+MAX_EXPORT_BYTES = 2 * 1024 * 1024
+
+
+def _sample_hand_and_runes(rng: random.Random) -> tuple[tuple[str, ...], RunePool]:
+    num_hand = rng.randint(0, 2)
+    hand = tuple(rng.choice(HAND_SPELL_POOL) for _ in range(num_hand))
+
+    total_energy = 0
+    power_needs: dict[str, int] = {}
+    for card_id in hand:
+        card = CARD_POOL[card_id]
+        total_energy += card.energy_cost
+        if card.power_cost:
+            power_needs[card.power_domain] = power_needs.get(card.power_domain, 0) + card.power_cost
+
+    runes: list[str] = []
+    for domain, count in power_needs.items():
+        runes += [domain] * count
+    runes += ["Fury"] * total_energy  # energy is domain-agnostic, any filler works
+    return hand, RunePool(available=tuple(runes))
+
+
+def sample_position(rng: random.Random) -> tuple[GameState, dict[str, CardDef]]:
+    """One random single-turn position from the verified card pool. See
+    design/10-generation-pipeline.md's "Sampling" section for the ranges
+    used here and why."""
+    battlefield_ids = ["left", "right"]
+    scored_this_turn = frozenset({rng.choice(battlefield_ids)}) if rng.random() < 0.5 else frozenset()
+
+    next_id = [1]
+
+    def new_id() -> int:
+        value = next_id[0]
+        next_id[0] += 1
+        return value
+
+    num_our_units = rng.randint(2, 4)
+    remaining_our = [rng.choice(OUR_UNIT_POOL) for _ in range(num_our_units)]
+    used_card_ids = set(remaining_our)
+
+    battlefields = []
+    for bf_id in battlefield_ids:
+        roll = rng.random()
+        if remaining_our and roll < 0.4:
+            card_id = remaining_our.pop(0)
+            card = CARD_POOL[card_id]
+            # Never exhausted: Awaken readies every unit at turn start (rule
+            # 315.4/431), and this position IS turn start - there's no
+            # legitimate in-turn event that could have exhausted a unit
+            # sitting at Base or a battlefield before the puzzle's own
+            # first action. Only a freshly-PLAYED unit starts exhausted
+            # (rule 143.4.a), which apply_play_unit already models.
+            unit = UnitInstance(card_id=card_id, instance_id=new_id(), controller=0,
+                                 might=card.might, keywords=card.keywords,
+                                 exhausted=False, damage=0, is_token=False)
+            battlefields.append(BattlefieldState(bf_id, 0, frozenset({unit}), None))
+        elif roll < 0.65:
+            unit = UnitInstance(card_id="generic-opponent", instance_id=new_id(), controller=1,
+                                 might=rng.randint(1, 5), keywords=frozenset(),
+                                 exhausted=False, damage=0, is_token=False)
+            battlefields.append(BattlefieldState(bf_id, 1, frozenset({unit}), None))
+        else:
+            battlefields.append(BattlefieldState(bf_id, None, frozenset(), None))
+
+    our_base_units = []
+    for card_id in remaining_our:
+        card = CARD_POOL[card_id]
+        our_base_units.append(UnitInstance(card_id=card_id, instance_id=new_id(), controller=0,
+                                            might=card.might, keywords=card.keywords,
+                                            exhausted=False, damage=0, is_token=False))
+
+    hand, runes = _sample_hand_and_runes(rng)
+    used_card_ids |= set(hand)
+
+    root = GameState(
+        turn_player=0,
+        players=(
+            PlayerState(base_units=frozenset(our_base_units), hand=hand, runes=runes,
+                        score=STARTING_SCORE),
+            PlayerState(base_units=frozenset(), hand=(), runes=RunePool(available=()), score=0),
+        ),
+        battlefields=tuple(battlefields),
+        scored_this_turn=scored_this_turn,
+        cards_played_this_turn=0,
+    )
+    cards = {card_id: CARD_POOL[card_id] for card_id in used_card_ids}
+    return root, cards
+
+
+def evaluate_candidate(root: GameState, cards: dict[str, CardDef], puzzle_id: str) -> Optional[dict]:
+    """Runs one candidate through the full filter chain (design/10-
+    generation-pipeline.md's "Filters" section); returns the exported
+    puzzle dict if it survives, else None."""
+    strategy = solve(root, cards, max_depth=MAX_SOLVE_DEPTH)
+    if strategy is None:
+        return None
+    if len(strategy) < MIN_STRATEGY_SIZE:
+        return None
+
+    solution_count = count_winning_strategies(root, cards, max_depth=MAX_SOLVE_DEPTH)
+    if not (1 <= solution_count <= MAX_SOLUTION_COUNT):
+        return None
+
+    result = export_puzzle(puzzle_id, root, cards, max_solver_depth=MAX_SOLVE_DEPTH)
+    export_bytes = len(json.dumps(result).encode("utf-8"))
+    if export_bytes > MAX_EXPORT_BYTES:
+        return None
+
+    result["_generation_meta"] = {
+        "solution_length": len(strategy),
+        "solution_count": solution_count,
+        "export_bytes": export_bytes,
+    }
+    return result
+
+
+def generate(count: int, seed: Optional[int] = None, attempt_multiplier: int = 200) -> tuple[list[dict], int]:
+    """Samples candidates until `count` survive the filters or the attempt
+    budget (`count * attempt_multiplier`) runs out. Returns (survivors,
+    attempts_made)."""
+    rng = random.Random(seed)
+    survivors: list[dict] = []
+    attempts = 0
+    max_attempts = count * attempt_multiplier
+    while len(survivors) < count and attempts < max_attempts:
+        attempts += 1
+        root, cards = sample_position(rng)
+        puzzle_id = f"generated-{attempts:05d}"
+        result = evaluate_candidate(root, cards, puzzle_id)
+        if result is not None:
+            survivors.append(result)
+    return survivors, attempts
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Generate lethal-puzzle candidates.")
+    parser.add_argument("--count", type=int, default=5, help="number of survivors to produce")
+    parser.add_argument("--seed", type=int, default=None, help="RNG seed, for reproducible runs")
+    args = parser.parse_args()
+
+    survivors, attempts = generate(args.count, seed=args.seed)
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    for result in survivors:
+        path = OUTPUT_DIR / f"{result['puzzle_id']}.json"
+        path.write_text(json.dumps(result, indent=2))
+
+    print(f"Attempts: {attempts}, survivors: {len(survivors)} "
+          f"(hit rate: {len(survivors) / attempts:.1%})" if attempts else "No attempts made.")
+    for result in survivors:
+        meta = result["_generation_meta"]
+        print(f"  {result['puzzle_id']}: {meta['solution_length']} states, "
+              f"{meta['solution_count']} distinct winning line(s), {meta['export_bytes']} bytes")
+
+
+if __name__ == "__main__":
+    main()
