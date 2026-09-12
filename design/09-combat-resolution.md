@@ -54,15 +54,29 @@ Source: [`diagrams/09-combat-and-or.mmd`](diagrams/09-combat-and-or.mmd)
    - For each of the *opponent's* assignment choices `d` given `a` (on whichever side is theirs):
      - Compute the resulting state (apply both assignments, remove dead units, resolve control per the existing rule 466.7.b logic).
      - Recurse: does `_dfs` from this resulting state, at `remaining - 1`, find a win?
-   - If **every** `d` produced a win: choice `a` is validated. Return a path built from `a` and (for path-reporting purposes) one representative `d`'s continuation.
+   - If **every** `d` produced a win: choice `a` is validated — see the next section for exactly what gets returned (a strategy map, not a path).
    - If any `d` failed: try the next `a`.
 3. If no `a` survives all its `d`s, this combat-triggering action fails at this depth (same as any other action with no winning continuation) — feeds into the existing transposition-table FAIL caching unchanged.
 
-## Structural implication: `solve()`'s return type
+## `solve()`'s return type: a strategy, not a path
 
-`solve()` currently returns a flat `list[Action]`. That's still correct and sufficient **whenever a puzzle's combat never gives the opponent's side a real choice** (single-unit opposing side, like puzzles 5 and 6 as currently sketched) — the AND-node collapses to exactly one branch, so the flat list stays accurate as "the" continuation.
+Decided: `solve()` returns a **strategy**, not a flat path, built now rather than deferred — needed correctly from the start rather than patched in later once a puzzle forces the issue.
 
-**Proposed for now:** keep `solve()`'s flat-list return type, since no currently-sketched puzzle needs anything richer, and note explicitly that it's only guaranteed accurate for puzzles where the opponent's damage assignment is forced (0 or 1 meaningful units on their side of the contested battlefield). If a future puzzle wants a genuinely branching opponent choice, `solve()`'s return type needs to grow into something that can represent a strategy (a subtree of the DAG, not a flat list) rather than a single path — `export.py`'s DAG output already handles this fine (it's building the full graph regardless), so the gap is specifically in `solve()`'s convenience return value, not in the exported puzzle data. Flagging this now rather than discovering it mid-implementation of a puzzle that needs it.
+A strategy turns out not to need a bespoke nested tree type. Our own choice at any given state is always just *one* recommended action — we never need to represent "the other options we didn't take." The opponent's branching is already fully captured by the *edge* itself (does resolving this action fan out to multiple possible resulting states, or exactly one). So the whole strategy collapses to:
+
+```python
+Strategy = dict[StateKey, Action]  # canonical_key(state) -> the one action to take from there
+```
+
+covering every state the player might actually find themselves in while following the strategy — including every state reachable via an opponent-forced branch, since the strategy has to hold up in all of them. A state absent from the map is either a `"win"` terminal (nothing left to recommend) or not part of the strategy at all.
+
+Building it during search: `_dfs` still explores our own choices depth-first as before (OR). When it reaches a combat-triggering action:
+- For each of our assignment choices `a`, enumerate the opponent's possible responses.
+- For choice `a` to be viable, **every** opponent response must have a winning continuation within the remaining depth — recurse into each and require all of them to succeed (the AND-node from the diagram above).
+- If they all succeed: merge their returned per-state maps together, add `canonical_key(current_state) -> a`, and that's the (possibly much larger, if the opponent had real choices) strategy for this subtree.
+- If any response fails: try the next `a`.
+
+This is the same shape `export.py`'s schema now expects (`06-export-schema.md`'s `solution` field is this exact map, just with `canonical_key` swapped for the string `state_hash`) — the solver and the exporter were designed to agree on this representation from the start, not bolted together after the fact.
 
 ## What this does NOT do
 
