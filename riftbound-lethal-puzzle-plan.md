@@ -8,7 +8,7 @@
 
 ## Why this project
 
-Riftbound's win condition is unusually puzzle-friendly. The 8th point cannot come from a single conquer unless you scored every battlefield that turn, so the obvious aggressive line often fails and the solution is a hold setup or a card effect instead. That is a built-in trap mechanic. The community already uses the term "lethal range" for scoring enough points in one turn, so the concept needs no explanation.
+Riftbound's win condition is unusually puzzle-friendly. The 8th point cannot come from a single conquer unless you scored every battlefield that turn, so the obvious aggressivelets rena line often fails and the solution is a hold setup or a card effect instead. That is a built-in trap mechanic. The community already uses the term "lethal range" for scoring enough points in one turn, so the concept needs no explanation.
 
 Nothing like this exists. Every other Riftbound tool niche (deck builders, card scanners, collection trackers, rules bots, daily card-guessing games) is already crowded.
 

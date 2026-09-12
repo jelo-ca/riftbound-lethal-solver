@@ -21,3 +21,7 @@ Thumbs.db
 task_plan.md
 findings.md
 progress.md
+
+# Generated puzzle candidates (unaudited scratch output, not deliverables
+# until a human reviews and promotes one into puzzles/)
+puzzles/generated/
