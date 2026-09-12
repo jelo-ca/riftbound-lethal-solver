@@ -81,9 +81,14 @@ class GameState:
 Needed so IDDFS's transposition table collapses equivalent states reached via different action orderings.
 
 ```python
-def canonical_hash(state: GameState) -> bytes:
+def canonical_key(state: GameState) -> tuple:
     # 1. units within base_units and within each battlefield's units are order-independent
-    #    -> sort by (card_id, instance_id) before hashing, so set order never matters
+    #    AND instance_id is EXCLUDED from the per-unit key -> sort by
+    #    (card_id, controller, might, keywords, exhausted, damage, is_token), duplicates preserved.
+    #    This makes it a multiset comparison: two identical-looking tokens (e.g. two 1-might
+    #    Recruit tokens) collapse to the same key regardless of which instance_id counter values
+    #    they happen to carry, so two action orderings that create "the same" tokens in a
+    #    different creation order (and thus different instance_id numbers) still dedup correctly.
     # 2. battlefields are NOT sortable relative to each other — battlefield identity/effect
     #    can differ (e.g. a named battlefield raising win threshold), so battlefield_id order is fixed
     # 3. hand order doesn't matter -> sort card_ids
@@ -93,7 +98,9 @@ def canonical_hash(state: GameState) -> bytes:
     ...
 ```
 
-`instance_id` stays in the sort key (not stripped) so two board states with the *same* card at the *same* might/keywords/exhaustion but different underlying instances still collapse correctly — dedup is about board equivalence, not instance identity.
+**Correction from the initial design pass:** the original version of this section said `instance_id` should stay *in* the per-unit key "so identical units still collapse correctly" — that's backwards. Keeping `instance_id` in the comparison makes two structurally-identical units compare *unequal* whenever they happen to carry different instance numbers (exactly the case that arises when the same set of tokens gets created in a different order across two action sequences), which *defeats* transposition-table dedup for any puzzle involving tokens. `instance_id` still exists on `UnitInstance` and is used elsewhere (actions reference a specific instance to move/target it) — it's simply excluded from the dedup key, which is a separate concern from action targeting.
+
+Implemented as `canonical_key(state) -> tuple` rather than a byte digest — a plain tuple is already hashable and directly usable as a dict key (the transposition table's actual use, see `05-dfs-solver.md`), so there's no serialization/hashing step to write or to introduce collision risk in.
 
 ## Diagram
 
