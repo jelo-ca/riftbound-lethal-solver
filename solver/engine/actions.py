@@ -50,6 +50,11 @@ class PlayUnit:
     card_id: str
     target_zone: Zone
     rune_payment: RunePayment
+    # Opaque, effect-specific — same params convention as PlaySpell/
+    # ActivateAbility, for units with a registered "when you play me"
+    # trigger (abilities.UNIT_PLAY_TRIGGERS). Empty tuple = no trigger
+    # registered, or the player declined an optional one ("you may...").
+    trigger_params: tuple = ()
 
 
 @dataclass(frozen=True)

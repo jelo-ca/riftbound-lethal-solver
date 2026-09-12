@@ -27,6 +27,7 @@ adversarial choice can lead to different resulting states.
 
 from __future__ import annotations
 
+import dataclasses
 from typing import Optional
 
 from .engine import abilities, combat, scoring
@@ -82,6 +83,21 @@ def legal_actions(state: GameState, cards: dict[str, CardDef]) -> list[Action]:
                                       params=params, rune_payment=None)
             if abilities.is_legal_activate_ability(state, action):
                 result.append(action)
+
+    # PlayUnit "when you play me" trigger candidates: legal_board_actions
+    # already generated the plain (trigger_params=()) form for every
+    # affordable PlayUnit — this adds the "use the trigger" variants on
+    # top, one per registered card's own candidate generator.
+    for base_action in [a for a in result if isinstance(a, PlayUnit)]:
+        entry = abilities.UNIT_PLAY_TRIGGERS.get(base_action.card_id)
+        if entry is None:
+            continue
+        card = cards[base_action.card_id]
+        _, _, generate_trigger_candidates = entry
+        for trigger_params in generate_trigger_candidates(state, base_action, card):
+            triggered = dataclasses.replace(base_action, trigger_params=trigger_params)
+            if abilities.is_legal_unit_play_trigger(state, triggered, card):
+                result.append(triggered)
     return result
 
 
@@ -90,12 +106,18 @@ def apply(state: GameState, action: Action, cards: dict[str, CardDef]) -> GameSt
     actions.py (board state) with scoring.py (points); see both modules'
     docstrings for why the split exists.
 
-    `ResolveCombat` deliberately raises: it can't produce a single
-    resulting state on its own (the opponent's damage-assignment response
-    is still pending) — use `solve()` or `combat.apply_combat` directly
-    with a chosen opponent assignment instead.
+    `ResolveCombat`, and a `PlayUnit` with non-empty `trigger_params`,
+    deliberately raise: neither can produce a single resulting state on
+    its own once a triggered effect can cause combat (the opponent's
+    damage-assignment response is still pending) — use `solve()`, or
+    `combat.apply_combat`/`abilities.resolve_unit_play_trigger_outcomes`
+    directly with a chosen opponent assignment, instead.
     """
     if isinstance(action, PlayUnit):
+        if action.trigger_params:
+            raise NotImplementedError(
+                "apply: PlayUnit with trigger_params can have multiple outcomes — see search.solve()"
+            )
         new_state = apply_play_unit(state, action, cards[action.card_id])
         if action.target_zone != "base":
             new_state = scoring.resolve_control_change(state, new_state, action.target_zone)
@@ -151,6 +173,9 @@ def _dfs(state: GameState, remaining: int, cards: dict[str, CardDef],
     for action in legal_actions(state, cards):
         if isinstance(action, ResolveCombat):
             result = _resolve_combat_search(state, action, remaining, cards, ttable)
+        elif isinstance(action, PlayUnit) and action.trigger_params:
+            outcomes = abilities.resolve_unit_play_trigger_outcomes(state, action, cards[action.card_id])
+            result = _and_or_search(state, action, outcomes, remaining, cards, ttable)
         else:
             try:
                 child = apply(state, action, cards)
@@ -168,21 +193,31 @@ def _dfs(state: GameState, remaining: int, cards: dict[str, CardDef],
 
 def _resolve_combat_search(state: GameState, action: ResolveCombat, remaining: int,
                             cards: dict[str, CardDef], ttable: dict[tuple, bool]) -> Optional[Strategy]:
-    """The AND-node: `action.our_assignment` is already fixed (one of our
-    choices, tried in `legal_actions`'s outer OR-loop via `_dfs`). Here we
-    must additionally verify EVERY possible opponent response still leads
-    to a win — see design/09-combat-resolution.md.
-    """
+    """Thin wrapper: computes ResolveCombat's outcomes, then defers to the
+    shared _and_or_search."""
     mover = find_unit(state, action.instance_id, action.from_zone)
     outcomes = combat.enumerate_combat_outcomes(state, mover, action.from_zone, action.to_zone, action.our_assignment)
+    outcomes = [scoring.resolve_control_change(state, o, action.to_zone) for o in outcomes]
+    return _and_or_search(state, action, outcomes, remaining, cards, ttable)
 
+
+def _and_or_search(state: GameState, action: Action, outcomes: list[GameState], remaining: int,
+                    cards: dict[str, CardDef], ttable: dict[tuple, bool]) -> Optional[Strategy]:
+    """The AND-node: `action` already bakes in our own choice (a specific
+    damage assignment, tried in `legal_actions`'s outer OR-loop via
+    `_dfs`); `outcomes` is every possible way the adversary's response can
+    resolve it. For `action` to be validated, EVERY outcome must still
+    lead to a win — see design/09-combat-resolution.md. Shared by
+    ResolveCombat and any "when played" trigger whose effect can cause
+    combat (abilities.UNIT_PLAY_TRIGGERS), since both reduce to the same
+    shape once their outcomes are computed.
+    """
     key = canonical_key(state)
     merged: Strategy = {}
     for child in outcomes:
-        child = scoring.resolve_control_change(state, child, action.to_zone)
         sub = _dfs(child, remaining - 1, cards, ttable)
         if sub is None:
-            return None  # this opponent response defeats us — action.our_assignment doesn't survive
+            return None  # this adversary response defeats us — action doesn't survive
         merged.update(sub)
 
     merged[key] = action

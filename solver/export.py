@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import hashlib
 
-from .engine import combat, scoring
+from .engine import abilities, combat, scoring
 from .engine.actions import ActivateAbility, Action, MoveUnit, PlayGear, PlaySpell, PlayUnit, ResolveCombat, find_unit
 from .engine.cards import CardDef
 from .engine.state import BattlefieldState, GameState, PlayerState, UnitInstance, canonical_key
@@ -110,6 +110,8 @@ def _resolve_action_outcomes(state: GameState, action: Action, cards: dict[str, 
         mover = find_unit(state, action.instance_id, action.from_zone)
         outcomes = combat.enumerate_combat_outcomes(state, mover, action.from_zone, action.to_zone, action.our_assignment)
         return [scoring.resolve_control_change(state, o, action.to_zone) for o in outcomes]
+    if isinstance(action, PlayUnit) and action.trigger_params:
+        return abilities.resolve_unit_play_trigger_outcomes(state, action, cards[action.card_id])
     return [apply(state, action, cards)]
 
 

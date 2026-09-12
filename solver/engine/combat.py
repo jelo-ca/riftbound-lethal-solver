@@ -76,6 +76,24 @@ def is_combat_triggered(state: GameState, mover: UnitInstance, destination_id: s
     return other_controller != mover.controller
 
 
+def our_assignment_options(state: GameState, mover: UnitInstance, destination_id: str) -> list[Assignment]:
+    """All valid OUR-side damage-assignment choices for a combat triggered
+    by `mover` moving to `destination_id` — regardless of whether that
+    makes us the Attacker (our own unit moved) or the Defender (an effect
+    of ours moved an *enemy* unit onto ground we hold, e.g. Blitzcrank).
+    Generalizes what a Standard Move's candidate generation inlines
+    (always-Attacker case) for any caller that doesn't know in advance
+    which side it'll end up on.
+    """
+    attacker_ctrl, defender_ctrl, attacker_units, defender_units = determine_sides(state, mover, destination_id)
+    we_are_attacker = attacker_ctrl == state.turn_player
+    our_units = attacker_units if we_are_attacker else defender_units
+    our_designation = "attacker" if we_are_attacker else "defender"
+    target_units = defender_units if we_are_attacker else attacker_units
+    our_pool = sum(unit_combat_might(u, our_designation) for u in our_units)
+    return enumerate_assignments(target_units, our_pool)
+
+
 def enumerate_assignments(targets: frozenset[UnitInstance], pool: int) -> list[Assignment]:
     """All distinct valid ways to assign `pool` damage among `targets`,
     per the lethal-first rule (rule 465.2.c): a unit must receive its
