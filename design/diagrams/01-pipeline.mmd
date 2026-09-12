@@ -1,0 +1,6 @@
+flowchart TD
+    A[fetch_cards.py] -->|GET /cards?set_id=OGN, paginate| B[cards_raw.json\nverbatim API dump]
+    B --> C{In puzzle whitelist?}
+    C -->|no| D[discarded]
+    C -->|yes| E[cards_curated.json\nengine-ready fields only]
+    F[abilities.py\nhand-authored effect definitions,\nkeyed by riftbound_id] --> E

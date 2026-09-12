@@ -1,0 +1,9 @@
+flowchart TD
+    S[GameState] --> G1[Hand candidates\nper playable card]
+    S --> G2[Board candidates\nper unit that can move]
+    S --> G3[Ability candidates\nper activatable source]
+    G1 --> F{Legal?\ncost, targets, zone rules}
+    G2 --> F
+    G3 --> F
+    F -->|yes| L[legal_actions list]
+    F -->|no| X[discarded]
