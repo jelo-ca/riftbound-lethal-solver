@@ -4,10 +4,10 @@ design/03-action-space.md.
 Scope of this module, deliberately: board mechanics only (unit location,
 exhaustion, rune spending, control establishment). It does NOT grant points
 or touch `scored_this_turn` / `score` — control establishment's scoring
-consequences (Conquer, the Final Point restriction) are the scoring
-module's job (design/04-scoring-rules.md), not built yet. Composing the two
-(apply a board action, then resolve its scoring consequences) is the
-solver's job once scoring.py exists.
+consequences (Conquer, the Final Point restriction) are scoring.py's job
+(design/04-scoring-rules.md). Composing the two (apply a board action, then
+call scoring.resolve_conquer on the newly-controlled battlefield) is the
+solver's job.
 
 Also deliberately out of scope here: `PlaySpell`, `PlayGear`,
 `ActivateAbility` apply() bodies (they need per-card hand-authored effects,
@@ -24,7 +24,14 @@ from dataclasses import dataclass
 from typing import Optional
 
 from .cards import CardDef
-from .state import BattlefieldState, Domain, GameState, PlayerState, RunePool, UnitInstance
+from .state import (
+    BattlefieldState,
+    Domain,
+    GameState,
+    RunePool,
+    UnitInstance,
+    replace_player,
+)
 
 Zone = str  # "base" or a battlefield_id
 
@@ -144,12 +151,6 @@ def _replace_battlefield(state: GameState, updated: BattlefieldState) -> GameSta
     return dataclasses.replace(state, battlefields=battlefields)
 
 
-def _replace_player(state: GameState, player_index: int, updated: PlayerState) -> GameState:
-    players = list(state.players)
-    players[player_index] = updated
-    return dataclasses.replace(state, players=tuple(players))
-
-
 def _next_instance_id(state: GameState) -> int:
     ids = [0]
     for player in state.players:
@@ -218,10 +219,10 @@ def apply_play_unit(state: GameState, action: PlayUnit, card: CardDef) -> GameSt
             hand=tuple(new_hand),
             runes=new_runes,
         )
-        return _replace_player(state, player_index, new_player)
+        return replace_player(state, player_index, new_player)
 
     new_player = dataclasses.replace(player, hand=tuple(new_hand), runes=new_runes)
-    state = _replace_player(state, player_index, new_player)
+    state = replace_player(state, player_index, new_player)
     bf = _battlefield(state, action.target_zone)
     new_bf = dataclasses.replace(bf, units=bf.units | {new_unit})
     return _replace_battlefield(state, new_bf)
@@ -280,7 +281,7 @@ def apply_move_unit(state: GameState, action: MoveUnit) -> GameState:
     if action.from_zone == "base":
         player = state.players[player_index]
         new_player = dataclasses.replace(player, base_units=player.base_units - {unit})
-        state = _replace_player(state, player_index, new_player)
+        state = replace_player(state, player_index, new_player)
     else:
         bf = _battlefield(state, action.from_zone)
         state = _replace_battlefield(state, dataclasses.replace(bf, units=bf.units - {unit}))
@@ -289,7 +290,7 @@ def apply_move_unit(state: GameState, action: MoveUnit) -> GameState:
     if action.to_zone == "base":
         player = state.players[player_index]
         new_player = dataclasses.replace(player, base_units=player.base_units | {moved_unit})
-        return _replace_player(state, player_index, new_player)
+        return replace_player(state, player_index, new_player)
 
     bf = _battlefield(state, action.to_zone)
     if bf.units:

@@ -7,6 +7,7 @@ not modeled as a live transition here.
 
 from __future__ import annotations
 
+import dataclasses
 from dataclasses import dataclass
 from typing import Literal, Optional
 
@@ -91,6 +92,15 @@ def _canonical_battlefield(battlefield: BattlefieldState) -> tuple:
         _canonical_units(battlefield.units),
         battlefield.effect_id,
     )
+
+
+def replace_player(state: GameState, player_index: int, updated: PlayerState) -> GameState:
+    """Return `state` with `state.players[player_index]` swapped for `updated`.
+    Shared by actions.py and scoring.py so both modules mutate players the
+    same way."""
+    players = list(state.players)
+    players[player_index] = updated
+    return dataclasses.replace(state, players=tuple(players))
 
 
 def canonical_key(state: GameState) -> tuple:
