@@ -98,8 +98,10 @@ class PlayGear:
 @dataclass(frozen=True)
 class ActivateAbility:
     source_id: int  # instance_id of the activating unit
-    ability_id: str
-    rune_payment: Optional[RunePayment]
+    ability_id: str  # keyed into abilities.ABILITY_EFFECTS, by convention == the source's card_id
+    # Opaque, effect-specific — same convention as PlaySpell.params.
+    params: tuple
+    rune_payment: Optional[RunePayment]  # None for abilities with no rune cost (e.g. exhaust-only)
 
 
 Action = PlayUnit | MoveUnit | ResolveCombat | PlaySpell | PlayGear | ActivateAbility
@@ -168,7 +170,7 @@ def _battlefield(state: GameState, battlefield_id: str) -> BattlefieldState:
     raise KeyError(f"no battlefield {battlefield_id!r}")
 
 
-def _replace_battlefield(state: GameState, updated: BattlefieldState) -> GameState:
+def replace_battlefield(state: GameState, updated: BattlefieldState) -> GameState:
     battlefields = tuple(
         updated if bf.battlefield_id == updated.battlefield_id else bf
         for bf in state.battlefields
@@ -259,7 +261,7 @@ def apply_play_unit(state: GameState, action: PlayUnit, card: CardDef) -> GameSt
     # controller (it's already theirs).
     new_controller = bf.controller if bf.controller is not None else player_index
     new_bf = dataclasses.replace(bf, units=bf.units | {new_unit}, controller=new_controller)
-    return _replace_battlefield(state, new_bf)
+    return replace_battlefield(state, new_bf)
 
 
 # --- PlaySpell (generic cost/hand bookkeeping; effects live in abilities.py) --
@@ -316,6 +318,19 @@ def find_unit(state: GameState, instance_id: int, zone: Zone) -> Optional[UnitIn
     for u in pool:
         if u.instance_id == instance_id:
             return u
+    return None
+
+
+def find_unit_at_any_battlefield(state: GameState, instance_id: int) -> Optional[tuple[UnitInstance, str]]:
+    """Searches only battlefields (not either player's Base) — sufficient
+    for abilities like Caitlyn - Patrolling's ("deal damage to a unit at
+    a battlefield") that only ever target board presence, not Base. Base
+    isn't searched here since our Zone type can't disambiguate whose
+    Base a match came from without a target zone already in hand."""
+    for bf in state.battlefields:
+        for u in bf.units:
+            if u.instance_id == instance_id:
+                return u, bf.battlefield_id
     return None
 
 
@@ -413,7 +428,7 @@ def relocate_unit(state: GameState, instance_id: int, from_zone: Zone, to_zone: 
         bf = _battlefield(state, from_zone)
         remaining_units = bf.units - {unit}
         new_controller = bf.controller if remaining_units else None  # rule 468
-        state = _replace_battlefield(
+        state = replace_battlefield(
             state, dataclasses.replace(bf, units=remaining_units, controller=new_controller)
         )
 
@@ -429,7 +444,7 @@ def relocate_unit(state: GameState, instance_id: int, from_zone: Zone, to_zone: 
             "isn't implemented yet (see design/03-action-space.md's combat section)"
         )
     new_bf = dataclasses.replace(bf, units=bf.units | {moved_unit}, controller=player_index)
-    return _replace_battlefield(state, new_bf)
+    return replace_battlefield(state, new_bf)
 
 
 def apply_move_unit(state: GameState, action: MoveUnit) -> GameState:

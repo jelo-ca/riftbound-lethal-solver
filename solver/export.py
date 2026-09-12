@@ -20,7 +20,7 @@ from __future__ import annotations
 import hashlib
 
 from .engine import combat, scoring
-from .engine.actions import Action, MoveUnit, PlayGear, PlaySpell, PlayUnit, ResolveCombat, find_unit
+from .engine.actions import ActivateAbility, Action, MoveUnit, PlayGear, PlaySpell, PlayUnit, ResolveCombat, find_unit
 from .engine.cards import CardDef
 from .engine.state import BattlefieldState, GameState, PlayerState, UnitInstance, canonical_key
 from .search import apply, legal_actions, solve
@@ -94,6 +94,8 @@ def render_action(action: Action, action_id: str) -> dict:
         label = f"Play {action.card_id} ({', '.join(str(p) for p in action.params)})"
     elif isinstance(action, PlayGear):
         label = f"Play {action.card_id} on unit {action.target_unit}"
+    elif isinstance(action, ActivateAbility):
+        label = f"Activate unit {action.source_id} ({', '.join(str(p) for p in action.params)})"
     else:
         label = type(action).__name__
     return {"id": action_id, "type": type(action).__name__, "label": label}

@@ -129,6 +129,24 @@ def _apply_damage(units: frozenset[UnitInstance], assignment: Assignment) -> fro
     return frozenset(survivors)
 
 
+def deal_damage_to_unit(state: GameState, battlefield_id: str, target_instance_id: int, amount: int) -> GameState:
+    """Direct, single-target damage from an effect outside the Combat
+    Damage Step (e.g. Caitlyn - Patrolling's activated ability) — not a
+    damage *assignment* choice, just a flat instruction. Removes the
+    target if it dies and recomputes the battlefield's controller from
+    whoever's left (rule 468: no units from any player -> Uncontrolled;
+    only one controller's units remain -> that controller; this doesn't
+    attempt to represent a genuinely mixed-controller Contested state
+    beyond falling back to Uncontrolled, since nothing in the v0
+    whitelist produces that case).
+    """
+    bf = next(b for b in state.battlefields if b.battlefield_id == battlefield_id)
+    remaining = _apply_damage(bf.units, ((target_instance_id, amount),))
+    controllers = {u.controller for u in remaining}
+    new_controller = next(iter(controllers)) if len(controllers) == 1 else None
+    return _replace_battlefield(state, dataclasses.replace(bf, units=remaining, controller=new_controller))
+
+
 def apply_combat(state: GameState, mover: UnitInstance, from_zone: str, destination_id: str,
                   attacker_assignment: Assignment, defender_assignment: Assignment,
                   exhausted_after: bool = True) -> GameState:

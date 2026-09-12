@@ -1,5 +1,5 @@
-from solver.engine.abilities import RIDE_THE_WIND, is_legal_play_spell
-from solver.engine.actions import PlaySpell, RunePayment
+from solver.engine.abilities import CAITLYN_PATROLLING, RIDE_THE_WIND, is_legal_activate_ability, is_legal_play_spell
+from solver.engine.actions import ActivateAbility, PlaySpell, RunePayment
 from solver.engine.cards import CardDef
 from solver.engine.scoring import is_winning
 from solver.engine.state import BattlefieldState, GameState, PlayerState, RunePool, UnitInstance
@@ -148,3 +148,123 @@ def test_ride_the_wind_battlefield_to_battlefield_does_not_require_ganking():
     new_state = apply(root, action, {RIDE_THE_WIND: RIDE_THE_WIND_CARD})
     assert new_state.battlefields[1].controller == 0
     assert not next(iter(new_state.battlefields[1].units)).exhausted
+
+
+# --- Caitlyn - Patrolling: "Exhaust: Deal damage equal to my Might to a unit at a battlefield" ---
+
+
+def make_caitlyn(instance_id, exhausted=False, might=3):
+    return UnitInstance(card_id=CAITLYN_PATROLLING, instance_id=instance_id, controller=0,
+                         might=might, keywords=frozenset(), exhausted=exhausted, damage=0, is_token=False)
+
+
+def test_caitlyn_kills_a_weaker_enemy_unit():
+    caitlyn = make_caitlyn(1)
+    target = UnitInstance("enemy", 2, controller=1, might=3, keywords=frozenset(),
+                           exhausted=False, damage=0, is_token=False)
+    root = GameState(
+        turn_player=0,
+        players=(
+            PlayerState(base_units=frozenset(), hand=(), runes=RunePool(available=()), score=0),
+            PlayerState(base_units=frozenset(), hand=(), runes=RunePool(available=()), score=0),
+        ),
+        battlefields=(
+            BattlefieldState("left", None, frozenset({caitlyn, target}), None),
+            BattlefieldState("right", None, frozenset(), None),
+        ),
+        scored_this_turn=frozenset(),
+        cards_played_this_turn=0,
+    )
+    action = ActivateAbility(source_id=1, ability_id=CAITLYN_PATROLLING, params=(2,), rune_payment=None)
+    assert is_legal_activate_ability(root, action)
+
+    new_state = apply(root, action, {})
+    left_units = {u.instance_id: u for u in new_state.battlefields[0].units}
+    assert 2 not in left_units  # target died
+    assert left_units[1].exhausted is True  # Caitlyn paid her Exhaust cost
+
+
+def test_caitlyn_cannot_activate_from_base():
+    caitlyn = make_caitlyn(1)
+    root = GameState(
+        turn_player=0,
+        players=(
+            PlayerState(base_units=frozenset({caitlyn}), hand=(), runes=RunePool(available=()), score=0),
+            PlayerState(base_units=frozenset(), hand=(), runes=RunePool(available=()), score=0),
+        ),
+        battlefields=(
+            BattlefieldState("left", None, frozenset(), None),
+            BattlefieldState("right", None, frozenset(), None),
+        ),
+        scored_this_turn=frozenset(),
+        cards_played_this_turn=0,
+    )
+    action = ActivateAbility(source_id=1, ability_id=CAITLYN_PATROLLING, params=(1,), rune_payment=None)
+    assert not is_legal_activate_ability(root, action)  # "only while I'm at a battlefield"
+
+
+def test_caitlyn_cannot_activate_while_exhausted():
+    caitlyn = make_caitlyn(1, exhausted=True)
+    target = UnitInstance("enemy", 2, controller=1, might=3, keywords=frozenset(),
+                           exhausted=False, damage=0, is_token=False)
+    root = GameState(
+        turn_player=0,
+        players=(
+            PlayerState(base_units=frozenset(), hand=(), runes=RunePool(available=()), score=0),
+            PlayerState(base_units=frozenset(), hand=(), runes=RunePool(available=()), score=0),
+        ),
+        battlefields=(
+            BattlefieldState("left", None, frozenset({caitlyn, target}), None),
+            BattlefieldState("right", None, frozenset(), None),
+        ),
+        scored_this_turn=frozenset(),
+        cards_played_this_turn=0,
+    )
+    action = ActivateAbility(source_id=1, ability_id=CAITLYN_PATROLLING, params=(2,), rune_payment=None)
+    assert not is_legal_activate_ability(root, action)
+
+
+def test_caitlyn_killing_last_enemy_makes_battlefield_uncontrolled():
+    caitlyn = make_caitlyn(1)
+    target = UnitInstance("enemy", 2, controller=1, might=3, keywords=frozenset(),
+                           exhausted=False, damage=0, is_token=False)
+    root = GameState(
+        turn_player=0,
+        players=(
+            PlayerState(base_units=frozenset(), hand=(), runes=RunePool(available=()), score=0),
+            PlayerState(base_units=frozenset(), hand=(), runes=RunePool(available=()), score=0),
+        ),
+        battlefields=(
+            BattlefieldState("left", 1, frozenset({caitlyn, target}), None),
+            BattlefieldState("right", None, frozenset(), None),
+        ),
+        scored_this_turn=frozenset(),
+        cards_played_this_turn=0,
+    )
+    action = ActivateAbility(source_id=1, ability_id=CAITLYN_PATROLLING, params=(2,), rune_payment=None)
+    new_state = apply(root, action, {})
+    # Caitlyn (controller 0) and the dead target's controller (1) leaves a
+    # mixed-then-single-controller board: only Caitlyn (0) remains.
+    assert new_state.battlefields[0].controller == 0
+
+
+def test_caitlyn_appears_in_legal_actions_when_usable():
+    caitlyn = make_caitlyn(1)
+    target = UnitInstance("enemy", 2, controller=1, might=3, keywords=frozenset(),
+                           exhausted=False, damage=0, is_token=False)
+    root = GameState(
+        turn_player=0,
+        players=(
+            PlayerState(base_units=frozenset(), hand=(), runes=RunePool(available=()), score=0),
+            PlayerState(base_units=frozenset(), hand=(), runes=RunePool(available=()), score=0),
+        ),
+        battlefields=(
+            BattlefieldState("left", None, frozenset({caitlyn, target}), None),
+            BattlefieldState("right", None, frozenset(), None),
+        ),
+        scored_this_turn=frozenset(),
+        cards_played_this_turn=0,
+    )
+    actions = legal_actions(root, {})
+    ability_actions = [a for a in actions if isinstance(a, ActivateAbility)]
+    assert any(a.source_id == 1 and a.params == (2,) for a in ability_actions)

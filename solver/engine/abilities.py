@@ -8,21 +8,26 @@ bookkeeping (apply_play_spell_cost) has already run.
 
 from __future__ import annotations
 
+import dataclasses
 from typing import Callable, Optional
 
-from . import scoring
+from . import combat, scoring
 from .actions import (
+    ActivateAbility,
     PlaySpell,
     apply_play_spell_cost,
     find_unit,
+    find_unit_at_any_battlefield,
     is_legal_ability_move_destination,
     is_legal_play_spell_cost,
     relocate_unit,
+    replace_battlefield,
 )
 from .cards import CardDef
 from .state import GameState
 
 RIDE_THE_WIND = "ogn-173-298"  # 2 Energy, 1 Chaos Power: "Move a friendly unit and ready it."
+CAITLYN_PATROLLING = "ogn-068-298"  # Exhaust: Deal damage equal to my Might to a unit at a battlefield.
 
 
 def _locate_unit(state: GameState, instance_id: int) -> Optional[str]:
@@ -92,6 +97,62 @@ SPELL_EFFECTS: dict[str, tuple[
 ]] = {
     RIDE_THE_WIND: (_ride_the_wind_is_legal, _ride_the_wind_effect, _ride_the_wind_candidates),
 }
+
+
+def _caitlyn_is_legal(state: GameState, action: ActivateAbility) -> bool:
+    """params = (target_instance_id,). "Exhaust: Deal damage equal to my
+    Might to a unit at a battlefield. Use this ability only while I'm at
+    a battlefield." No rune cost — just exhausting Caitlyn herself."""
+    if len(action.params) != 1:
+        return False
+    located = find_unit_at_any_battlefield(state, action.source_id)
+    if located is None:
+        return False  # "only while I'm at a battlefield" — not usable from Base
+    source, _ = located
+    if source.controller != state.turn_player or source.exhausted:
+        return False
+    target_located = find_unit_at_any_battlefield(state, action.params[0])
+    return target_located is not None
+
+
+def _caitlyn_effect(state: GameState, action: ActivateAbility) -> GameState:
+    source, source_bf_id = find_unit_at_any_battlefield(state, action.source_id)
+    exhausted_source = dataclasses.replace(source, exhausted=True)
+    bf = next(b for b in state.battlefields if b.battlefield_id == source_bf_id)
+    state = replace_battlefield(state, dataclasses.replace(bf, units=(bf.units - {source}) | {exhausted_source}))
+
+    target_id = action.params[0]
+    _, target_bf_id = find_unit_at_any_battlefield(state, target_id)
+    return combat.deal_damage_to_unit(state, target_bf_id, target_id, source.might)
+
+
+def _caitlyn_candidates(state: GameState) -> list[tuple[int]]:
+    """One candidate per unit present at any battlefield — Caitlyn's text
+    doesn't restrict the target to enemies."""
+    return [(u.instance_id,) for bf in state.battlefields for u in bf.units]
+
+
+# card_id -> (is_legal(state, action), effect(state, action), generate_candidate_params(state))
+ABILITY_EFFECTS: dict[str, tuple[
+    Callable[[GameState, ActivateAbility], bool],
+    Callable[[GameState, ActivateAbility], GameState],
+    Callable[[GameState], list[tuple]],
+]] = {
+    CAITLYN_PATROLLING: (_caitlyn_is_legal, _caitlyn_effect, _caitlyn_candidates),
+}
+
+
+def is_legal_activate_ability(state: GameState, action: ActivateAbility) -> bool:
+    entry = ABILITY_EFFECTS.get(action.ability_id)
+    if entry is None:
+        return False
+    is_legal_effect, _, _ = entry
+    return is_legal_effect(state, action)
+
+
+def apply_ability(state: GameState, action: ActivateAbility) -> GameState:
+    _, effect, _ = ABILITY_EFFECTS[action.ability_id]
+    return effect(state, action)
 
 
 def is_legal_play_spell(state: GameState, action: PlaySpell, card: CardDef) -> bool:

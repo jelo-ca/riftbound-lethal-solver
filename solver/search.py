@@ -32,6 +32,7 @@ from typing import Optional
 from .engine import abilities, combat, scoring
 from .engine.actions import (
     Action,
+    ActivateAbility,
     MoveUnit,
     PlaySpell,
     PlayUnit,
@@ -66,6 +67,21 @@ def legal_actions(state: GameState, cards: dict[str, CardDef]) -> list[Action]:
                 action = PlaySpell(card_id=card_id, params=params, rune_payment=payment)
                 if abilities.is_legal_play_spell(state, action, card):
                     result.append(action)
+
+    # ActivateAbility candidates: one registry per unit currently on the
+    # board (not hand), keyed by card_id — same registry-lookup pattern as
+    # spells, but scanning units instead of cards in hand.
+    all_units = list(player.base_units) + [u for bf in state.battlefields for u in bf.units if u.controller == state.turn_player]
+    for unit in all_units:
+        entry = abilities.ABILITY_EFFECTS.get(unit.card_id)
+        if entry is None:
+            continue
+        _, _, generate_candidates = entry
+        for params in generate_candidates(state):
+            action = ActivateAbility(source_id=unit.instance_id, ability_id=unit.card_id,
+                                      params=params, rune_payment=None)
+            if abilities.is_legal_activate_ability(state, action):
+                result.append(action)
     return result
 
 
@@ -93,6 +109,9 @@ def apply(state: GameState, action: Action, cards: dict[str, CardDef]) -> GameSt
 
     if isinstance(action, PlaySpell):
         return abilities.apply_spell(state, action, cards[action.card_id])
+
+    if isinstance(action, ActivateAbility):
+        return abilities.apply_ability(state, action)
 
     raise NotImplementedError(
         f"apply: {type(action).__name__} not supported yet (see design/03-action-space.md / "
