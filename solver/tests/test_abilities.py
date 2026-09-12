@@ -82,12 +82,11 @@ def test_extra_innings_shape_solver_finds_the_hidden_extra_action():
     puzzle 2's validated behavior), this Scores both battlefields this
     turn and wins the Final Point — solvable in exactly 1 action.
     """
-    # Ganking is needed here under the current conservative assumption
-    # that spell-granted moves obey the same Battlefield->Battlefield
-    # restriction as a Standard Move — see the open question in
-    # design/07-scope-and-cut-list.md. Without it, the solver still finds
-    # a valid (longer) solution relaying through Base instead.
-    exhausted_conqueror = make_unit(1, exhausted=True, keywords=frozenset({"Ganking"}))
+    # No Ganking needed: confirmed that spell-granted moves (Ride The
+    # Wind, Charm) are NOT bound by Ganking's Battlefield->Battlefield
+    # restriction — that's specific to a unit's own Standard Move (rule
+    # 810). A spell states explicitly if it's restricted to Base.
+    exhausted_conqueror = make_unit(1, exhausted=True)
     root = GameState(
         turn_player=0,
         players=(
@@ -117,33 +116,34 @@ def test_extra_innings_shape_solver_finds_the_hidden_extra_action():
     assert final_state.players[0].score == 8
 
 
-def test_extra_innings_shape_without_ganking_relays_through_base():
-    """Same shape, no Ganking: Ride The Wind can't hop the unit directly
-    Battlefield->Battlefield under the current conservative assumption, so
-    the solver correctly finds the longer relay instead — left->base
-    (Ride The Wind readies it), then base->right (a normal Standard Move,
-    now legal since the unit is readied). Still wins, just in 2 actions.
+def test_ride_the_wind_battlefield_to_battlefield_does_not_require_ganking():
+    """Confirmed: spell-granted "Move" effects default to any destination
+    (including Battlefield->Battlefield) with no Ganking requirement —
+    that restriction is specific to a unit's own Standard Move. A unit
+    with no keywords at all can still be Ride The Wind'd directly from one
+    battlefield to another.
     """
-    exhausted_conqueror = make_unit(1, exhausted=True)  # no Ganking
+    unit = make_unit(1, exhausted=True, keywords=frozenset())  # no Ganking
     root = GameState(
         turn_player=0,
         players=(
             PlayerState(base_units=frozenset(), hand=(RIDE_THE_WIND,),
-                        runes=RunePool(available=("Fury", "Fury", "Chaos")), score=7),
+                        runes=RunePool(available=("Fury", "Fury", "Chaos")), score=0),
             PlayerState(base_units=frozenset(), hand=(), runes=RunePool(available=()), score=0),
         ),
         battlefields=(
-            BattlefieldState("left", 0, frozenset({exhausted_conqueror}), None),
+            BattlefieldState("left", 0, frozenset({unit}), None),
             BattlefieldState("right", None, frozenset(), None),
         ),
-        scored_this_turn=frozenset({"left"}),
+        scored_this_turn=frozenset(),
         cards_played_this_turn=0,
     )
-    cards = {RIDE_THE_WIND: RIDE_THE_WIND_CARD}
-    solution = solve(root, cards, max_depth=4)
-    assert solution is not None
-    assert len(solution) == 2
-
-    final_state = apply(root, solution[0], cards)
-    final_state = apply(final_state, solution[1], {})
-    assert is_winning(final_state)
+    action = PlaySpell(
+        card_id=RIDE_THE_WIND,
+        params=(1, "right"),
+        rune_payment=RunePayment(energy_runes=("Fury", "Fury"), power_runes=("Chaos",)),
+    )
+    assert is_legal_play_spell(root, action, RIDE_THE_WIND_CARD)
+    new_state = apply(root, action, {RIDE_THE_WIND: RIDE_THE_WIND_CARD})
+    assert new_state.battlefields[1].controller == 0
+    assert not next(iter(new_state.battlefields[1].units)).exhausted

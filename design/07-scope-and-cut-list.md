@@ -34,9 +34,13 @@ All five items originally listed here as open are now resolved by pulling and gr
 
 **Single-turn puzzle horizon** (confirmed by the user, consistent with the existing 6-week plan's "fixed starting position with a fixed energy budget"): removes Channel Phase, Awaken/rune-recovery, and Hold-as-a-live-action from the search entirely — see `02-state-model.md`.
 
-## New open question (2026-09-12, found while implementing PlaySpell effects)
+## Resolved (2026-09-12, per direct rules clarification)
 
-6. **Does Ganking's Battlefield→Battlefield restriction apply to spell-granted "Move" effects, or only the Standard Move action?** Rule 810 ties Ganking specifically to "a Unit's Standard Move." Ride The Wind ("Move a friendly unit and ready it") currently applies the same Ganking gate as a Standard Move (conservative — if wrong, this is too strict, not too permissive) — see `solver/engine/abilities.py`'s `_ride_the_wind_is_legal`. Verify against the official rules before authoring a puzzle that depends on the answer either way.
+6. **Does Ganking's Battlefield→Battlefield restriction apply to spell-granted "Move" effects?** No — confirmed. Ganking's restriction (rule 810) is specific to a unit's own Standard Move. Spell-granted "Move" effects (Ride The Wind, Charm) default to moving a unit to any zone, including Battlefield→Battlefield, with no Ganking requirement — a spell states explicitly when it's narrower (e.g. Fight or Flight: "Move a unit from a battlefield to its base," restricted to that one direction). Implemented as `is_legal_ability_move_destination` in `actions.py`, separate from `is_legal_destination` (which still gates the unit's own Standard Move on Ganking).
+
+## New open item (2026-09-12, flagged for whenever combat resolution gets built)
+
+7. **"When I attack" / "when I defend" triggered-ability ordering.** Not yet relevant — combat resolution isn't implemented (puzzles 5 "Clear the Way" and 6 "Redirection" need it, `design/03-action-space.md`'s combat section). Flagging now so it isn't rediscovered late: when combat resolution is actually built, the order these triggers fire in relative to each other and to damage assignment needs to be nailed down explicitly, not assumed. Revisit `05-dfs-solver.md`'s damage-assignment-branching notes at that point.
 
 ## Review checkpoints
 

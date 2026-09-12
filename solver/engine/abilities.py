@@ -15,7 +15,7 @@ from .actions import (
     PlaySpell,
     apply_play_spell_cost,
     find_unit,
-    is_legal_destination,
+    is_legal_ability_move_destination,
     is_legal_play_spell_cost,
     relocate_unit,
 )
@@ -37,18 +37,11 @@ def _locate_unit(state: GameState, instance_id: int) -> Optional[str]:
 def _ride_the_wind_is_legal(state: GameState, action: PlaySpell) -> bool:
     """params = (instance_id, destination_zone). "Move a friendly unit and
     ready it" — unlike a Standard Move, the unit does NOT need to already
-    be unexhausted (that's the whole point of the card); it just needs to
-    be a friendly unit somewhere on the board, with a legal move
-    destination for it.
-
-    UNVERIFIED ASSUMPTION: reuses is_legal_destination, which gates
-    Battlefield->Battlefield moves on the Ganking keyword. Rule 810 ties
-    Ganking specifically to "a Unit's Standard Move" — it's not confirmed
-    whether a spell-granted "Move" effect like this one is bound by the
-    same restriction, or is a distinct move type that bypasses it. Kept
-    conservative (same restriction applies) until checked against the
-    official rules text; if wrong, this is too strict, not too permissive.
-    """
+    be unexhausted (that's the whole point of the card), and the
+    destination isn't restricted to Base<->Battlefield-with-Ganking:
+    spell-granted moves default to any zone unless the card text says
+    otherwise, which this one doesn't (confirmed) — see
+    is_legal_ability_move_destination."""
     if len(action.params) != 2:
         return False
     instance_id, destination = action.params
@@ -58,7 +51,7 @@ def _ride_the_wind_is_legal(state: GameState, action: PlaySpell) -> bool:
     unit = find_unit(state, instance_id, from_zone)
     if unit.controller != state.turn_player:
         return False
-    return is_legal_destination(state, unit, from_zone, destination)
+    return is_legal_ability_move_destination(state, from_zone, destination)
 
 
 def _ride_the_wind_effect(state: GameState, action: PlaySpell) -> GameState:
@@ -86,7 +79,7 @@ def _ride_the_wind_candidates(state: GameState) -> list[tuple[int, str]]:
             if unit.controller != state.turn_player:
                 continue
             for destination in all_zones:
-                if destination != zone and is_legal_destination(state, unit, zone, destination):
+                if destination != zone and is_legal_ability_move_destination(state, zone, destination):
                     candidates.append((unit.instance_id, destination))
     return candidates
 

@@ -300,11 +300,14 @@ def find_unit(state: GameState, instance_id: int, zone: Zone) -> Optional[UnitIn
 
 
 def is_legal_destination(state: GameState, unit: UnitInstance, from_zone: Zone, to_zone: Zone) -> bool:
-    """Zone-rule legality only (rule 145.2.a Base<->Battlefield, rule 810
-    Ganking for Battlefield->Battlefield) — does NOT check exhaustion.
-    Shared by is_legal_move_unit (a Standard Move, which does require the
-    unit not be exhausted) and any effect that moves a unit without that
-    precondition (e.g. Ride The Wind — see abilities.py)."""
+    """Zone-rule legality for a unit's own Standard Move only (rule
+    145.2.a Base<->Battlefield, rule 810 Ganking for Battlefield-to-
+    Battlefield) — does NOT check exhaustion. This restriction is specific
+    to the Standard Move game action; spell/ability-granted "Move" effects
+    are NOT bound by it (see is_legal_ability_move_destination) — a spell
+    states explicitly if it's restricted to Base (e.g. "Move a unit from a
+    battlefield to its base"), otherwise it can move a unit to any zone
+    including Battlefield-to-Battlefield with no Ganking requirement."""
     if from_zone == to_zone:
         return False
     if from_zone == "base":
@@ -314,6 +317,20 @@ def is_legal_destination(state: GameState, unit: UnitInstance, from_zone: Zone, 
     if not any(bf.battlefield_id == to_zone for bf in state.battlefields):
         return False
     return "Ganking" in unit.keywords
+
+
+def is_legal_ability_move_destination(state: GameState, from_zone: Zone, to_zone: Zone) -> bool:
+    """Zone-rule legality for a spell/ability-granted "Move" effect (e.g.
+    Ride The Wind, Charm) — any zone to any other zone is legal by
+    default, no Ganking requirement, since that restriction is specific to
+    a unit's own Standard Move (see is_legal_destination). A spell that's
+    actually restricted (e.g. "Move a unit from a battlefield to its
+    base") enforces that narrower rule itself rather than calling this."""
+    if from_zone == to_zone:
+        return False
+    if to_zone != "base" and not any(bf.battlefield_id == to_zone for bf in state.battlefields):
+        return False
+    return from_zone == "base" or any(bf.battlefield_id == from_zone for bf in state.battlefields)
 
 
 def is_legal_move_unit(state: GameState, action: MoveUnit) -> bool:

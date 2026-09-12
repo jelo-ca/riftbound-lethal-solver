@@ -42,10 +42,12 @@ Each candidate generator is independent and testable on its own (one generator p
 
 This lives in `abilities.py` rather than `actions.py` because `legal_actions()`'s spell-candidate generation needs to import both `actions.py` (for the shared move/destination helpers) and the registry itself — putting the registry in `actions.py` would make it import back from wherever calls it, a circular import. So `legal_actions()` itself lives in `search.py`, composing `actions.legal_board_actions` (PlayUnit/MoveUnit only) with `abilities.SPELL_EFFECTS`-driven `PlaySpell` candidates. `actions.py` keeps a narrower `legal_board_actions` for exactly this reason.
 
-**Open question found while building this:** does Ganking's Battlefield→Battlefield restriction (rule 810, tied to "a Unit's Standard Move") also gate a spell-granted "Move" effect, or only the Standard Move action itself? Not verified — see `07-scope-and-cut-list.md`'s open question #6. Current code applies the same restriction to both (the conservative choice).
+**Resolved:** Ganking's Battlefield→Battlefield restriction (rule 810) is specific to a unit's own Standard Move — spell-granted "Move" effects (Ride The Wind, Charm) default to moving a unit to any zone with no Ganking requirement, unless the specific card text narrows it (e.g. "to its base"). Implemented as a separate `is_legal_ability_move_destination` helper in `actions.py`, distinct from `is_legal_destination` (Standard Move only). See `07-scope-and-cut-list.md`'s resolved item #6.
 
 ## Combat resolution (tapped-out assumption)
 
 Per `riftbound-lethal-puzzle-plan.md`: the tapped-out assumption removes *defender choice* (no showdown reactions), not combat itself. `MoveUnit` onto a contested battlefield still:
 1. Resolves combat deterministically (defender deals damage, defender's triggered abilities fire — these aren't "choices", they're fixed resolution)
 2. Only branches the search when the *attacker* has a genuine choice (e.g. damage assignment across multiple defenders) — see pruning notes in [`05-dfs-solver.md`](05-dfs-solver.md#damage-assignment-branching)
+
+**Not yet designed, flagged for when this section actually gets built:** the order "when I attack" and "when I defend" triggered abilities fire relative to each other and to damage assignment. Needs to be nailed down explicitly against the rules, not assumed, before combat resolution is implemented — see `07-scope-and-cut-list.md`'s open item #7.
