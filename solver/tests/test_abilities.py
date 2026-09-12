@@ -106,12 +106,13 @@ def test_extra_innings_shape_solver_finds_the_hidden_extra_action():
         cards_played_this_turn=0,
     )
     cards = {RIDE_THE_WIND: RIDE_THE_WIND_CARD}
-    solution = solve(root, cards, max_depth=4)
-    assert solution is not None
-    assert len(solution) == 1
-    assert isinstance(solution[0], PlaySpell)
+    strategy = solve(root, cards, max_depth=4)
+    assert strategy is not None
+    assert len(strategy) == 1
+    action = next(iter(strategy.values()))
+    assert isinstance(action, PlaySpell)
 
-    final_state = apply(root, solution[0], cards)
+    final_state = apply(root, action, cards)
     assert is_winning(final_state)
     assert final_state.players[0].score == 8
 

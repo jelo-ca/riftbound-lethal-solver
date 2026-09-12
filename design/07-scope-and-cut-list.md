@@ -17,10 +17,10 @@ The explicit boundary of what this solver implements. Every mechanic on the OUT 
 
 - Legend/champion activated abilities, except a hand-picked whitelist entry if a specific puzzle needs one.
 - Multi-set interactions (Origins only, permanently, per the existing plan's policy posture).
-- Damage-assignment complexity beyond single-blocker combat, until a whitelisted card actually forces the issue.
 - General keyword rules coverage — keywords are added to the engine on demand per puzzle, never speculatively.
 - RiftScribe integration — Riftcodex is sufficient and verified live; RiftScribe stays an unwired fallback.
-- Adversarial/minimax opponent — the state model leaves room for it (per the existing plan's architecture note) but v0 does not implement it.
+- **General adversarial/minimax opponent** (turn-taking, spell-casting, blocking decisions) — still out of scope. What *is* now implemented (`09-combat-resolution.md`) is a narrow, localized exception: the opponent's damage-assignment choice during combat is adversarial (an AND-node), since it's a mandatory rules procedure the opponent must go through even while otherwise tapped out — not a general opponent AI.
+- Spell/gear effects that move an *enemy* unit (Charm, Blitzcrank) triggering combat where we're the Defender — `combat.py`'s logic handles this case generically and it's proven correct by direct tests, but nothing in `legal_actions()` generates it yet. Needed for puzzle 6 ("Redirection"); not needed for puzzle 5.
 
 ## Resolved (2026-09-11, verified against the official Core Rules PDF)
 

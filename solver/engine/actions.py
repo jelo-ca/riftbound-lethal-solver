@@ -24,7 +24,9 @@ import dataclasses
 from dataclasses import dataclass
 from typing import Optional
 
+from . import combat
 from .cards import CardDef
+from .combat import Assignment
 from .state import (
     BattlefieldState,
     Domain,
@@ -58,6 +60,24 @@ class MoveUnit:
 
 
 @dataclass(frozen=True)
+class ResolveCombat:
+    """A Standard Move whose destination has enemy units present — see
+    design/09-combat-resolution.md. `our_assignment` is OUR chosen
+    damage split, targeting whichever side is the opponent's (in this v0
+    pass, always the Defender's units, since a Standard Move only ever
+    moves a unit we control, making us the Attacker every time — spell-
+    granted combat, where an enemy unit gets moved onto ground we hold
+    and we become the Defender, isn't wired up yet). Generated in place
+    of a plain MoveUnit whenever the destination is combat-triggering;
+    one candidate per distinct assignment we could choose.
+    """
+    instance_id: int
+    from_zone: Zone
+    to_zone: Zone
+    our_assignment: Assignment
+
+
+@dataclass(frozen=True)
 class PlaySpell:
     card_id: str
     # Opaque, effect-specific: whatever the card's registered ability
@@ -82,7 +102,7 @@ class ActivateAbility:
     rune_payment: Optional[RunePayment]
 
 
-Action = PlayUnit | MoveUnit | PlaySpell | PlayGear | ActivateAbility
+Action = PlayUnit | MoveUnit | ResolveCombat | PlaySpell | PlayGear | ActivateAbility
 
 
 # --- Rune payment -----------------------------------------------------------
@@ -339,7 +359,28 @@ def is_legal_move_unit(state: GameState, action: MoveUnit) -> bool:
         return False
     if unit.exhausted:  # rule 145.1: a Standard Move requires the unit not already exhausted
         return False
-    return is_legal_destination(state, unit, action.from_zone, action.to_zone)
+    if not is_legal_destination(state, unit, action.from_zone, action.to_zone):
+        return False
+    # A destination with enemy units triggers combat — that's ResolveCombat's
+    # job, not a plain MoveUnit's (see is_legal_resolve_combat below).
+    if action.to_zone != "base" and combat.is_combat_triggered(state, unit, action.to_zone):
+        return False
+    return True
+
+
+def is_legal_resolve_combat(state: GameState, action: ResolveCombat) -> bool:
+    unit = find_unit(state, action.instance_id, action.from_zone)
+    if unit is None or unit.controller != state.turn_player:
+        return False
+    if unit.exhausted:  # rule 145.1
+        return False
+    if action.to_zone == "base" or not is_legal_destination(state, unit, action.from_zone, action.to_zone):
+        return False
+    if not combat.is_combat_triggered(state, unit, action.to_zone):
+        return False
+    _, _, _, defender_units = combat.determine_sides(state, unit, action.to_zone)
+    our_pool = combat.unit_combat_might(unit, "attacker")
+    return action.our_assignment in combat.enumerate_assignments(defender_units, our_pool)
 
 
 def relocate_unit(state: GameState, instance_id: int, from_zone: Zone, to_zone: Zone,
@@ -432,18 +473,30 @@ def legal_board_actions(state: GameState, cards: dict[str, CardDef]) -> list[Act
                 if is_legal_play_unit(state, action, card):
                     actions.append(action)
 
+    def add_move_candidates(unit: UnitInstance, from_zone: Zone, to_zone: Zone) -> None:
+        if to_zone != "base" and combat.is_combat_triggered(state, unit, to_zone):
+            _, _, _, defender_units = combat.determine_sides(state, unit, to_zone)
+            our_pool = combat.unit_combat_might(unit, "attacker")
+            for assignment in combat.enumerate_assignments(defender_units, our_pool):
+                action = ResolveCombat(
+                    instance_id=unit.instance_id, from_zone=from_zone, to_zone=to_zone,
+                    our_assignment=assignment,
+                )
+                if is_legal_resolve_combat(state, action):
+                    actions.append(action)
+            return
+        action = MoveUnit(instance_id=unit.instance_id, from_zone=from_zone, to_zone=to_zone)
+        if is_legal_move_unit(state, action):
+            actions.append(action)
+
     for unit in player.base_units:
         for bf_id in battlefield_ids:
-            action = MoveUnit(instance_id=unit.instance_id, from_zone="base", to_zone=bf_id)
-            if is_legal_move_unit(state, action):
-                actions.append(action)
+            add_move_candidates(unit, "base", bf_id)
     for bf in state.battlefields:
         for unit in bf.units:
             if unit.controller != state.turn_player:
                 continue
             for to_zone in ["base"] + [b for b in battlefield_ids if b != bf.battlefield_id]:
-                action = MoveUnit(instance_id=unit.instance_id, from_zone=bf.battlefield_id, to_zone=to_zone)
-                if is_legal_move_unit(state, action):
-                    actions.append(action)
+                add_move_candidates(unit, bf.battlefield_id, to_zone)
 
     return actions

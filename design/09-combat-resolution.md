@@ -78,6 +78,16 @@ Building it during search: `_dfs` still explores our own choices depth-first as 
 
 This is the same shape `export.py`'s schema now expects (`06-export-schema.md`'s `solution` field is this exact map, just with `canonical_key` swapped for the string `state_hash`) — the solver and the exporter were designed to agree on this representation from the start, not bolted together after the fact.
 
+## Implementation status (2026-09-12)
+
+Implemented: `solver/engine/combat.py` (Might-summing with Assault/Shield, lethal-first assignment enumeration, `apply_combat`, `enumerate_combat_outcomes`), a new `ResolveCombat` action in `actions.py`, and the AND/OR extension in `search.py`'s `_dfs`/`_resolve_combat_search`. 74/74 tests passing, including two that directly prove the AND-node mechanism: one where the opponent can deny a win by choosing which of our two units to kill (correctly rejected), one where every opponent choice still wins (correctly accepted, strategy covers both branches).
+
+**Two real bugs caught while implementing**, beyond the design itself:
+1. `enumerate_combat_outcomes` initially conflated "the opponent's own units (whose Might sums to their pool)" with "the units their pool gets assigned to (ours)" — used the same variable for both, which are opposite sides. Silently produced a single all-zero "opponent does nothing" outcome instead of enumerating their real choices. Caught by the AND-node test actually exercising a real 2-unit opponent choice.
+2. A Standard Move always exhausts its unit (rule 145.1) — this means a unit can **never** make two Standard Moves in the same turn, including a "relay" (Battlefield→Base→Battlefield) to route around not having Ganking. The first test scenario assumed a 2-hop relay was a legal fallback for a non-Ganking unit; it isn't. Fixed by using an outcome-collapsing setup instead (see the test itself) rather than relying on a relay that the rules don't actually permit.
+
+**What's implemented is narrower than the full design**: `ResolveCombat` is only generated for a Standard `MoveUnit` (our own unit moving), so we are always the Attacker in every reachable combat today. The "we are Defender" case (an enemy unit moved onto ground we hold via a spell like Charm or Blitzcrank) is written generically into `combat.py` and proven correct by the direct tests above, but nothing in `legal_actions()` generates it yet — that needs a spell/gear effect that moves an *enemy* unit to also route through `ResolveCombat`, which isn't built. **Puzzle 6 ("Redirection") still can't be authored** until that's added; puzzle 5 ("Clear the Way," a single-unit defender) can be, since its opponent-side assignment is always trivial regardless.
+
 ## What this does NOT do
 
 - No general adversarial opponent (turn-taking, spell-casting, blocking decisions) — still explicitly out of scope.

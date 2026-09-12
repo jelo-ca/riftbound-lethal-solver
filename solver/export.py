@@ -4,25 +4,32 @@ the JSON DAG the web layer consumes. See design/06-export-schema.md.
 Scope note on the depth cap: `depth_cap = len(solution) + margin` bounds
 how far the graph-building BFS explores (per the original 6-week plan:
 "cap depth at solution length + 2-3" — graph size doubles as a puzzle
-quality filter). A state at the cap that still has legal actions is left
-with no recorded outgoing edges and is deliberately NOT marked terminal
-(that would mislabel a merely-truncated state as a genuine dead end) — a
-well-scoped puzzle should hit real wins/dead-ends within the cap; hitting
-the cap on active branches is a signal the puzzle is too loose, not
-something this module should paper over.
+quality filter). `len(solution)` is the strategy map's size (number of
+distinct states covered), a safe proxy for "how deep" even when the
+strategy branches (adversarial combat) rather than a single path. A state
+at the cap that still has legal actions is left with no recorded outgoing
+edges and is deliberately NOT marked terminal (that would mislabel a
+merely-truncated state as a genuine dead end) — a well-scoped puzzle
+should hit real wins/dead-ends within the cap; hitting the cap on active
+branches is a signal the puzzle is too loose, not something this module
+should paper over.
 """
 
 from __future__ import annotations
 
 import hashlib
 
-from .engine import scoring
-from .engine.actions import Action, MoveUnit, PlayGear, PlaySpell, PlayUnit
+from .engine import combat, scoring
+from .engine.actions import Action, MoveUnit, PlayGear, PlaySpell, PlayUnit, ResolveCombat, find_unit
 from .engine.cards import CardDef
 from .engine.state import BattlefieldState, GameState, PlayerState, UnitInstance, canonical_key
 from .search import apply, legal_actions, solve
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
+
+
+def _hash_canonical_key(key: tuple) -> str:
+    return hashlib.sha256(repr(key).encode("utf-8")).hexdigest()[:16]
 
 
 def state_hash(state: GameState) -> str:
@@ -30,8 +37,7 @@ def state_hash(state: GameState) -> str:
     object key. Python's built-in hash() is randomized per process for
     str/frozenset contents, so it's not safe to persist across runs —
     hashlib on canonical_key's repr is."""
-    canonical_repr = repr(canonical_key(state)).encode("utf-8")
-    return hashlib.sha256(canonical_repr).hexdigest()[:16]
+    return _hash_canonical_key(canonical_key(state))
 
 
 def render_unit(unit: UnitInstance) -> dict:
@@ -82,6 +88,8 @@ def render_action(action: Action, action_id: str) -> dict:
         label = f"Play {action.card_id} to {action.target_zone}"
     elif isinstance(action, MoveUnit):
         label = f"Move unit {action.instance_id} from {action.from_zone} to {action.to_zone}"
+    elif isinstance(action, ResolveCombat):
+        label = f"Move unit {action.instance_id} from {action.from_zone} to {action.to_zone} (combat)"
     elif isinstance(action, PlaySpell):
         label = f"Play {action.card_id} ({', '.join(str(p) for p in action.params)})"
     elif isinstance(action, PlayGear):
@@ -91,20 +99,32 @@ def render_action(action: Action, action_id: str) -> dict:
     return {"id": action_id, "type": type(action).__name__, "label": label}
 
 
+def _resolve_action_outcomes(state: GameState, action: Action, cards: dict[str, CardDef]) -> list[GameState]:
+    """All possible resulting states for `action` — a single-element list
+    for a deterministic action, multiple for a combat action with a real
+    opponent choice. Raises NotImplementedError the same way apply() does
+    for anything neither can handle yet."""
+    if isinstance(action, ResolveCombat):
+        mover = find_unit(state, action.instance_id, action.from_zone)
+        outcomes = combat.enumerate_combat_outcomes(state, mover, action.from_zone, action.to_zone, action.our_assignment)
+        return [scoring.resolve_control_change(state, o, action.to_zone) for o in outcomes]
+    return [apply(state, action, cards)]
+
+
 def export_puzzle(puzzle_id: str, root: GameState, cards: dict[str, CardDef],
                    max_solver_depth: int = 12, depth_cap_margin: int = 2) -> dict:
     """Verify `root` has a win (per solve()), then BFS-enumerate its
-    reachable-state graph up to `len(solution) + depth_cap_margin` and
+    reachable-state graph up to `len(strategy) + depth_cap_margin` and
     return the JSON-serializable DAG described in design/06-export-schema.md.
     """
-    solution = solve(root, cards, max_depth=max_solver_depth)
-    if solution is None:
+    strategy = solve(root, cards, max_depth=max_solver_depth)
+    if strategy is None:
         raise ValueError(
             f"puzzle {puzzle_id!r}: no winning line found within depth {max_solver_depth} — "
             "export.py only exports verified positions (design/06-export-schema.md)"
         )
 
-    depth_cap = len(solution) + depth_cap_margin
+    depth_cap = len(strategy) + depth_cap_margin
 
     nodes: dict[str, dict] = {}
     edges: dict[str, list[dict]] = {}
@@ -131,40 +151,46 @@ def export_puzzle(puzzle_id: str, root: GameState, cards: dict[str, CardDef],
         any_child = False
         for action in legal_actions(state, cards):
             try:
-                child = apply(state, action, cards)
+                outcomes = _resolve_action_outcomes(state, action, cards)
             except NotImplementedError:
                 continue
             any_child = True
-            child_hash = state_hash(child)
             action_counter += 1
             action_id = f"a{action_counter}"
             action_lookup[(h, action)] = action_id
-            state_edges.append({"action": render_action(action, action_id), "to": child_hash})
-            if child_hash not in visited:
-                visited.add(child_hash)
-                nodes[child_hash] = render_state(child)
-                frontier.append((child, depth + 1))
+            outcome_hashes = []
+            for child in outcomes:
+                child_hash = state_hash(child)
+                outcome_hashes.append(child_hash)
+                if child_hash not in visited:
+                    visited.add(child_hash)
+                    nodes[child_hash] = render_state(child)
+                    frontier.append((child, depth + 1))
+            state_edges.append({
+                "action": render_action(action, action_id),
+                "to": outcome_hashes,
+                "adversarial": len(outcomes) > 1,
+            })
 
         if state_edges:
             edges[h] = state_edges
         if not any_child:
             terminal[h] = "dead_end"
 
-    # Walk the solver's specific winning path to recover its action_ids —
-    # the BFS above may have recorded the same (state, action) pair once
-    # even though the winning path revisits shared prefixes.
-    solution_ids = []
-    current = root
-    for action in solution:
-        h = state_hash(current)
-        solution_ids.append(action_lookup[(h, action)])
-        current = apply(current, action, cards)
+    # The strategy maps canonical_key(state) -> action; convert to
+    # state_hash -> action_id using the same action_lookup the BFS above
+    # built (the BFS's own legal_actions()/action objects are structurally
+    # equal to the strategy's, so the lookup hits).
+    solution = {
+        _hash_canonical_key(key): action_lookup[(_hash_canonical_key(key), action)]
+        for key, action in strategy.items()
+    }
 
     return {
         "schema_version": SCHEMA_VERSION,
         "puzzle_id": puzzle_id,
         "root": root_hash,
-        "solution": solution_ids,
+        "solution": solution,
         "nodes": nodes,
         "edges": edges,
         "terminal": terminal,

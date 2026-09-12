@@ -41,11 +41,12 @@ def test_solves_conquer_both_battlefields_for_final_point():
     # Point and is legal because both battlefields got Scored this turn).
     units = frozenset({make_unit(1), make_unit(2)})
     root = make_state(units, score=6)
-    solution = solve(root, cards={}, max_depth=4)
-    assert solution is not None
-    assert len(solution) == 2
-    assert all(isinstance(a, MoveUnit) for a in solution)
-    targets = {a.to_zone for a in solution}
+    strategy = solve(root, cards={}, max_depth=4)
+    assert strategy is not None
+    assert len(strategy) == 2
+    actions = list(strategy.values())
+    assert all(isinstance(a, MoveUnit) for a in actions)
+    targets = {a.to_zone for a in actions}
     assert targets == {"left", "right"}
 
 
@@ -56,14 +57,14 @@ def test_single_conquer_at_7_is_unsolvable_alone():
     # genuinely unsolvable position within the modeled action space.
     units = frozenset({make_unit(1)})
     root = make_state(units, score=7)
-    solution = solve(root, cards={}, max_depth=4)
-    assert solution is None
+    strategy = solve(root, cards={}, max_depth=4)
+    assert strategy is None
 
 
 def test_already_winning_state_returns_empty_solution():
     root = make_state(frozenset(), score=8)
-    solution = solve(root, cards={}, max_depth=4)
-    assert solution == []
+    strategy = solve(root, cards={}, max_depth=4)
+    assert strategy == {}
 
 
 def test_finds_shortest_solution_first():
@@ -73,8 +74,8 @@ def test_finds_shortest_solution_first():
     # happens to work).
     units = frozenset({make_unit(1), make_unit(2), make_unit(3)})
     root = make_state(units, score=6)
-    solution = solve(root, cards={}, max_depth=4)
-    assert len(solution) == 2
+    strategy = solve(root, cards={}, max_depth=4)
+    assert len(strategy) == 2
 
 
 OPEN_DEPLOY_CARD = CardDef(card_id="ogn-176-298", card_type="Unit", energy_cost=0,

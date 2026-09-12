@@ -59,14 +59,21 @@ def test_export_puzzle_solvable_position():
     root = make_state(frozenset({make_unit(1), make_unit(2)}), score=6)
     result = export_puzzle("test-1", root, cards={})
 
-    assert result["schema_version"] == 1
+    assert result["schema_version"] == 2
     assert result["puzzle_id"] == "test-1"
     assert result["root"] in result["nodes"]
-    assert len(result["solution"]) == 2
+    assert len(result["solution"]) == 2  # 2 states in the strategy: root, and the state after 1 move
+    assert result["root"] in result["solution"]
 
     # solution's action_ids must all exist somewhere in edges
     all_action_ids = {e["action"]["id"] for edge_list in result["edges"].values() for e in edge_list}
-    assert set(result["solution"]).issubset(all_action_ids)
+    assert set(result["solution"].values()).issubset(all_action_ids)
+
+    # every edge's "to" is a list; no adversarial branching in this shape
+    for edge_list in result["edges"].values():
+        for e in edge_list:
+            assert isinstance(e["to"], list)
+            assert e["adversarial"] is False
 
     assert "win" in result["terminal"].values()
     json.dumps(result)  # full round-trip: must be valid JSON

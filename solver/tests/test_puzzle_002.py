@@ -7,11 +7,12 @@ from solver.search import apply, solve
 
 def test_puzzle_002_solves_in_one_move():
     root = build_root()
-    solution = solve(root, cards={}, max_depth=4)
-    assert solution is not None
-    assert len(solution) == 1
-    assert isinstance(solution[0], MoveUnit)
-    assert solution[0].to_zone == "left"
+    strategy = solve(root, cards={}, max_depth=4)
+    assert strategy is not None
+    assert len(strategy) == 1
+    action = next(iter(strategy.values()))
+    assert isinstance(action, MoveUnit)
+    assert action.to_zone == "left"
 
 
 def test_puzzle_002_validates_hold_plus_conquer_correction():
