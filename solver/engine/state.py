@@ -47,11 +47,26 @@ class BattlefieldState:
 
 
 @dataclass(frozen=True)
+class LegendState:
+    """A player's Legend — a persistent card in its own zone, not a unit
+    on the board and never at a battlefield. Modelled as just its card_id
+    plus exhaustion, since every Legend ability registered so far pays an
+    Exhaust cost (some with Energy on top) and nothing else about a
+    Legend's state is reachable from a single-turn puzzle."""
+    card_id: str
+    exhausted: bool = False
+
+
+@dataclass(frozen=True)
 class PlayerState:
     base_units: frozenset[UnitInstance]
     hand: tuple[str, ...]
     runes: RunePool
     score: int
+    # None for a position that doesn't involve a Legend at all — every
+    # puzzle authored before Legends existed, and any sampled position
+    # that didn't draw one.
+    legend: Optional[LegendState] = None
 
 
 @dataclass(frozen=True)
@@ -90,6 +105,9 @@ def _canonical_player(player: PlayerState) -> tuple:
         tuple(sorted(player.hand)),
         tuple(sorted(player.runes.available)),
         player.score,
+        # Exhaustion matters: a Legend that's already paid its Exhaust cost
+        # this turn is a genuinely different position from one that hasn't.
+        (player.legend.card_id, player.legend.exhausted) if player.legend else None,
     )
 
 

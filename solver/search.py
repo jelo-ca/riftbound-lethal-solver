@@ -30,7 +30,7 @@ from __future__ import annotations
 import dataclasses
 from typing import Optional
 
-from .engine import abilities, combat, scoring
+from .engine import abilities, combat, legends, scoring
 from .engine.actions import (
     Action,
     ActivateAbility,
@@ -83,6 +83,23 @@ def legal_actions(state: GameState, cards: dict[str, CardDef]) -> list[Action]:
                                       params=params, rune_payment=None)
             if abilities.is_legal_activate_ability(state, action):
                 result.append(action)
+
+    # Legend ability candidates: same ActivateAbility action, but sourced
+    # from the player's Legend zone rather than a unit on the board, so
+    # source_id is the LEGEND_SOURCE_ID sentinel and the rune payment is
+    # real (unlike Caitlyn's exhaust-only ability, which pays None).
+    if player.legend is not None and legends.is_legend_ability(player.legend.card_id):
+        ability_id = player.legend.card_id
+        energy_cost, power_cost, power_domain = legends.ABILITY_COSTS[ability_id]
+        _, _, generate_candidates = legends.LEGEND_ABILITIES[ability_id]
+        payments = (generate_rune_payments(player.runes, energy_cost, power_cost, power_domain)
+                    if energy_cost or power_cost else [None])
+        for payment in payments:
+            for params in generate_candidates(state):
+                action = ActivateAbility(source_id=legends.LEGEND_SOURCE_ID, ability_id=ability_id,
+                                          params=params, rune_payment=payment)
+                if legends.is_legal_legend_ability(state, action):
+                    result.append(action)
 
     # PlayUnit "when you play me" trigger candidates: legal_board_actions
     # already generated the plain (trigger_params=()) form for every
@@ -141,6 +158,13 @@ def apply(state: GameState, action: Action, cards: dict[str, CardDef]) -> GameSt
         )
 
     if isinstance(action, ActivateAbility):
+        if legends.is_legend_ability(action.ability_id):
+            outcomes = legends.resolve_legend_ability_outcomes(state, action)
+            if len(outcomes) != 1:
+                raise NotImplementedError(
+                    "apply: this Legend ability has multiple outcomes — see search.solve()"
+                )
+            return outcomes[0]
         return abilities.apply_ability(state, action)
 
     raise NotImplementedError(

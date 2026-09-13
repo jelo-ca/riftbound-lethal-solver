@@ -158,7 +158,7 @@ def generate_rune_payments(pool: RunePool, energy_cost: int, power_cost: int,
     return payments
 
 
-def _consume_runes(pool: RunePool, payment: RunePayment) -> RunePool:
+def consume_runes(pool: RunePool, payment: RunePayment) -> RunePool:
     remaining = list(pool.available)
     for domain in payment.energy_runes + payment.power_runes:
         remaining.remove(domain)
@@ -246,7 +246,7 @@ def apply_play_unit(state: GameState, action: PlayUnit, card: CardDef) -> GameSt
 
     new_hand = list(player.hand)
     new_hand.remove(action.card_id)
-    new_runes = _consume_runes(player.runes, action.rune_payment)
+    new_runes = consume_runes(player.runes, action.rune_payment)
 
     if action.target_zone == "base":
         new_player = dataclasses.replace(
@@ -307,7 +307,7 @@ def apply_play_spell_cost(state: GameState, action: PlaySpell) -> GameState:
     player = state.players[player_index]
     new_hand = list(player.hand)
     new_hand.remove(action.card_id)
-    new_runes = _consume_runes(player.runes, action.rune_payment)
+    new_runes = consume_runes(player.runes, action.rune_payment)
     new_player = dataclasses.replace(player, hand=tuple(new_hand), runes=new_runes)
     return replace_player(state, player_index, new_player)
 
