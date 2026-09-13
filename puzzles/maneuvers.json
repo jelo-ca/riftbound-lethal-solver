@@ -2,17 +2,17 @@
   "puzzle-001-one-point-short": [
     [
       "MoveUnit",
-      "ogn-010-298"
+      "vanilla:"
     ],
     [
       "MoveUnit",
-      "ogn-211-298"
+      "vanilla:"
     ]
   ],
   "puzzle-002-borrowed-time": [
     [
       "MoveUnit",
-      "ogn-211-298"
+      "vanilla:"
     ]
   ],
   "puzzle-003-the-long-way-around": [
@@ -42,7 +42,7 @@
     ],
     [
       "MoveUnit",
-      "ogn-010-298"
+      "vanilla:"
     ]
   ],
   "puzzle-006-redirection": [
@@ -52,13 +52,13 @@
     ],
     [
       "MoveUnit",
-      "ogn-211-298"
+      "vanilla:"
     ]
   ],
   "puzzle-007-snipe-and-trade": [
     [
       "MoveUnit",
-      "ogn-176-298"
+      "vanilla:"
     ],
     [
       "PlaySpell",
@@ -70,11 +70,11 @@
     ],
     [
       "ResolveCombat",
-      "ogn-218-298"
+      "vanilla:"
     ],
     [
       "MoveUnit",
-      "ogn-176-298"
+      "vanilla:"
     ]
   ]
 }

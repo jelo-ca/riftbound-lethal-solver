@@ -3121,7 +3121,10 @@
           "id": "a1",
           "type": "MoveUnit",
           "label": "Move unit 1 from left to base",
-          "card_id": "ogn-205-298"
+          "card_id": "ogn-205-298",
+          "keywords": [
+            "Ganking"
+          ]
         },
         "to": [
           "1af3835a874bb6b5"
@@ -3133,7 +3136,10 @@
           "id": "a2",
           "type": "MoveUnit",
           "label": "Move unit 1 from left to right",
-          "card_id": "ogn-205-298"
+          "card_id": "ogn-205-298",
+          "keywords": [
+            "Ganking"
+          ]
         },
         "to": [
           "409f25daebc78d99"
@@ -3145,7 +3151,8 @@
           "id": "a3",
           "type": "PlaySpell",
           "label": "Play ogn-173-298 (1, base)",
-          "card_id": "ogn-173-298"
+          "card_id": "ogn-173-298",
+          "keywords": []
         },
         "to": [
           "d9e245841114740b"
@@ -3157,7 +3164,8 @@
           "id": "a4",
           "type": "PlaySpell",
           "label": "Play ogn-173-298 (1, right)",
-          "card_id": "ogn-173-298"
+          "card_id": "ogn-173-298",
+          "keywords": []
         },
         "to": [
           "6d4e133a65cfea41"
@@ -3169,7 +3177,8 @@
           "id": "a5",
           "type": "PlaySpell",
           "label": "Play ogn-173-298 (2, base)",
-          "card_id": "ogn-173-298"
+          "card_id": "ogn-173-298",
+          "keywords": []
         },
         "to": [
           "3d6d7fba15d65325"
@@ -3181,7 +3190,8 @@
           "id": "a6",
           "type": "PlaySpell",
           "label": "Play ogn-173-298 (2, right)",
-          "card_id": "ogn-173-298"
+          "card_id": "ogn-173-298",
+          "keywords": []
         },
         "to": [
           "9c5cb3a74384290d"
@@ -3193,7 +3203,8 @@
           "id": "a7",
           "type": "PlaySpell",
           "label": "Play ogn-173-298 (3, base)",
-          "card_id": "ogn-173-298"
+          "card_id": "ogn-173-298",
+          "keywords": []
         },
         "to": [
           "503d04a216dad8d3"
@@ -3205,7 +3216,8 @@
           "id": "a8",
           "type": "PlaySpell",
           "label": "Play ogn-173-298 (3, left)",
-          "card_id": "ogn-173-298"
+          "card_id": "ogn-173-298",
+          "keywords": []
         },
         "to": [
           "3b1db5a8f00d208e"
@@ -3219,7 +3231,8 @@
           "id": "a9",
           "type": "PlaySpell",
           "label": "Play ogn-173-298 (1, left)",
-          "card_id": "ogn-173-298"
+          "card_id": "ogn-173-298",
+          "keywords": []
         },
         "to": [
           "18ffb7ac31c6b656"
@@ -3231,7 +3244,8 @@
           "id": "a10",
           "type": "PlaySpell",
           "label": "Play ogn-173-298 (1, right)",
-          "card_id": "ogn-173-298"
+          "card_id": "ogn-173-298",
+          "keywords": []
         },
         "to": [
           "11e6837250b69783"
@@ -3243,7 +3257,8 @@
           "id": "a11",
           "type": "PlaySpell",
           "label": "Play ogn-173-298 (2, base)",
-          "card_id": "ogn-173-298"
+          "card_id": "ogn-173-298",
+          "keywords": []
         },
         "to": [
           "eca8e88764a8d9c7"
@@ -3255,7 +3270,8 @@
           "id": "a12",
           "type": "PlaySpell",
           "label": "Play ogn-173-298 (2, right)",
-          "card_id": "ogn-173-298"
+          "card_id": "ogn-173-298",
+          "keywords": []
         },
         "to": [
           "cb022585dfccd5bd"
@@ -3267,7 +3283,8 @@
           "id": "a13",
           "type": "PlaySpell",
           "label": "Play ogn-173-298 (3, base)",
-          "card_id": "ogn-173-298"
+          "card_id": "ogn-173-298",
+          "keywords": []
         },
         "to": [
           "08f505c3ef02c3b3"
@@ -3279,7 +3296,8 @@
           "id": "a14",
           "type": "PlaySpell",
           "label": "Play ogn-173-298 (3, left)",
-          "card_id": "ogn-173-298"
+          "card_id": "ogn-173-298",
+          "keywords": []
         },
         "to": [
           "935db8abb425f473"
@@ -3293,7 +3311,8 @@
           "id": "a15",
           "type": "PlaySpell",
           "label": "Play ogn-173-298 (2, base)",
-          "card_id": "ogn-173-298"
+          "card_id": "ogn-173-298",
+          "keywords": []
         },
         "to": [
           "5b07ef58fef09245"
@@ -3305,7 +3324,8 @@
           "id": "a16",
           "type": "PlaySpell",
           "label": "Play ogn-173-298 (2, right)",
-          "card_id": "ogn-173-298"
+          "card_id": "ogn-173-298",
+          "keywords": []
         },
         "to": [
           "5f83c967f37cb14f"
@@ -3317,7 +3337,8 @@
           "id": "a17",
           "type": "PlaySpell",
           "label": "Play ogn-173-298 (1, base)",
-          "card_id": "ogn-173-298"
+          "card_id": "ogn-173-298",
+          "keywords": []
         },
         "to": [
           "b2405a422006297e"
@@ -3329,7 +3350,8 @@
           "id": "a18",
           "type": "PlaySpell",
           "label": "Play ogn-173-298 (1, left)",
-          "card_id": "ogn-173-298"
+          "card_id": "ogn-173-298",
+          "keywords": []
         },
         "to": [
           "18ffb7ac31c6b656"
@@ -3341,7 +3363,8 @@
           "id": "a19",
           "type": "PlaySpell",
           "label": "Play ogn-173-298 (3, base)",
-          "card_id": "ogn-173-298"
+          "card_id": "ogn-173-298",
+          "keywords": []
         },
         "to": [
           "4fff17885ba24e25"
@@ -3353,7 +3376,8 @@
           "id": "a20",
           "type": "PlaySpell",
           "label": "Play ogn-173-298 (3, left)",
-          "card_id": "ogn-173-298"
+          "card_id": "ogn-173-298",
+          "keywords": []
         },
         "to": [
           "ff75769ddc8d6c5e"
@@ -3367,7 +3391,10 @@
           "id": "a21",
           "type": "MoveUnit",
           "label": "Move unit 1 from base to left",
-          "card_id": "ogn-205-298"
+          "card_id": "ogn-205-298",
+          "keywords": [
+            "Ganking"
+          ]
         },
         "to": [
           "3a92ceb84608a9e9"
@@ -3379,7 +3406,10 @@
           "id": "a22",
           "type": "MoveUnit",
           "label": "Move unit 1 from base to right",
-          "card_id": "ogn-205-298"
+          "card_id": "ogn-205-298",
+          "keywords": [
+            "Ganking"
+          ]
         },
         "to": [
           "0416a1d44a6c5eeb"
@@ -3393,7 +3423,10 @@
           "id": "a23",
           "type": "MoveUnit",
           "label": "Move unit 1 from right to base",
-          "card_id": "ogn-205-298"
+          "card_id": "ogn-205-298",
+          "keywords": [
+            "Ganking"
+          ]
         },
         "to": [
           "555f20333d4dd649"
@@ -3405,7 +3438,10 @@
           "id": "a24",
           "type": "MoveUnit",
           "label": "Move unit 1 from right to left",
-          "card_id": "ogn-205-298"
+          "card_id": "ogn-205-298",
+          "keywords": [
+            "Ganking"
+          ]
         },
         "to": [
           "3a92ceb84608a9e9"
@@ -3419,7 +3455,8 @@
           "id": "a25",
           "type": "MoveUnit",
           "label": "Move unit 2 from base to left",
-          "card_id": "ogn-010-298"
+          "card_id": "ogn-010-298",
+          "keywords": []
         },
         "to": [
           "b06d4e677e05978c"
@@ -3431,7 +3468,8 @@
           "id": "a26",
           "type": "MoveUnit",
           "label": "Move unit 2 from base to right",
-          "card_id": "ogn-010-298"
+          "card_id": "ogn-010-298",
+          "keywords": []
         },
         "to": [
           "a7931b972c09386e"
@@ -3443,7 +3481,10 @@
           "id": "a27",
           "type": "MoveUnit",
           "label": "Move unit 1 from left to base",
-          "card_id": "ogn-205-298"
+          "card_id": "ogn-205-298",
+          "keywords": [
+            "Ganking"
+          ]
         },
         "to": [
           "eca8e88764a8d9c7"
@@ -3455,7 +3496,10 @@
           "id": "a28",
           "type": "MoveUnit",
           "label": "Move unit 1 from left to right",
-          "card_id": "ogn-205-298"
+          "card_id": "ogn-205-298",
+          "keywords": [
+            "Ganking"
+          ]
         },
         "to": [
           "5b07ef58fef09245"
@@ -3469,7 +3513,10 @@
           "id": "a29",
           "type": "MoveUnit",
           "label": "Move unit 1 from left to base",
-          "card_id": "ogn-205-298"
+          "card_id": "ogn-205-298",
+          "keywords": [
+            "Ganking"
+          ]
         },
         "to": [
           "cb022585dfccd5bd"
@@ -3481,7 +3528,10 @@
           "id": "a30",
           "type": "MoveUnit",
           "label": "Move unit 1 from left to right",
-          "card_id": "ogn-205-298"
+          "card_id": "ogn-205-298",
+          "keywords": [
+            "Ganking"
+          ]
         },
         "to": [
           "5f83c967f37cb14f"
@@ -3493,7 +3543,8 @@
           "id": "a31",
           "type": "MoveUnit",
           "label": "Move unit 2 from right to base",
-          "card_id": "ogn-010-298"
+          "card_id": "ogn-010-298",
+          "keywords": []
         },
         "to": [
           "fb10a1c6fcbd1bcf"
@@ -3507,7 +3558,8 @@
           "id": "a32",
           "type": "MoveUnit",
           "label": "Move unit 3 from base to left",
-          "card_id": "ogn-211-298"
+          "card_id": "ogn-211-298",
+          "keywords": []
         },
         "to": [
           "938df7fa9fd83a48"
@@ -3519,7 +3571,8 @@
           "id": "a33",
           "type": "MoveUnit",
           "label": "Move unit 3 from base to right",
-          "card_id": "ogn-211-298"
+          "card_id": "ogn-211-298",
+          "keywords": []
         },
         "to": [
           "701b16c62743078a"
@@ -3531,7 +3584,10 @@
           "id": "a34",
           "type": "MoveUnit",
           "label": "Move unit 1 from left to base",
-          "card_id": "ogn-205-298"
+          "card_id": "ogn-205-298",
+          "keywords": [
+            "Ganking"
+          ]
         },
         "to": [
           "08f505c3ef02c3b3"
@@ -3543,7 +3599,10 @@
           "id": "a35",
           "type": "MoveUnit",
           "label": "Move unit 1 from left to right",
-          "card_id": "ogn-205-298"
+          "card_id": "ogn-205-298",
+          "keywords": [
+            "Ganking"
+          ]
         },
         "to": [
           "4fff17885ba24e25"
@@ -3557,7 +3616,10 @@
           "id": "a36",
           "type": "MoveUnit",
           "label": "Move unit 1 from left to base",
-          "card_id": "ogn-205-298"
+          "card_id": "ogn-205-298",
+          "keywords": [
+            "Ganking"
+          ]
         },
         "to": [
           "935db8abb425f473"
@@ -3569,7 +3631,10 @@
           "id": "a37",
           "type": "MoveUnit",
           "label": "Move unit 1 from left to right",
-          "card_id": "ogn-205-298"
+          "card_id": "ogn-205-298",
+          "keywords": [
+            "Ganking"
+          ]
         },
         "to": [
           "ff75769ddc8d6c5e"
@@ -3581,7 +3646,8 @@
           "id": "a38",
           "type": "MoveUnit",
           "label": "Move unit 3 from left to base",
-          "card_id": "ogn-211-298"
+          "card_id": "ogn-211-298",
+          "keywords": []
         },
         "to": [
           "cb345892a668cb13"
@@ -3595,7 +3661,10 @@
           "id": "a39",
           "type": "MoveUnit",
           "label": "Move unit 1 from left to base",
-          "card_id": "ogn-205-298"
+          "card_id": "ogn-205-298",
+          "keywords": [
+            "Ganking"
+          ]
         },
         "to": [
           "fb88348e2fd2e973"
@@ -3607,7 +3676,10 @@
           "id": "a40",
           "type": "MoveUnit",
           "label": "Move unit 1 from left to right",
-          "card_id": "ogn-205-298"
+          "card_id": "ogn-205-298",
+          "keywords": [
+            "Ganking"
+          ]
         },
         "to": [
           "30abd8ebc156f016"
@@ -3621,7 +3693,10 @@
           "id": "a41",
           "type": "MoveUnit",
           "label": "Move unit 1 from right to base",
-          "card_id": "ogn-205-298"
+          "card_id": "ogn-205-298",
+          "keywords": [
+            "Ganking"
+          ]
         },
         "to": [
           "fb88348e2fd2e973"
@@ -3633,7 +3708,10 @@
           "id": "a42",
           "type": "MoveUnit",
           "label": "Move unit 1 from right to left",
-          "card_id": "ogn-205-298"
+          "card_id": "ogn-205-298",
+          "keywords": [
+            "Ganking"
+          ]
         },
         "to": [
           "a0c28d254b4ea7a7"
@@ -3647,7 +3725,8 @@
           "id": "a43",
           "type": "MoveUnit",
           "label": "Move unit 2 from base to left",
-          "card_id": "ogn-010-298"
+          "card_id": "ogn-010-298",
+          "keywords": []
         },
         "to": [
           "717fab911cc35eca"
@@ -3659,7 +3738,8 @@
           "id": "a44",
           "type": "MoveUnit",
           "label": "Move unit 2 from base to right",
-          "card_id": "ogn-010-298"
+          "card_id": "ogn-010-298",
+          "keywords": []
         },
         "to": [
           "33af722b90683d0c"
@@ -3673,7 +3753,8 @@
           "id": "a45",
           "type": "MoveUnit",
           "label": "Move unit 2 from right to base",
-          "card_id": "ogn-010-298"
+          "card_id": "ogn-010-298",
+          "keywords": []
         },
         "to": [
           "4181d5e82c27a3f3"
@@ -3687,7 +3768,8 @@
           "id": "a46",
           "type": "MoveUnit",
           "label": "Move unit 3 from base to left",
-          "card_id": "ogn-211-298"
+          "card_id": "ogn-211-298",
+          "keywords": []
         },
         "to": [
           "c813274780f26123"
@@ -3699,7 +3781,8 @@
           "id": "a47",
           "type": "MoveUnit",
           "label": "Move unit 3 from base to right",
-          "card_id": "ogn-211-298"
+          "card_id": "ogn-211-298",
+          "keywords": []
         },
         "to": [
           "2225e8dba40bebc4"
@@ -3713,7 +3796,8 @@
           "id": "a48",
           "type": "MoveUnit",
           "label": "Move unit 3 from left to base",
-          "card_id": "ogn-211-298"
+          "card_id": "ogn-211-298",
+          "keywords": []
         },
         "to": [
           "dad71522371b0b46"
@@ -3727,7 +3811,8 @@
           "id": "a49",
           "type": "MoveUnit",
           "label": "Move unit 2 from base to left",
-          "card_id": "ogn-010-298"
+          "card_id": "ogn-010-298",
+          "keywords": []
         },
         "to": [
           "c5d61b9c8d132791"
@@ -3739,7 +3824,8 @@
           "id": "a50",
           "type": "MoveUnit",
           "label": "Move unit 2 from base to right",
-          "card_id": "ogn-010-298"
+          "card_id": "ogn-010-298",
+          "keywords": []
         },
         "to": [
           "f23dec9a9a78f81d"
@@ -3753,7 +3839,8 @@
           "id": "a51",
           "type": "MoveUnit",
           "label": "Move unit 2 from right to base",
-          "card_id": "ogn-010-298"
+          "card_id": "ogn-010-298",
+          "keywords": []
         },
         "to": [
           "d89e3bca5a068cc2"
@@ -3767,7 +3854,10 @@
           "id": "a52",
           "type": "MoveUnit",
           "label": "Move unit 1 from base to left",
-          "card_id": "ogn-205-298"
+          "card_id": "ogn-205-298",
+          "keywords": [
+            "Ganking"
+          ]
         },
         "to": [
           "a0c28d254b4ea7a7"
@@ -3779,7 +3869,10 @@
           "id": "a53",
           "type": "MoveUnit",
           "label": "Move unit 1 from base to right",
-          "card_id": "ogn-205-298"
+          "card_id": "ogn-205-298",
+          "keywords": [
+            "Ganking"
+          ]
         },
         "to": [
           "30abd8ebc156f016"
@@ -3793,7 +3886,8 @@
           "id": "a54",
           "type": "MoveUnit",
           "label": "Move unit 3 from base to left",
-          "card_id": "ogn-211-298"
+          "card_id": "ogn-211-298",
+          "keywords": []
         },
         "to": [
           "d04e8ad2d8caad37"
@@ -3805,7 +3899,8 @@
           "id": "a55",
           "type": "MoveUnit",
           "label": "Move unit 3 from base to right",
-          "card_id": "ogn-211-298"
+          "card_id": "ogn-211-298",
+          "keywords": []
         },
         "to": [
           "5cf8bda366d9ba18"
@@ -3819,7 +3914,8 @@
           "id": "a56",
           "type": "MoveUnit",
           "label": "Move unit 3 from left to base",
-          "card_id": "ogn-211-298"
+          "card_id": "ogn-211-298",
+          "keywords": []
         },
         "to": [
           "5ee12f35a2170a44"
@@ -3833,7 +3929,10 @@
           "id": "a57",
           "type": "MoveUnit",
           "label": "Move unit 1 from left to base",
-          "card_id": "ogn-205-298"
+          "card_id": "ogn-205-298",
+          "keywords": [
+            "Ganking"
+          ]
         },
         "to": [
           "717fab911cc35eca"
@@ -3845,7 +3944,10 @@
           "id": "a58",
           "type": "MoveUnit",
           "label": "Move unit 1 from left to right",
-          "card_id": "ogn-205-298"
+          "card_id": "ogn-205-298",
+          "keywords": [
+            "Ganking"
+          ]
         },
         "to": [
           "c5d61b9c8d132791"
@@ -3859,7 +3961,10 @@
           "id": "a59",
           "type": "MoveUnit",
           "label": "Move unit 1 from left to base",
-          "card_id": "ogn-205-298"
+          "card_id": "ogn-205-298",
+          "keywords": [
+            "Ganking"
+          ]
         },
         "to": [
           "33af722b90683d0c"
@@ -3871,7 +3976,10 @@
           "id": "a60",
           "type": "MoveUnit",
           "label": "Move unit 1 from left to right",
-          "card_id": "ogn-205-298"
+          "card_id": "ogn-205-298",
+          "keywords": [
+            "Ganking"
+          ]
         },
         "to": [
           "f23dec9a9a78f81d"
@@ -3885,7 +3993,10 @@
           "id": "a61",
           "type": "MoveUnit",
           "label": "Move unit 1 from left to base",
-          "card_id": "ogn-205-298"
+          "card_id": "ogn-205-298",
+          "keywords": [
+            "Ganking"
+          ]
         },
         "to": [
           "4181d5e82c27a3f3"
@@ -3897,7 +4008,10 @@
           "id": "a62",
           "type": "MoveUnit",
           "label": "Move unit 1 from left to right",
-          "card_id": "ogn-205-298"
+          "card_id": "ogn-205-298",
+          "keywords": [
+            "Ganking"
+          ]
         },
         "to": [
           "d89e3bca5a068cc2"
@@ -3911,7 +4025,10 @@
           "id": "a63",
           "type": "MoveUnit",
           "label": "Move unit 1 from left to base",
-          "card_id": "ogn-205-298"
+          "card_id": "ogn-205-298",
+          "keywords": [
+            "Ganking"
+          ]
         },
         "to": [
           "c813274780f26123"
@@ -3923,7 +4040,10 @@
           "id": "a64",
           "type": "MoveUnit",
           "label": "Move unit 1 from left to right",
-          "card_id": "ogn-205-298"
+          "card_id": "ogn-205-298",
+          "keywords": [
+            "Ganking"
+          ]
         },
         "to": [
           "d04e8ad2d8caad37"
@@ -3937,7 +4057,10 @@
           "id": "a65",
           "type": "MoveUnit",
           "label": "Move unit 1 from left to base",
-          "card_id": "ogn-205-298"
+          "card_id": "ogn-205-298",
+          "keywords": [
+            "Ganking"
+          ]
         },
         "to": [
           "2225e8dba40bebc4"
@@ -3949,7 +4072,10 @@
           "id": "a66",
           "type": "MoveUnit",
           "label": "Move unit 1 from left to right",
-          "card_id": "ogn-205-298"
+          "card_id": "ogn-205-298",
+          "keywords": [
+            "Ganking"
+          ]
         },
         "to": [
           "5cf8bda366d9ba18"
@@ -3963,7 +4089,10 @@
           "id": "a67",
           "type": "MoveUnit",
           "label": "Move unit 1 from left to base",
-          "card_id": "ogn-205-298"
+          "card_id": "ogn-205-298",
+          "keywords": [
+            "Ganking"
+          ]
         },
         "to": [
           "dad71522371b0b46"
@@ -3975,7 +4104,10 @@
           "id": "a68",
           "type": "MoveUnit",
           "label": "Move unit 1 from left to right",
-          "card_id": "ogn-205-298"
+          "card_id": "ogn-205-298",
+          "keywords": [
+            "Ganking"
+          ]
         },
         "to": [
           "5ee12f35a2170a44"

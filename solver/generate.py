@@ -283,9 +283,11 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Generate lethal-puzzle candidates.")
     parser.add_argument("--count", type=int, default=5, help="number of survivors to produce")
     parser.add_argument("--seed", type=int, default=None, help="RNG seed, for reproducible runs")
+    parser.add_argument("--attempt-multiplier", type=int, default=200,
+                         help="attempt budget per survivor wanted (max_attempts = count * this)")
     args = parser.parse_args()
 
-    survivors, attempts = generate(args.count, seed=args.seed)
+    survivors, attempts = generate(args.count, seed=args.seed, attempt_multiplier=args.attempt_multiplier)
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     for result in survivors:
         path = OUTPUT_DIR / f"{result['puzzle_id']}.json"

@@ -88,30 +88,36 @@ def render_action(state: GameState, action: Action, action_id: str) -> dict:
     the mover's card for a MoveUnit/ResolveCombat, the played/activated
     card otherwise — independent of lane/instance_id/exact Might, so two
     structurally-identical actions on different boards render the same
-    card_id. Used by maneuvers.py to fingerprint a puzzle's winning line
-    without needing to re-simulate it."""
+    card_id. `keywords` (MoveUnit/ResolveCombat only) is the mover's own
+    keyword set — maneuvers.py uses it to bucket interchangeable vanilla
+    movers (no registered mechanic, e.g. two different plain 2-Might
+    stat-sticks) by keyword-set instead of raw card_id, so a puzzle isn't
+    treated as "novel" just because it drew a different filler card."""
     if isinstance(action, PlayUnit):
         label = f"Play {action.card_id} to {action.target_zone}"
-        card_id = action.card_id
+        card_id, keywords = action.card_id, []
     elif isinstance(action, MoveUnit):
         label = f"Move unit {action.instance_id} from {action.from_zone} to {action.to_zone}"
-        card_id = find_unit(state, action.instance_id, action.from_zone).card_id
+        mover = find_unit(state, action.instance_id, action.from_zone)
+        card_id, keywords = mover.card_id, sorted(mover.keywords)
     elif isinstance(action, ResolveCombat):
         label = f"Move unit {action.instance_id} from {action.from_zone} to {action.to_zone} (combat)"
-        card_id = find_unit(state, action.instance_id, action.from_zone).card_id
+        mover = find_unit(state, action.instance_id, action.from_zone)
+        card_id, keywords = mover.card_id, sorted(mover.keywords)
     elif isinstance(action, PlaySpell):
         label = f"Play {action.card_id} ({', '.join(str(p) for p in action.params)})"
-        card_id = action.card_id
+        card_id, keywords = action.card_id, []
     elif isinstance(action, PlayGear):
         label = f"Play {action.card_id} on unit {action.target_unit}"
-        card_id = action.card_id
+        card_id, keywords = action.card_id, []
     elif isinstance(action, ActivateAbility):
         label = f"Activate unit {action.source_id} ({', '.join(str(p) for p in action.params)})"
-        card_id = action.ability_id
+        card_id, keywords = action.ability_id, []
     else:
         label = type(action).__name__
-        card_id = ""
-    return {"id": action_id, "type": type(action).__name__, "label": label, "card_id": card_id}
+        card_id, keywords = "", []
+    return {"id": action_id, "type": type(action).__name__, "label": label,
+            "card_id": card_id, "keywords": keywords}
 
 
 def resolve_action_outcomes(state: GameState, action: Action, cards: dict[str, CardDef]) -> list[GameState]:
