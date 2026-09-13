@@ -4,8 +4,8 @@ from solver.engine.actions import MoveUnit
 from solver.engine.state import BattlefieldState, GameState, PlayerState, RunePool, UnitInstance
 from solver.generate import (
     CARD_POOL,
-    MAX_SOLUTION_COUNT,
     MIN_STRATEGY_SIZE,
+    REQUIRED_SOLUTION_COUNT,
     STARTING_SCORE,
     evaluate_candidate,
     generate,
@@ -79,7 +79,7 @@ def test_count_winning_strategies_flags_the_symmetric_two_unit_puzzle_as_too_eas
         cards_played_this_turn=0,
     )
     count = count_winning_strategies(root, cards={}, max_depth=4)
-    assert count > MAX_SOLUTION_COUNT
+    assert count > REQUIRED_SOLUTION_COUNT
 
 
 def test_count_winning_strategies_is_one_for_a_forced_line():
@@ -125,20 +125,56 @@ def test_evaluate_candidate_rejects_short_solutions():
 
 
 def test_evaluate_candidate_rejects_an_already_seen_signature():
-    # puzzle 007's own root (solver.author_puzzle_007) is a known-good
-    # candidate that clears every other filter - run it through
-    # evaluate_candidate twice with a shared seen_signatures set; the
-    # second call must be rejected purely by the dedup filter.
-    from solver import author_puzzle_007
-    from solver.engine.abilities import RIDE_THE_WIND
+    # Get one real survivor under the CURRENT filters (length, exact
+    # solution count, no leftover runes, dedup) via generate() itself,
+    # then replay sample_position with the same seed the same number of
+    # times to reconstruct the exact root/cards that produced it - avoids
+    # hand-crafting a synthetic position that happens to satisfy every
+    # filter. Re-running it through evaluate_candidate a second time with
+    # a seen_signatures set already containing its signature must be
+    # rejected purely by the dedup filter (every other filter already
+    # passed once for this exact position).
+    seed = 1
+    survivors, attempts = generate(count=1, seed=seed, attempt_multiplier=3000)
+    assert survivors, "no survivor found for this seed - filters may have tightened further"
 
-    root = author_puzzle_007.build_root()
-    cards = {RIDE_THE_WIND: author_puzzle_007.RIDE_THE_WIND_CARD}
+    rng = random.Random(seed)
+    root = cards = None
+    for _ in range(attempts):
+        root, cards = sample_position(rng)
+
     seen: set = set()
     first = evaluate_candidate(root, cards, "test-dedup-1", seen)
     assert first is not None
     second = evaluate_candidate(root, cards, "test-dedup-2", seen)
     assert second is None
+
+
+def test_runes_left_over_false_when_the_line_spends_everything():
+    from solver import author_puzzle_004, generate
+    from solver.engine.abilities import RIDE_THE_WIND
+
+    root = author_puzzle_004.build_root()
+    cards = {RIDE_THE_WIND: author_puzzle_004.RIDE_THE_WIND_CARD}
+    strategy = solve(root, cards, max_depth=4)
+    assert strategy is not None
+    assert generate._runes_left_over(root, cards, strategy) is False
+
+
+def test_runes_left_over_true_when_a_spare_rune_goes_unused():
+    import dataclasses
+
+    from solver import author_puzzle_004, generate
+    from solver.engine.abilities import RIDE_THE_WIND
+
+    root = author_puzzle_004.build_root()
+    cards = {RIDE_THE_WIND: author_puzzle_004.RIDE_THE_WIND_CARD}
+    player = root.players[0]
+    spare_player = dataclasses.replace(player, runes=RunePool(available=player.runes.available + ("Fury",)))
+    root_with_spare = dataclasses.replace(root, players=(spare_player, root.players[1]))
+    strategy = solve(root_with_spare, cards, max_depth=4)
+    assert strategy is not None
+    assert generate._runes_left_over(root_with_spare, cards, strategy) is True
 
 
 def test_generate_survivors_all_satisfy_the_filters():
@@ -147,7 +183,7 @@ def test_generate_survivors_all_satisfy_the_filters():
     for result in survivors:
         meta = result["_generation_meta"]
         assert meta["solution_length"] >= MIN_STRATEGY_SIZE
-        assert 1 <= meta["solution_count"] <= MAX_SOLUTION_COUNT
+        assert meta["solution_count"] == REQUIRED_SOLUTION_COUNT
         assert result["root"] in result["nodes"]
 
 

@@ -111,7 +111,7 @@ def _ride_the_wind_candidates(state: GameState) -> list[tuple[int, str]]:
             state.players[state.turn_player].base_units if zone == "base"
             else next(bf.units for bf in state.battlefields if bf.battlefield_id == zone)
         )
-        for unit in units:
+        for unit in sorted(units, key=lambda u: u.instance_id):
             if unit.controller != state.turn_player:
                 continue
             for destination in all_zones:
@@ -160,7 +160,8 @@ def _caitlyn_effect(state: GameState, action: ActivateAbility) -> GameState:
 def _caitlyn_candidates(state: GameState) -> list[tuple[int]]:
     """One candidate per unit present at any battlefield — Caitlyn's text
     doesn't restrict the target to enemies."""
-    return [(u.instance_id,) for bf in state.battlefields for u in bf.units]
+    return [(u.instance_id,) for bf in state.battlefields
+            for u in sorted(bf.units, key=lambda u: u.instance_id)]
 
 
 # card_id -> (is_legal(state, action), effect(state, action), generate_candidate_params(state))
@@ -274,7 +275,7 @@ def _blitzcrank_candidates(state: GameState, base_action: PlayUnit, card: CardDe
     for bf in state.battlefields:
         if bf.battlefield_id == base_action.target_zone:
             continue
-        for unit in bf.units:
+        for unit in sorted(bf.units, key=lambda u: u.instance_id):
             if unit.controller == state.turn_player:
                 continue
             if combat.is_combat_triggered(state_after_play, unit, base_action.target_zone):

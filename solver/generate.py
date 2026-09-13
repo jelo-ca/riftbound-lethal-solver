@@ -4,8 +4,8 @@ design/10-generation-pipeline.md.
 Samples random single-turn positions from the verified card pool (the 3
 vanilla stat-sticks + Sneaky Deckhand + the 4 cards with registered
 mechanics — everything else is unregistered and simply can't be sampled),
-keeps only positions that are solvable, long enough (>=4 actions), and
-have a small number of correct first moves (1-3), then exports survivors
+keeps only positions that are solvable, long enough (>=4 actions), have
+EXACTLY one correct line, and use every rune, then exports survivors
 through the same export.py used for the hand-authored puzzles.
 
 Run with: python -m solver.generate --count 5
@@ -21,10 +21,10 @@ from typing import Optional
 
 from .engine.abilities import BLITZCRANK_IMPASSIVE, CAITLYN_PATROLLING, RIDE_THE_WIND, YASUO_WINDRIDER
 from .engine.cards import CardDef
-from .engine.state import BattlefieldState, GameState, PlayerState, RunePool, UnitInstance
-from .export import export_puzzle
+from .engine.state import BattlefieldState, GameState, PlayerState, RunePool, UnitInstance, canonical_key
+from .export import export_puzzle, resolve_action_outcomes
 from .maneuvers import Signature, load_registry, maneuver_signature
-from .search import count_winning_strategies, solve
+from .search import Strategy, count_winning_strategies, solve
 
 OUTPUT_DIR = Path(__file__).parent.parent / "puzzles" / "generated"
 
@@ -67,7 +67,7 @@ HAND_SPELL_POOL = [RIDE_THE_WIND]
 STARTING_SCORE = 6  # design decision: forces a two-point turn, see doc
 MIN_STRATEGY_SIZE = 4
 MAX_SOLVE_DEPTH = 6
-MAX_SOLUTION_COUNT = 3
+REQUIRED_SOLUTION_COUNT = 1  # tightened from a 1-3 range: exactly one correct line, no alternates
 MAX_EXPORT_BYTES = 2 * 1024 * 1024
 CARD_COPY_CAP = 3  # standard format: max 3 copies of the same card in a deck
 
@@ -177,6 +177,28 @@ def sample_position(rng: random.Random) -> tuple[GameState, dict[str, CardDef]]:
     return root, cards
 
 
+def _runes_left_over(root: GameState, cards: dict[str, CardDef], strategy: Strategy) -> bool:
+    """True if the winning line leaves any of OUR runes unspent at the
+    terminal (win) state — tightens puzzles to use every resource they're
+    given, not just the ones the line happens to need. Walks the
+    strategy's spine via the first enumerated outcome at each step (same
+    approach as maneuvers.maneuver_signature): rune spending only comes
+    from OUR OWN actions, never the opponent's combat-assignment choice,
+    so which branch gets followed doesn't affect the answer."""
+    state = root
+    visited: set[tuple] = set()
+    while True:
+        key = canonical_key(state)
+        if key in visited:
+            break
+        visited.add(key)
+        action = strategy.get(key)
+        if action is None:
+            break
+        state = resolve_action_outcomes(state, action, cards)[0]
+    return len(state.players[root.turn_player].runes.available) > 0
+
+
 def evaluate_candidate(root: GameState, cards: dict[str, CardDef], puzzle_id: str,
                         seen_signatures: set[Signature]) -> Optional[dict]:
     """Runs one candidate through the full filter chain (design/10-
@@ -192,7 +214,10 @@ def evaluate_candidate(root: GameState, cards: dict[str, CardDef], puzzle_id: st
         return None
 
     solution_count = count_winning_strategies(root, cards, max_depth=MAX_SOLVE_DEPTH)
-    if not (1 <= solution_count <= MAX_SOLUTION_COUNT):
+    if solution_count != REQUIRED_SOLUTION_COUNT:
+        return None
+
+    if _runes_left_over(root, cards, strategy):
         return None
 
     result = export_puzzle(puzzle_id, root, cards, max_solver_depth=MAX_SOLVE_DEPTH)

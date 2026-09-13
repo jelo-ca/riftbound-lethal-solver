@@ -54,7 +54,7 @@ Strategy = dict[StateKey, Action]
 def legal_actions(state: GameState, cards: dict[str, CardDef]) -> list[Action]:
     result = list(legal_board_actions(state, cards))
     player = state.players[state.turn_player]
-    for card_id in set(player.hand):
+    for card_id in sorted(set(player.hand)):
         card = cards.get(card_id)
         if card is None:
             continue
@@ -73,7 +73,7 @@ def legal_actions(state: GameState, cards: dict[str, CardDef]) -> list[Action]:
     # board (not hand), keyed by card_id — same registry-lookup pattern as
     # spells, but scanning units instead of cards in hand.
     all_units = list(player.base_units) + [u for bf in state.battlefields for u in bf.units if u.controller == state.turn_player]
-    for unit in all_units:
+    for unit in sorted(all_units, key=lambda u: u.instance_id):
         entry = abilities.ABILITY_EFFECTS.get(unit.card_id)
         if entry is None:
             continue
