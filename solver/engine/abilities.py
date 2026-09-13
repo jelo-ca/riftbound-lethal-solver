@@ -2,8 +2,8 @@
 puzzles need them — not a general effect engine (design/07-scope-and-cut-
 list.md's "add mechanics on demand" policy). Each registered spell pairs a
 target/params legality check with the actual game-effect function;
-apply_spell() looks a card up here after actions.py's generic cost/hand
-bookkeeping (apply_play_spell_cost) has already run.
+resolve_spell_outcomes() looks a card up here after actions.py's generic
+cost/hand bookkeeping (apply_play_spell_cost) has already run.
 """
 
 from __future__ import annotations
@@ -19,12 +19,16 @@ from .actions import (
     apply_play_spell_cost,
     apply_play_unit,
     find_unit,
+    find_unit_anywhere,
     find_unit_at_any_battlefield,
     is_legal_ability_move_destination,
     is_legal_play_spell_cost,
     is_legal_play_unit,
+    kill_unit,
+    next_instance_id,
     relocate_unit,
     replace_battlefield,
+    return_unit_to_hand,
 )
 from .cards import CardDef
 from .state import GameState
@@ -90,14 +94,14 @@ def _ride_the_wind_is_legal(state: GameState, action: PlaySpell) -> bool:
     return is_legal_ability_move_destination(state, from_zone, destination)
 
 
-def _ride_the_wind_effect(state: GameState, action: PlaySpell) -> GameState:
+def _ride_the_wind_effect(state: GameState, action: PlaySpell) -> list[GameState]:
     instance_id, destination = action.params
     from_zone = _locate_unit(state, instance_id)
     assert from_zone is not None
     new_state = relocate_unit(state, instance_id, from_zone, destination, exhausted_after=False)
     if destination != "base":
         new_state = scoring.resolve_control_change(state, new_state, destination)
-    return apply_move_triggers(new_state, instance_id)
+    return [apply_move_triggers(new_state, instance_id)]
 
 
 def _ride_the_wind_candidates(state: GameState) -> list[tuple[int, str]]:
@@ -120,13 +124,135 @@ def _ride_the_wind_candidates(state: GameState) -> list[tuple[int, str]]:
     return candidates
 
 
-# card_id -> (is_legal(state, action), effect(state, action), generate_candidate_params(state))
+VENGEANCE = "ogn-229-298"  # 4 Energy, 2 Order Power: "Kill a unit."
+
+
+def _vengeance_is_legal(state: GameState, action: PlaySpell) -> bool:
+    """params = (target_instance_id,). Unrestricted target: any unit
+    anywhere on the board, either player's, Base or a battlefield -
+    confirmed against the real card, including your own (opens
+    sacrifice-style lines a same-controller-only reading would rule out)."""
+    if len(action.params) != 1:
+        return False
+    return find_unit_anywhere(state, action.params[0]) is not None
+
+
+def _vengeance_effect(state: GameState, action: PlaySpell) -> list[GameState]:
+    return [kill_unit(state, action.params[0])]
+
+
+def _vengeance_candidates(state: GameState) -> list[tuple[int]]:
+    """One candidate per unit anywhere on the board - both players' Base
+    plus every battlefield."""
+    candidates = []
+    for player in state.players:
+        candidates += [(u.instance_id,) for u in sorted(player.base_units, key=lambda u: u.instance_id)]
+    for bf in state.battlefields:
+        candidates += [(u.instance_id,) for u in sorted(bf.units, key=lambda u: u.instance_id)]
+    return candidates
+
+
+CHARM = "ogn-043-298"  # 1 Energy, 1 Calm Power: "Move an enemy unit." (Slow speed —
+# can't be played during a showdown; the engine has no showdown/priority-
+# window concept yet, so nothing currently in the action space could even
+# attempt this at the wrong time — nothing to enforce until showdowns exist.)
+
+
+def _move_enemy_unit_no_combat(state: GameState, unit, from_zone: str, to_zone: str) -> GameState:
+    """Relocates a unit NOT controlled by turn_player between two
+    battlefields when no combat is triggered (destination is empty, or
+    already held only by the SAME controller as `unit`) — relocate_unit
+    can't be reused here since it hardcodes turn_player as "whose board
+    this is" (see its docstring), which is wrong for an enemy-controlled
+    mover; reusing it would silently touch the wrong player's Base and
+    misjudge the destination's combat check."""
+    exhausted_unit = dataclasses.replace(unit, exhausted=True, moved_this_turn=unit.moved_this_turn + 1)
+    from_bf = next(b for b in state.battlefields if b.battlefield_id == from_zone)
+    remaining = from_bf.units - {unit}
+    from_controller = from_bf.controller if remaining else None
+    state = replace_battlefield(state, dataclasses.replace(from_bf, units=remaining, controller=from_controller))
+
+    to_bf = next(b for b in state.battlefields if b.battlefield_id == to_zone)
+    new_units = to_bf.units | {exhausted_unit}
+    controllers = {u.controller for u in new_units}
+    new_controller = next(iter(controllers)) if len(controllers) == 1 else None
+    return replace_battlefield(state, dataclasses.replace(to_bf, units=new_units, controller=new_controller))
+
+
+def _charm_is_legal(state: GameState, action: PlaySpell) -> bool:
+    """params = (enemy_instance_id, destination_battlefield_id), or with
+    a third `our_assignment` element if the redirect causes combat — we
+    become the Defender (the ENEMY's own unit's move caused the
+    Contested status, design/09-combat-resolution.md's "not always the
+    Attacker" case, same shape as Blitzcrank's redirect but reachable
+    any turn via a spell instead of tied to playing a specific unit).
+    Scoped to battlefield<->battlefield only: an enemy unit's own Base
+    isn't representable in this engine's zone model (Zone can't
+    disambiguate whose Base without a controller-aware from/to)."""
+    if len(action.params) not in (2, 3):
+        return False
+    enemy_id, destination = action.params[0], action.params[1]
+    located = find_unit_at_any_battlefield(state, enemy_id)
+    if located is None:
+        return False
+    unit, from_zone = located
+    if unit.controller == state.turn_player or from_zone == destination:
+        return False
+    if not any(bf.battlefield_id == destination for bf in state.battlefields):
+        return False
+    if combat.is_combat_triggered(state, unit, destination):
+        if len(action.params) != 3:
+            return False
+        return action.params[2] in combat.our_assignment_options(state, unit, destination)
+    return len(action.params) == 2
+
+
+def _charm_effect(state: GameState, action: PlaySpell) -> list[GameState]:
+    enemy_id, destination = action.params[0], action.params[1]
+    unit, from_zone = find_unit_at_any_battlefield(state, enemy_id)
+
+    if combat.is_combat_triggered(state, unit, destination):
+        our_assignment = action.params[2]
+        outcomes = combat.enumerate_combat_outcomes(state, unit, from_zone, destination, our_assignment)
+        outcomes = [scoring.resolve_control_change(state, o, destination) for o in outcomes]
+        return [apply_move_triggers(o, enemy_id) for o in outcomes]
+
+    moved_state = _move_enemy_unit_no_combat(state, unit, from_zone, destination)
+    moved_state = scoring.resolve_control_change(state, moved_state, destination)
+    return [apply_move_triggers(moved_state, enemy_id)]
+
+
+def _charm_candidates(state: GameState) -> list[tuple]:
+    """One candidate per enemy unit at a battlefield, times every OTHER
+    battlefield as a destination, further split by our damage-assignment
+    choice if the redirect causes combat."""
+    candidates: list[tuple] = []
+    for bf in state.battlefields:
+        for unit in sorted(bf.units, key=lambda u: u.instance_id):
+            if unit.controller == state.turn_player:
+                continue
+            for destination_bf in state.battlefields:
+                if destination_bf.battlefield_id == bf.battlefield_id:
+                    continue
+                destination = destination_bf.battlefield_id
+                if combat.is_combat_triggered(state, unit, destination):
+                    for our_assignment in combat.our_assignment_options(state, unit, destination):
+                        candidates.append((unit.instance_id, destination, our_assignment))
+                else:
+                    candidates.append((unit.instance_id, destination))
+    return candidates
+
+
+# card_id -> (is_legal(state, action), effect(state, action) -> list[GameState],
+#             generate_candidate_params(state))
 SPELL_EFFECTS: dict[str, tuple[
     Callable[[GameState, PlaySpell], bool],
-    Callable[[GameState, PlaySpell], GameState],
+    Callable[[GameState, PlaySpell], list[GameState]],
     Callable[[GameState], list[tuple]],
 ]] = {
     RIDE_THE_WIND: (_ride_the_wind_is_legal, _ride_the_wind_effect, _ride_the_wind_candidates),
+    VENGEANCE: (_vengeance_is_legal, _vengeance_effect, _vengeance_candidates),
+    CHARM: (_charm_is_legal, _charm_effect, _charm_candidates),
 }
 
 
@@ -197,7 +323,11 @@ def is_legal_play_spell(state: GameState, action: PlaySpell, card: CardDef) -> b
     return is_legal_effect(state, action)
 
 
-def apply_spell(state: GameState, action: PlaySpell, card: CardDef) -> GameState:
+def resolve_spell_outcomes(state: GameState, action: PlaySpell, card: CardDef) -> list[GameState]:
+    """All possible resulting states for `action` — a single-element list
+    for a deterministic spell (Ride The Wind, Vengeance), multiple for one
+    whose effect can cause combat (Charm) — same shape as
+    resolve_unit_play_trigger_outcomes below, and for the same reason."""
     state_after_cost = apply_play_spell_cost(state, action)
     _, effect, _ = SPELL_EFFECTS[action.card_id]
     return effect(state_after_cost, action)
@@ -286,6 +416,52 @@ def _blitzcrank_candidates(state: GameState, base_action: PlayUnit, card: CardDe
     return candidates
 
 
+ZAUNITE_BOUNCER = "ogn-188-298"  # When you play me, return another unit at a battlefield to its owner's hand.
+
+
+def _zaunite_bouncer_is_legal(state: GameState, action: PlayUnit, card: CardDef) -> bool:
+    """trigger_params = () to decline, or (target_instance_id,) — any
+    OTHER unit at a battlefield (either controller's; not restricted to
+    enemies, and not Base — "at a battlefield" only). Tank doesn't gate
+    this (Tank only orders Combat Damage Step assignment). `state` is
+    still pre-play here, so next_instance_id(state) predicts the id
+    ZAUNITE_BOUNCER itself is about to get — used to rule out
+    self-targeting without needing to re-locate "the unit just played"
+    after the fact."""
+    if not action.trigger_params:
+        return True
+    if len(action.trigger_params) != 1:
+        return False
+    target_id = action.trigger_params[0]
+    if target_id == next_instance_id(state):
+        return False  # "another unit" — not itself
+    state_after_play = apply_play_unit(state, dataclasses.replace(action, trigger_params=()), card)
+    return find_unit_at_any_battlefield(state_after_play, target_id) is not None
+
+
+def _zaunite_bouncer_effect(state_after_play: GameState, action: PlayUnit) -> list[GameState]:
+    if not action.trigger_params:
+        return [state_after_play]
+    target_id = action.trigger_params[0]
+    _, bf_id = find_unit_at_any_battlefield(state_after_play, target_id)
+    return [return_unit_to_hand(state_after_play, bf_id, target_id)]
+
+
+def _zaunite_bouncer_candidates(state: GameState, base_action: PlayUnit, card: CardDef) -> list[tuple]:
+    """One candidate per OTHER unit currently at any battlefield —
+    ZAUNITE_BOUNCER's own placement doesn't restrict which battlefield
+    counts, unlike Blitzcrank's "to a battlefield" text."""
+    played_id = next_instance_id(state)
+    state_after_play = apply_play_unit(state, base_action, card)
+    candidates: list[tuple] = []
+    for bf in state_after_play.battlefields:
+        for unit in sorted(bf.units, key=lambda u: u.instance_id):
+            if unit.instance_id == played_id:
+                continue  # "another unit" — not itself
+            candidates.append((unit.instance_id,))
+    return candidates
+
+
 # card_id -> (is_legal(state, action, card), effect(state_after_play, action) -> list[GameState],
 #             generate_candidate_params(state, base_action, card))
 UNIT_PLAY_TRIGGERS: dict[str, tuple[
@@ -294,6 +470,7 @@ UNIT_PLAY_TRIGGERS: dict[str, tuple[
     Callable[[GameState, PlayUnit, CardDef], list[tuple]],
 ]] = {
     BLITZCRANK_IMPASSIVE: (_blitzcrank_is_legal, _blitzcrank_effect, _blitzcrank_candidates),
+    ZAUNITE_BOUNCER: (_zaunite_bouncer_is_legal, _zaunite_bouncer_effect, _zaunite_bouncer_candidates),
 }
 
 

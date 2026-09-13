@@ -1,5 +1,16 @@
-from solver.engine.abilities import CAITLYN_PATROLLING, RIDE_THE_WIND, is_legal_activate_ability, is_legal_play_spell
-from solver.engine.actions import ActivateAbility, PlaySpell, RunePayment
+from solver.engine.abilities import (
+    BLITZCRANK_IMPASSIVE,
+    CAITLYN_PATROLLING,
+    RIDE_THE_WIND,
+    VENGEANCE,
+    ZAUNITE_BOUNCER,
+    is_legal_activate_ability,
+    is_legal_play_spell,
+    is_legal_unit_play_trigger,
+    resolve_spell_outcomes,
+    resolve_unit_play_trigger_outcomes,
+)
+from solver.engine.actions import ActivateAbility, PlaySpell, PlayUnit, RunePayment
 from solver.engine.cards import CardDef
 from solver.engine.scoring import is_winning
 from solver.engine.state import BattlefieldState, GameState, PlayerState, RunePool, UnitInstance
@@ -7,6 +18,10 @@ from solver.search import apply, legal_actions, solve
 
 RIDE_THE_WIND_CARD = CardDef(card_id=RIDE_THE_WIND, card_type="Spell", energy_cost=2,
                               power_cost=1, power_domain="Chaos", keywords=frozenset())
+VENGEANCE_CARD = CardDef(card_id=VENGEANCE, card_type="Spell", energy_cost=4,
+                          power_cost=2, power_domain="Order", keywords=frozenset())
+ZAUNITE_BOUNCER_CARD = CardDef(card_id=ZAUNITE_BOUNCER, card_type="Unit", energy_cost=4,
+                                power_cost=2, power_domain="Chaos", might=2, keywords=frozenset())
 
 
 def make_unit(instance_id, controller=0, might=2, exhausted=False, keywords=frozenset()):
@@ -41,7 +56,9 @@ def test_ride_the_wind_moves_an_exhausted_unit_and_readies_it():
     )
     assert is_legal_play_spell(root, action, RIDE_THE_WIND_CARD)
 
-    new_state = apply(root, action, {RIDE_THE_WIND: RIDE_THE_WIND_CARD})
+    outcomes = resolve_spell_outcomes(root, action, RIDE_THE_WIND_CARD)
+    assert len(outcomes) == 1
+    new_state = outcomes[0]
     moved = next(iter(new_state.battlefields[0].units))
     assert moved.exhausted is False  # readied, not just moved
     assert new_state.battlefields[0].controller == 0  # established control
@@ -112,7 +129,7 @@ def test_extra_innings_shape_solver_finds_the_hidden_extra_action():
     action = next(iter(strategy.values()))
     assert isinstance(action, PlaySpell)
 
-    final_state = apply(root, action, cards)
+    final_state = resolve_spell_outcomes(root, action, RIDE_THE_WIND_CARD)[0]
     assert is_winning(final_state)
     assert final_state.players[0].score == 8
 
@@ -145,7 +162,7 @@ def test_ride_the_wind_battlefield_to_battlefield_does_not_require_ganking():
         rune_payment=RunePayment(energy_runes=("Fury", "Fury"), power_runes=("Chaos",)),
     )
     assert is_legal_play_spell(root, action, RIDE_THE_WIND_CARD)
-    new_state = apply(root, action, {RIDE_THE_WIND: RIDE_THE_WIND_CARD})
+    new_state = resolve_spell_outcomes(root, action, RIDE_THE_WIND_CARD)[0]
     assert new_state.battlefields[1].controller == 0
     assert not next(iter(new_state.battlefields[1].units)).exhausted
 
@@ -246,6 +263,188 @@ def test_caitlyn_killing_last_enemy_makes_battlefield_uncontrolled():
     # Caitlyn (controller 0) and the dead target's controller (1) leaves a
     # mixed-then-single-controller board: only Caitlyn (0) remains.
     assert new_state.battlefields[0].controller == 0
+
+
+# --- Vengeance: "Kill a unit" (any unit, any controller, Base or battlefield) ---
+
+
+def _vengeance_action(target_id):
+    return PlaySpell(
+        card_id=VENGEANCE, params=(target_id,),
+        rune_payment=RunePayment(energy_runes=("Fury",) * 4, power_runes=("Order", "Order")),
+    )
+
+
+def test_vengeance_kills_an_enemy_unit_at_a_battlefield():
+    target = UnitInstance("enemy", 2, controller=1, might=5, keywords=frozenset(),
+                           exhausted=False, damage=0, is_token=False)
+    root = GameState(
+        turn_player=0,
+        players=(
+            PlayerState(base_units=frozenset(), hand=(VENGEANCE,),
+                        runes=RunePool(available=("Fury", "Fury", "Fury", "Fury", "Order", "Order")), score=0),
+            PlayerState(base_units=frozenset(), hand=(), runes=RunePool(available=()), score=0),
+        ),
+        battlefields=(
+            BattlefieldState("left", 1, frozenset({target}), None),
+            BattlefieldState("right", None, frozenset(), None),
+        ),
+        scored_this_turn=frozenset(),
+        cards_played_this_turn=0,
+    )
+    action = _vengeance_action(2)
+    assert is_legal_play_spell(root, action, VENGEANCE_CARD)
+    new_state = resolve_spell_outcomes(root, action, VENGEANCE_CARD)[0]
+    assert new_state.battlefields[0].units == frozenset()
+    assert new_state.battlefields[0].controller is None
+
+
+def test_vengeance_can_kill_your_own_unit():
+    own_unit = make_unit(1, might=10)  # even a huge Might doesn't save it - not damage-based
+    root = GameState(
+        turn_player=0,
+        players=(
+            PlayerState(base_units=frozenset(), hand=(VENGEANCE,),
+                        runes=RunePool(available=("Fury", "Fury", "Fury", "Fury", "Order", "Order")), score=0),
+            PlayerState(base_units=frozenset(), hand=(), runes=RunePool(available=()), score=0),
+        ),
+        battlefields=(
+            BattlefieldState("left", 0, frozenset({own_unit}), None),
+            BattlefieldState("right", None, frozenset(), None),
+        ),
+        scored_this_turn=frozenset(),
+        cards_played_this_turn=0,
+    )
+    action = _vengeance_action(1)
+    assert is_legal_play_spell(root, action, VENGEANCE_CARD)
+    new_state = resolve_spell_outcomes(root, action, VENGEANCE_CARD)[0]
+    assert new_state.battlefields[0].units == frozenset()
+
+
+def test_vengeance_can_kill_a_unit_sitting_at_base():
+    based_unit = make_unit(1)
+    root = GameState(
+        turn_player=0,
+        players=(
+            PlayerState(base_units=frozenset({based_unit}), hand=(VENGEANCE,),
+                        runes=RunePool(available=("Fury", "Fury", "Fury", "Fury", "Order", "Order")), score=0),
+            PlayerState(base_units=frozenset(), hand=(), runes=RunePool(available=()), score=0),
+        ),
+        battlefields=(
+            BattlefieldState("left", None, frozenset(), None),
+            BattlefieldState("right", None, frozenset(), None),
+        ),
+        scored_this_turn=frozenset(),
+        cards_played_this_turn=0,
+    )
+    action = _vengeance_action(1)
+    assert is_legal_play_spell(root, action, VENGEANCE_CARD)
+    new_state = resolve_spell_outcomes(root, action, VENGEANCE_CARD)[0]
+    assert new_state.players[0].base_units == frozenset()
+
+
+def test_vengeance_rejects_a_nonexistent_target():
+    root = GameState(
+        turn_player=0,
+        players=(
+            PlayerState(base_units=frozenset(), hand=(VENGEANCE,),
+                        runes=RunePool(available=("Fury", "Fury", "Fury", "Fury", "Order", "Order")), score=0),
+            PlayerState(base_units=frozenset(), hand=(), runes=RunePool(available=()), score=0),
+        ),
+        battlefields=(
+            BattlefieldState("left", None, frozenset(), None),
+            BattlefieldState("right", None, frozenset(), None),
+        ),
+        scored_this_turn=frozenset(),
+        cards_played_this_turn=0,
+    )
+    assert not is_legal_play_spell(root, _vengeance_action(99), VENGEANCE_CARD)
+
+
+# --- Zaunite Bouncer: "When you play me, return another unit at a battlefield to its owner's hand" ---
+
+
+def _play_zaunite_bouncer(trigger_params=()):
+    return PlayUnit(
+        card_id=ZAUNITE_BOUNCER, target_zone="base",
+        rune_payment=RunePayment(energy_runes=("Fury",) * 4, power_runes=("Chaos", "Chaos")),
+        trigger_params=trigger_params,
+    )
+
+
+def _zaunite_root(other_units=frozenset()):
+    return GameState(
+        turn_player=0,
+        players=(
+            PlayerState(base_units=frozenset(), hand=(ZAUNITE_BOUNCER,),
+                        runes=RunePool(available=("Fury", "Fury", "Fury", "Fury", "Chaos", "Chaos")), score=0),
+            PlayerState(base_units=frozenset(), hand=(), runes=RunePool(available=()), score=0),
+        ),
+        battlefields=(
+            BattlefieldState("left", None, frozenset(), None),
+            BattlefieldState("right", 1 if other_units else None, other_units, None),
+        ),
+        scored_this_turn=frozenset(),
+        cards_played_this_turn=0,
+    )
+
+
+def test_zaunite_bouncer_returns_an_enemy_unit_to_its_owners_hand():
+    enemy = UnitInstance("enemy-card", 5, controller=1, might=4, keywords=frozenset(),
+                          exhausted=False, damage=0, is_token=False)
+    root = _zaunite_root(frozenset({enemy}))
+    action = _play_zaunite_bouncer(trigger_params=(5,))
+    assert is_legal_unit_play_trigger(root, action, ZAUNITE_BOUNCER_CARD)
+    outcomes = resolve_unit_play_trigger_outcomes(root, action, ZAUNITE_BOUNCER_CARD)
+    assert len(outcomes) == 1
+    new_state = outcomes[0]
+    assert not any(u.instance_id == 5 for u in new_state.battlefields[1].units)
+    assert "enemy-card" in new_state.players[1].hand
+
+
+def test_zaunite_bouncer_ignores_tank():
+    tank = UnitInstance("tank-card", 5, controller=1, might=4, keywords=frozenset({"Tank"}),
+                         exhausted=False, damage=0, is_token=False)
+    root = _zaunite_root(frozenset({tank}))
+    action = _play_zaunite_bouncer(trigger_params=(5,))
+    assert is_legal_unit_play_trigger(root, action, ZAUNITE_BOUNCER_CARD)
+
+
+def test_zaunite_bouncer_can_target_a_friendly_unit():
+    friendly = make_unit(5, controller=0)
+    root = GameState(
+        turn_player=0,
+        players=(
+            PlayerState(base_units=frozenset(), hand=(ZAUNITE_BOUNCER,),
+                        runes=RunePool(available=("Fury", "Fury", "Fury", "Fury", "Chaos", "Chaos")), score=0),
+            PlayerState(base_units=frozenset(), hand=(), runes=RunePool(available=()), score=0),
+        ),
+        battlefields=(
+            BattlefieldState("left", None, frozenset(), None),
+            BattlefieldState("right", 0, frozenset({friendly}), None),
+        ),
+        scored_this_turn=frozenset(),
+        cards_played_this_turn=0,
+    )
+    action = _play_zaunite_bouncer(trigger_params=(5,))
+    assert is_legal_unit_play_trigger(root, action, ZAUNITE_BOUNCER_CARD)
+    outcomes = resolve_unit_play_trigger_outcomes(root, action, ZAUNITE_BOUNCER_CARD)
+    assert len(outcomes) == 1
+    assert "ogn-010-298" in outcomes[0].players[0].hand
+
+
+def test_zaunite_bouncer_cannot_target_itself():
+    root = _zaunite_root()
+    # Predict Zaunite Bouncer's own about-to-be-assigned instance_id (1,
+    # since the board is otherwise empty) and confirm targeting it is illegal.
+    action = _play_zaunite_bouncer(trigger_params=(1,))
+    assert not is_legal_unit_play_trigger(root, action, ZAUNITE_BOUNCER_CARD)
+
+
+def test_zaunite_bouncer_decline_is_legal():
+    root = _zaunite_root()
+    action = _play_zaunite_bouncer()
+    assert is_legal_unit_play_trigger(root, action, ZAUNITE_BOUNCER_CARD)
 
 
 def test_caitlyn_appears_in_legal_actions_when_usable():

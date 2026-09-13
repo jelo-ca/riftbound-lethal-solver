@@ -183,7 +183,7 @@ def replace_battlefield(state: GameState, updated: BattlefieldState) -> GameStat
     return dataclasses.replace(state, battlefields=battlefields)
 
 
-def _next_instance_id(state: GameState) -> int:
+def next_instance_id(state: GameState) -> int:
     ids = [0]
     for player in state.players:
         ids += [u.instance_id for u in player.base_units]
@@ -235,7 +235,7 @@ def apply_play_unit(state: GameState, action: PlayUnit, card: CardDef) -> GameSt
 
     new_unit = UnitInstance(
         card_id=card.card_id,
-        instance_id=_next_instance_id(state),
+        instance_id=next_instance_id(state),
         controller=player_index,
         might=card.might if card.might is not None else 0,
         keywords=card.keywords,
@@ -337,6 +337,56 @@ def find_unit_at_any_battlefield(state: GameState, instance_id: int) -> Optional
             if u.instance_id == instance_id:
                 return u, bf.battlefield_id
     return None
+
+
+def find_unit_anywhere(state: GameState, instance_id: int) -> Optional[tuple[UnitInstance, Zone]]:
+    """Searches every zone on the board - both players' Base plus every
+    battlefield - for effects like Vengeance ("kill a unit," unrestricted
+    to battlefield presence or a specific controller). The unit's own
+    `controller` field (not the return value) disambiguates whose Base a
+    `"base"` match came from - `Zone` alone can't."""
+    for player in state.players:
+        for u in player.base_units:
+            if u.instance_id == instance_id:
+                return u, "base"
+    return find_unit_at_any_battlefield(state, instance_id)
+
+
+def kill_unit(state: GameState, instance_id: int) -> GameState:
+    """Removes a unit outright regardless of its current damage — for
+    effects like Vengeance ("kill a unit") that aren't a damage
+    *amount*, just a removal. Reuses combat.deal_damage_to_unit for a
+    battlefield target (dealing its own Might guarantees lethal,
+    correctly recomputing the battlefield's controller); a Base target
+    has no controller to recompute, just removal from that player's
+    base_units."""
+    located = find_unit_anywhere(state, instance_id)
+    assert located is not None
+    unit, zone = located
+    if zone == "base":
+        player = state.players[unit.controller]
+        new_player = dataclasses.replace(player, base_units=player.base_units - {unit})
+        return replace_player(state, unit.controller, new_player)
+    return combat.deal_damage_to_unit(state, zone, instance_id, unit.might)
+
+
+def return_unit_to_hand(state: GameState, battlefield_id: str, instance_id: int) -> GameState:
+    """Removes a unit from a battlefield and returns its card to its
+    OWNER's hand (not necessarily the acting player's) — for effects
+    like Zaunite Bouncer ("return another unit at a battlefield to its
+    owner's hand"). Tank doesn't gate this (rule: Tank only orders
+    Combat Damage Step assignment, not other effects) — any unit at the
+    battlefield is a legal target, keyword or not."""
+    bf = _battlefield(state, battlefield_id)
+    unit = next(u for u in bf.units if u.instance_id == instance_id)
+    remaining = bf.units - {unit}
+    controllers = {u.controller for u in remaining}
+    new_controller = next(iter(controllers)) if len(controllers) == 1 else None
+    state = replace_battlefield(state, dataclasses.replace(bf, units=remaining, controller=new_controller))
+
+    owner = state.players[unit.controller]
+    new_owner = dataclasses.replace(owner, hand=owner.hand + (unit.card_id,))
+    return replace_player(state, unit.controller, new_owner)
 
 
 def is_legal_destination(state: GameState, unit: UnitInstance, from_zone: Zone, to_zone: Zone) -> bool:

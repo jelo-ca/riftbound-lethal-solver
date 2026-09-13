@@ -106,12 +106,17 @@ def apply(state: GameState, action: Action, cards: dict[str, CardDef]) -> GameSt
     actions.py (board state) with scoring.py (points); see both modules'
     docstrings for why the split exists.
 
-    `ResolveCombat`, and a `PlayUnit` with non-empty `trigger_params`,
-    deliberately raise: neither can produce a single resulting state on
-    its own once a triggered effect can cause combat (the opponent's
-    damage-assignment response is still pending) — use `solve()`, or
-    `combat.apply_combat`/`abilities.resolve_unit_play_trigger_outcomes`
-    directly with a chosen opponent assignment, instead.
+    `ResolveCombat`, a `PlayUnit` with non-empty `trigger_params`, and
+    `PlaySpell` all deliberately raise: none can produce a single
+    resulting state on its own once its effect can cause combat (the
+    opponent's damage-assignment response is still pending) — use
+    `solve()`, or `combat.apply_combat`/`abilities.
+    resolve_unit_play_trigger_outcomes`/`abilities.resolve_spell_outcomes`
+    directly with a chosen opponent assignment, instead. Every spell
+    routes through the same list-returning path regardless of whether
+    IT specifically can branch, for the same reason `PlayUnit` triggers
+    do: consistency beats special-casing the (today) 2-of-3 spells that
+    happen to always return exactly one outcome.
     """
     if isinstance(action, PlayUnit):
         if action.trigger_params:
@@ -130,7 +135,10 @@ def apply(state: GameState, action: Action, cards: dict[str, CardDef]) -> GameSt
         return abilities.apply_move_triggers(new_state, action.instance_id)
 
     if isinstance(action, PlaySpell):
-        return abilities.apply_spell(state, action, cards[action.card_id])
+        raise NotImplementedError(
+            "apply: PlaySpell can have multiple outcomes — see search.solve() or "
+            "abilities.resolve_spell_outcomes()"
+        )
 
     if isinstance(action, ActivateAbility):
         return abilities.apply_ability(state, action)
@@ -176,6 +184,17 @@ def _dfs(state: GameState, remaining: int, cards: dict[str, CardDef],
         elif isinstance(action, PlayUnit) and action.trigger_params:
             outcomes = abilities.resolve_unit_play_trigger_outcomes(state, action, cards[action.card_id])
             result = _and_or_search(state, action, outcomes, remaining, cards, ttable)
+        elif isinstance(action, PlaySpell):
+            try:
+                outcomes = abilities.resolve_spell_outcomes(state, action, cards[action.card_id])
+            except NotImplementedError:
+                # e.g. Ride The Wind moving a friendly unit onto an enemy-
+                # occupied battlefield - that spell's effect doesn't handle
+                # combat (only Charm's does), same documented gap
+                # legal_actions()'s docstring already calls out.
+                result = None
+            else:
+                result = _and_or_search(state, action, outcomes, remaining, cards, ttable)
         else:
             try:
                 child = apply(state, action, cards)
@@ -261,6 +280,11 @@ def _count_solutions(state: GameState, remaining: int, cards: dict[str, CardDef]
             outcomes = [abilities.apply_move_triggers(o, action.instance_id) for o in outcomes]
         elif isinstance(action, PlayUnit) and action.trigger_params:
             outcomes = abilities.resolve_unit_play_trigger_outcomes(state, action, cards[action.card_id])
+        elif isinstance(action, PlaySpell):
+            try:
+                outcomes = abilities.resolve_spell_outcomes(state, action, cards[action.card_id])
+            except NotImplementedError:
+                continue
         else:
             try:
                 outcomes = [apply(state, action, cards)]

@@ -1,9 +1,9 @@
 from solver.author_puzzle_004 import RIDE_THE_WIND_CARD, build_root
-from solver.engine.abilities import RIDE_THE_WIND
+from solver.engine.abilities import RIDE_THE_WIND, resolve_spell_outcomes
 from solver.engine.actions import MoveUnit, PlaySpell, RunePayment
 from solver.engine.scoring import is_winning
 from solver.export import export_puzzle
-from solver.search import apply, legal_actions, solve
+from solver.search import legal_actions, solve
 
 CARDS = {RIDE_THE_WIND: RIDE_THE_WIND_CARD}
 
@@ -36,7 +36,7 @@ def test_puzzle_004_ride_the_wind_wins():
         params=(conqueror.instance_id, "right"),
         rune_payment=RunePayment(energy_runes=("Fury", "Fury"), power_runes=("Chaos",)),
     )
-    new_state = apply(root, action, CARDS)
+    new_state = resolve_spell_outcomes(root, action, RIDE_THE_WIND_CARD)[0]
     assert is_winning(new_state)
     assert new_state.players[0].score == 8
 

@@ -14,8 +14,19 @@ Week 3's "sample → solve → filter" half of the original 6-week plan, picked 
 | Caitlyn - Patrolling | `ogn-068-298` | Exhaust-cost removal | `ABILITY_EFFECTS` |
 | Blitzcrank - Impassive | `ogn-067-298` | Redirect an enemy unit | `UNIT_PLAY_TRIGGERS` |
 | Yasuo - Windrider | `ogn-205-298` | Move-count point | `MOVE_COUNT_TRIGGERS` |
+| Daring Poro | `ogn-210-298` | Vanilla body, 2 Might, **Assault** | none (keyword already engine-supported) |
+| Stalwart Poro | `ogn-052-298` | Vanilla body, 2 Might, **Shield** | none (keyword already engine-supported) |
+| Vengeance | `ogn-229-298` | Kill any unit, any controller | `SPELL_EFFECTS` |
+| Charm | `ogn-043-298` | Redirect an enemy unit (battlefield only) | `SPELL_EFFECTS`, first spell to use the AND-node (see below) |
+| Zaunite Bouncer | `ogn-188-298` | Bounce another unit at a battlefield to its owner's hand | `UNIT_PLAY_TRIGGERS` — not yet sampled (see note below) |
 
 Sneaky Deckhand hasn't actually been used in a hand-authored puzzle yet — its mechanism is unit-tested directly (`test_actions.py`) but this pipeline would be its first real exercise. Worth watching for surprises the first time generation actually produces a candidate using it.
+
+**`PlaySpell` now supports the AND-node** (2026-09-12): adding Charm ("move an enemy unit," which can trigger combat with us as Defender) required generalizing `abilities.apply_spell` — renamed `resolve_spell_outcomes` — to return `list[GameState]` like `UNIT_PLAY_TRIGGERS` already does, and wiring `PlaySpell` through `search._dfs`/`_count_solutions`'s AND-node the same way. Every spell routes through this path now, including the two that only ever return one outcome (Ride The Wind, Vengeance) — consistency over special-casing. `search.apply()` no longer accepts `PlaySpell` at all (mirrors its existing `PlayUnit`-with-trigger_params refusal); use `solve()` or `abilities.resolve_spell_outcomes()` directly instead.
+
+**Known gap — unit-play triggers aren't reachable through generation yet**: `OUR_UNIT_POOL` samples units pre-placed on the board, never into hand, so a "when you play me" trigger (Blitzcrank's redirect, Zaunite Bouncer's bounce) can never actually fire in a *generated* puzzle — only in a hand-authored one. Fixing this needs the sampler to occasionally place a trigger-bearing unit into hand instead of pre-placed, not yet done.
+
+**Known gap — maneuver-signature granularity**: `solver/maneuvers.py` fingerprints a `MoveUnit`/`ResolveCombat` step by the mover's raw `card_id`. Two different vanilla (no-keyword, no registered mechanic) cards filling the same structural role — e.g. Sneaky Deckhand vs Faithful Manufactor as the "spare unit that walks into the cleared lane" — currently register as different signatures even though they're mechanically interchangeable, letting a near-duplicate slip past dedup. Not yet fixed: would need bucketing vanilla movers by keyword-set instead of raw card_id.
 
 ## Sampling
 

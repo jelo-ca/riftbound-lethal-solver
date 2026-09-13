@@ -1,12 +1,13 @@
 """Puzzle generation pipeline: sample -> solve -> filter. See
 design/10-generation-pipeline.md.
 
-Samples random single-turn positions from the verified card pool (the 3
-vanilla stat-sticks + Sneaky Deckhand + the 4 cards with registered
-mechanics — everything else is unregistered and simply can't be sampled),
-keeps only positions that are solvable, long enough (>=4 actions), have
-EXACTLY one correct line, and use every rune, then exports survivors
-through the same export.py used for the hand-authored puzzles.
+Samples random single-turn positions from the verified card pool (plain
+vanilla stat-sticks, two Assault/Shield keyword vanillas, Sneaky
+Deckhand, and the cards with registered mechanics — everything else is
+unregistered and simply can't be sampled), keeps only positions that are
+solvable, long enough (>=4 actions), have EXACTLY one correct line, and
+use every rune, then exports survivors through the same export.py used
+for the hand-authored puzzles.
 
 Run with: python -m solver.generate --count 5
 """
@@ -19,7 +20,14 @@ import random
 from pathlib import Path
 from typing import Optional
 
-from .engine.abilities import BLITZCRANK_IMPASSIVE, CAITLYN_PATROLLING, RIDE_THE_WIND, YASUO_WINDRIDER
+from .engine.abilities import (
+    BLITZCRANK_IMPASSIVE,
+    CAITLYN_PATROLLING,
+    CHARM,
+    RIDE_THE_WIND,
+    VENGEANCE,
+    YASUO_WINDRIDER,
+)
 from .engine.cards import CardDef
 from .engine.state import BattlefieldState, GameState, PlayerState, RunePool, UnitInstance, canonical_key
 from .export import export_puzzle, resolve_action_outcomes
@@ -34,6 +42,8 @@ LEGION_REARGUARD = "ogn-010-298"
 FAITHFUL_MANUFACTOR = "ogn-211-298"
 VANGUARD_CAPTAIN = "ogn-218-298"
 SNEAKY_DECKHAND = "ogn-176-298"
+DARING_PORO = "ogn-210-298"
+STALWART_PORO = "ogn-052-298"
 
 CARD_POOL: dict[str, CardDef] = {
     LEGION_REARGUARD: CardDef(card_id=LEGION_REARGUARD, card_type="Unit", energy_cost=2,
@@ -53,16 +63,27 @@ CARD_POOL: dict[str, CardDef] = {
                               power_cost=0, might=2, keywords=frozenset({"Ganking"})),
     RIDE_THE_WIND: CardDef(card_id=RIDE_THE_WIND, card_type="Spell", energy_cost=2,
                             power_cost=1, power_domain="Chaos", keywords=frozenset()),
+    DARING_PORO: CardDef(card_id=DARING_PORO, card_type="Unit", energy_cost=2,
+                          power_cost=0, might=2, keywords=frozenset({"Assault"})),
+    STALWART_PORO: CardDef(card_id=STALWART_PORO, card_type="Unit", energy_cost=2,
+                            power_cost=0, might=2, keywords=frozenset({"Shield"})),
+    VENGEANCE: CardDef(card_id=VENGEANCE, card_type="Spell", energy_cost=4,
+                        power_cost=2, power_domain="Order", keywords=frozenset()),
+    CHARM: CardDef(card_id=CHARM, card_type="Spell", energy_cost=1,
+                    power_cost=1, power_domain="Calm", keywords=frozenset()),
 }
 
 # Units that can be sampled onto the board (pre-placed) or into hand.
 OUR_UNIT_POOL = [LEGION_REARGUARD, FAITHFUL_MANUFACTOR, VANGUARD_CAPTAIN,
-                  SNEAKY_DECKHAND, CAITLYN_PATROLLING, BLITZCRANK_IMPASSIVE, YASUO_WINDRIDER]
-# Only Ride The Wind is played out of hand today (design/10-generation-
-# pipeline.md's card pool table) - the mechanic units above are sampled
-# pre-placed on the board, not into hand, since PlayUnit's own candidate
-# generation already covers "play a unit this turn" for anything at Base.
-HAND_SPELL_POOL = [RIDE_THE_WIND]
+                  SNEAKY_DECKHAND, CAITLYN_PATROLLING, BLITZCRANK_IMPASSIVE, YASUO_WINDRIDER,
+                  DARING_PORO, STALWART_PORO]
+# Cards played out of hand (design/10-generation-pipeline.md's card pool
+# table) - the mechanic UNITS above are sampled pre-placed on the board
+# instead, since nothing here samples units into hand yet (a real gap:
+# Blitzcrank's redirect trigger, and any future on-play trigger like
+# Zaunite Bouncer, can currently only fire in a HAND-authored puzzle,
+# never a generated one, until that's added).
+HAND_SPELL_POOL = [RIDE_THE_WIND, VENGEANCE, CHARM]
 
 STARTING_SCORE = 6  # design decision: forces a two-point turn, see doc
 MIN_STRATEGY_SIZE = 4

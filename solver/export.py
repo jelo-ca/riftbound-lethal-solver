@@ -126,6 +126,8 @@ def resolve_action_outcomes(state: GameState, action: Action, cards: dict[str, C
         return [abilities.apply_move_triggers(o, action.instance_id) for o in outcomes]
     if isinstance(action, PlayUnit) and action.trigger_params:
         return abilities.resolve_unit_play_trigger_outcomes(state, action, cards[action.card_id])
+    if isinstance(action, PlaySpell):
+        return abilities.resolve_spell_outcomes(state, action, cards[action.card_id])
     return [apply(state, action, cards)]
 
 

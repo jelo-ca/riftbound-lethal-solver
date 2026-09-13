@@ -134,8 +134,8 @@ def test_evaluate_candidate_rejects_an_already_seen_signature():
     # a seen_signatures set already containing its signature must be
     # rejected purely by the dedup filter (every other filter already
     # passed once for this exact position).
-    seed = 1
-    survivors, attempts = generate(count=1, seed=seed, attempt_multiplier=3000)
+    seed = 5  # picked empirically: finds a survivor in ~750 attempts under the current pool/filters
+    survivors, attempts = generate(count=1, seed=seed, attempt_multiplier=2000)
     assert survivors, "no survivor found for this seed - filters may have tightened further"
 
     rng = random.Random(seed)
