@@ -62,6 +62,58 @@ def test_maneuver_signature_keeps_raw_card_id_for_a_registered_mechanic():
     assert maneuvers.maneuver_signature(result) == (("MoveUnit", RIDE_THE_WIND),)
 
 
+# --- is_duplicate: exact match plus dominant-containment ---
+
+
+def sig(*steps):
+    return tuple(steps)
+
+
+YASUO_RUN = sig(("MoveUnit", "yasuo"), ("PlaySpell", "rtw"), ("MoveUnit", "yasuo"))
+
+
+def test_is_duplicate_on_exact_match():
+    assert maneuvers.is_duplicate(YASUO_RUN, [YASUO_RUN])
+
+
+def test_is_duplicate_when_a_known_trick_plus_trivial_setup():
+    """The real case from a live batch: one combat step prepended to
+    puzzle 3's Yasuo loop. 3 of 4 steps are the known trick, so it's the
+    same puzzle with a throwaway opener, not a new one."""
+    candidate = sig(("ResolveCombat", "vanilla:"), *YASUO_RUN)
+    assert maneuvers.is_duplicate(candidate, [YASUO_RUN])
+
+
+def test_is_not_duplicate_when_a_known_trick_is_only_part_of_a_composite():
+    """The case worth protecting: a known trick CHAINED with substantial
+    other work (e.g. starting further back on points and needing two
+    conquers as well as Yasuo's card-effect point) is a genuinely better
+    puzzle, not a rerun."""
+    candidate = sig(
+        ("ResolveCombat", "vanilla:"), ("MoveUnit", "vanilla:"), ("ResolveCombat", "vanilla:Tank"),
+        *YASUO_RUN,
+    )
+    assert not maneuvers.is_duplicate(candidate, [YASUO_RUN])
+
+
+def test_short_registered_signatures_never_match_by_containment():
+    """Puzzle 2 and puzzle 4 are single-step signatures that appear inside
+    almost everything - matching those by containment would reject the
+    entire search space."""
+    one_step = sig(("PlaySpell", "rtw"))
+    candidate = sig(("ResolveCombat", "vanilla:"), ("PlaySpell", "rtw"), ("MoveUnit", "vanilla:"))
+    assert not maneuvers.is_duplicate(candidate, [one_step])
+
+
+def test_is_duplicate_ignores_an_unrelated_known_trick():
+    candidate = sig(("ResolveCombat", "vanilla:"), ("ActivateAbility", "caitlyn"))
+    assert not maneuvers.is_duplicate(candidate, [YASUO_RUN])
+
+
+def test_empty_signature_is_never_duplicate():
+    assert not maneuvers.is_duplicate((), [YASUO_RUN])
+
+
 def test_registry_roundtrip(tmp_path, monkeypatch):
     monkeypatch.setattr(maneuvers, "REGISTRY_PATH", tmp_path / "maneuvers.json")
     assert maneuvers.load_registry() == {}

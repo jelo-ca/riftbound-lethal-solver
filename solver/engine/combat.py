@@ -264,7 +264,8 @@ def apply_combat(state: GameState, mover: UnitInstance, from_zone: str, destinat
 
 
 def enumerate_combat_outcomes(state: GameState, mover: UnitInstance, from_zone: str, destination_id: str,
-                               our_assignment: Assignment) -> list[GameState]:
+                               our_assignment: Assignment,
+                               exhausted_after: bool = True) -> list[GameState]:
     """All possible resulting states for a combat-triggering move, one per
     possible opponent response to `our_assignment` — the enumeration
     itself (used by both search.py's AND-node and export.py's graph BFS,
@@ -272,6 +273,12 @@ def enumerate_combat_outcomes(state: GameState, mover: UnitInstance, from_zone: 
     which outcomes are acceptable, and doesn't resolve scoring
     consequences of any resulting control change — same division of
     responsibility as apply_combat.
+
+    `exhausted_after` defaults to True for the Standard Move case (rule
+    145.1: exhausting the unit is part of that action's cost). An
+    EFFECT-granted move into combat (Charm, Blitzcrank's redirect) must
+    pass the mover's existing exhaustion instead — an effect-granted move
+    doesn't exhaust unless the card says so.
     """
     attacker_ctrl, defender_ctrl, attacker_units, defender_units = determine_sides(state, mover, destination_id)
     we_are_attacker = attacker_ctrl == state.turn_player
@@ -299,7 +306,7 @@ def enumerate_combat_outcomes(state: GameState, mover: UnitInstance, from_zone: 
         defender_assignment = opponent_assignment if we_are_attacker else our_assignment
         outcomes.append(apply_combat(
             state, mover, from_zone, destination_id, attacker_assignment, defender_assignment,
-            exhausted_after=True,
+            exhausted_after=exhausted_after,
         ))
     return outcomes
 

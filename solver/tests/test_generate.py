@@ -9,6 +9,7 @@ from solver.generate import (
     STARTING_SCORE,
     evaluate_candidate,
     generate,
+    sample_for_attempt,
     sample_position,
 )
 from solver.search import count_winning_strategies, solve
@@ -125,29 +126,31 @@ def test_evaluate_candidate_rejects_short_solutions():
 
 
 def test_evaluate_candidate_rejects_an_already_seen_signature():
-    # Get one real survivor under the CURRENT filters (length, exact
-    # solution count, no leftover runes, dedup) via generate() itself,
-    # then replay sample_position with the same seed the same number of
-    # times to reconstruct the exact root/cards that produced it - avoids
-    # hand-crafting a synthetic position that happens to satisfy every
-    # filter. Re-running it through evaluate_candidate a second time with
-    # a seen_signatures set already containing its signature must be
-    # rejected purely by the dedup filter (every other filter already
-    # passed once for this exact position).
-    seed = 5  # picked empirically: finds a survivor in ~750 attempts under the current pool/filters
-    survivors, attempts = generate(count=1, seed=seed, attempt_multiplier=2000)
+    # Get one real survivor under the CURRENT filters via generate(), then
+    # rebuild that exact position with sample_for_attempt - since each
+    # attempt has its own RNG, attempt N reproduces exactly regardless of
+    # how the run was parallelised. Running it through evaluate_candidate
+    # twice with a shared seen_signatures set must reject the second call
+    # purely on dedup, every other filter having already passed once.
+    survivors, attempts = generate(count=1, seed=5, attempt_multiplier=2000, workers=1)
     assert survivors, "no survivor found for this seed - filters may have tightened further"
 
-    rng = random.Random(seed)
-    root = cards = None
-    for _ in range(attempts):
-        root, cards = sample_position(rng)
-
+    root, cards = sample_for_attempt(5, attempts)
     seen: set = set()
     first = evaluate_candidate(root, cards, "test-dedup-1", seen)
     assert first is not None
     second = evaluate_candidate(root, cards, "test-dedup-2", seen)
     assert second is None
+
+
+def test_parallel_and_serial_generation_agree():
+    """The whole point of doing dedup in the parent in attempt order: the
+    same seed must give the same survivors no matter how many workers
+    split the attempts."""
+    serial, serial_attempts = generate(count=1, seed=5, attempt_multiplier=2000, workers=1)
+    parallel, parallel_attempts = generate(count=1, seed=5, attempt_multiplier=2000, workers=4)
+    assert serial_attempts == parallel_attempts
+    assert [s["puzzle_id"] for s in serial] == [p["puzzle_id"] for p in parallel]
 
 
 def test_runes_left_over_false_when_the_line_spends_everything():

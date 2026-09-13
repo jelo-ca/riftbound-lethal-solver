@@ -36,6 +36,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Iterable
 
 from .engine import abilities
 
@@ -75,6 +76,44 @@ def maneuver_signature(result: dict) -> Signature:
         steps.append((action["type"], token))
         cur = edge["to"][0]
     return tuple(steps)
+
+
+# A registered trick shorter than this is too generic to match by
+# containment — puzzle 2's signature is a single ("MoveUnit", "vanilla:")
+# step and puzzle 4's is a single Ride The Wind, which between them appear
+# inside almost every candidate ever generated.
+MIN_CONTAINMENT_LENGTH = 3
+# ...and even a long enough trick only counts as "already done" if it
+# accounts for most of the candidate. A candidate that CHAINS a known
+# trick with substantial other work is exactly the kind of composite
+# puzzle worth keeping (e.g. starting at 5 points and using Yasuo's
+# move-count point for the 8th), so it must not be rejected just for
+# containing a known run somewhere inside it.
+CONTAINMENT_COVERAGE = 0.7
+
+
+def _contains_run(signature: Signature, run: Signature) -> bool:
+    return any(signature[i:i + len(run)] == run
+               for i in range(len(signature) - len(run) + 1))
+
+
+def is_duplicate(signature: Signature, known: Iterable[Signature]) -> bool:
+    """True if `signature` is the same trick as something already known —
+    either exactly, or because a known multi-step trick makes up the bulk
+    of it (a known run plus a bit of setup, e.g. "attack something, then
+    do puzzle 3's Yasuo loop").
+
+    Deliberately NOT pure containment: see CONTAINMENT_COVERAGE."""
+    if not signature:
+        return False
+    for other in known:
+        if signature == other:
+            return True
+        if (len(other) >= MIN_CONTAINMENT_LENGTH
+                and len(other) / len(signature) >= CONTAINMENT_COVERAGE
+                and _contains_run(signature, other)):
+            return True
+    return False
 
 
 def load_registry() -> dict[str, Signature]:

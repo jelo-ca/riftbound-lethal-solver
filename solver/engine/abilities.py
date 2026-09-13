@@ -166,14 +166,14 @@ def _move_enemy_unit_no_combat(state: GameState, unit, from_zone: str, to_zone: 
     this is" (see its docstring), which is wrong for an enemy-controlled
     mover; reusing it would silently touch the wrong player's Base and
     misjudge the destination's combat check."""
-    exhausted_unit = dataclasses.replace(unit, exhausted=True, moved_this_turn=unit.moved_this_turn + 1)
+    moved_unit = dataclasses.replace(unit, moved_this_turn=unit.moved_this_turn + 1)
     from_bf = next(b for b in state.battlefields if b.battlefield_id == from_zone)
     remaining = from_bf.units - {unit}
     from_controller = from_bf.controller if remaining else None
     state = replace_battlefield(state, dataclasses.replace(from_bf, units=remaining, controller=from_controller))
 
     to_bf = next(b for b in state.battlefields if b.battlefield_id == to_zone)
-    new_units = to_bf.units | {exhausted_unit}
+    new_units = to_bf.units | {moved_unit}
     controllers = {u.controller for u in new_units}
     new_controller = next(iter(controllers)) if len(controllers) == 1 else None
     return replace_battlefield(state, dataclasses.replace(to_bf, units=new_units, controller=new_controller))
@@ -213,7 +213,10 @@ def _charm_effect(state: GameState, action: PlaySpell) -> list[GameState]:
 
     if combat.is_combat_triggered(state, unit, destination):
         our_assignment = action.params[2]
-        outcomes = combat.enumerate_combat_outcomes(state, unit, from_zone, destination, our_assignment)
+        # Charm's text grants a move without exhausting, so the redirected
+        # unit keeps its existing exhaustion into the fight.
+        outcomes = combat.enumerate_combat_outcomes(state, unit, from_zone, destination,
+                                                     our_assignment, exhausted_after=unit.exhausted)
         outcomes = [scoring.resolve_control_change(state, o, destination) for o in outcomes]
         return [apply_move_triggers(o, enemy_id) for o in outcomes]
 
@@ -381,13 +384,18 @@ def _blitzcrank_effect(state_after_play: GameState, action: PlayUnit) -> list[Ga
     unit, from_zone = find_unit_at_any_battlefield(state_after_play, enemy_id)
     to_zone = action.target_zone
 
+    # An effect-granted move doesn't exhaust the unit unless the card says
+    # so, and Blitzcrank's text doesn't — so the redirected unit keeps
+    # whatever exhaustion state it already had (this previously forced
+    # exhausted=True, which was wrong).
     if combat.is_combat_triggered(state_after_play, unit, to_zone):
         our_assignment = action.trigger_params[1]
-        outcomes = combat.enumerate_combat_outcomes(state_after_play, unit, from_zone, to_zone, our_assignment)
+        outcomes = combat.enumerate_combat_outcomes(state_after_play, unit, from_zone, to_zone,
+                                                     our_assignment, exhausted_after=unit.exhausted)
         outcomes = [scoring.resolve_control_change(state_after_play, o, to_zone) for o in outcomes]
         return [apply_move_triggers(o, enemy_id) for o in outcomes]
 
-    moved = relocate_unit(state_after_play, enemy_id, from_zone, to_zone, exhausted_after=True)
+    moved = relocate_unit(state_after_play, enemy_id, from_zone, to_zone, exhausted_after=unit.exhausted)
     moved = scoring.resolve_control_change(state_after_play, moved, to_zone)
     return [apply_move_triggers(moved, enemy_id)]
 

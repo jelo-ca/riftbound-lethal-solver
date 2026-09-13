@@ -16,6 +16,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import multiprocessing
+import os
 import random
 from pathlib import Path
 from typing import Optional
@@ -32,7 +34,7 @@ from .engine.battlefields import REGISTERED as BATTLEFIELD_EFFECTS
 from .engine.cards import CardDef
 from .engine.state import BattlefieldState, GameState, PlayerState, RunePool, UnitInstance, canonical_key
 from .export import export_puzzle, resolve_action_outcomes
-from .maneuvers import Signature, load_registry, maneuver_signature
+from .maneuvers import Signature, is_duplicate, load_registry, maneuver_signature
 from .search import Strategy, count_winning_strategies, solve
 
 OUTPUT_DIR = Path(__file__).parent.parent / "puzzles" / "generated"
@@ -231,14 +233,12 @@ def _runes_left_over(root: GameState, cards: dict[str, CardDef], strategy: Strat
     return len(state.players[root.turn_player].runes.available) > 0
 
 
-def evaluate_candidate(root: GameState, cards: dict[str, CardDef], puzzle_id: str,
-                        seen_signatures: set[Signature]) -> Optional[dict]:
-    """Runs one candidate through the full filter chain (design/10-
-    generation-pipeline.md's "Filters" section); returns the exported
-    puzzle dict if it survives, else None. `seen_signatures` is checked
-    (already-promoted puzzles' maneuvers, plus every survivor accepted
-    earlier in this same run) and, on acceptance, updated in place — same
-    trick, different Might numbers, still gets rejected."""
+def evaluate_filters(root: GameState, cards: dict[str, CardDef], puzzle_id: str) -> Optional[dict]:
+    """Every filter EXCEPT maneuver dedup — the position-only ones, which
+    depend on nothing but this candidate and so can run in a worker
+    process. Dedup is deliberately excluded: it depends on what else has
+    already been accepted, so it has to be reconciled in one place, in a
+    deterministic order (see generate())."""
     strategy = solve(root, cards, max_depth=MAX_SOLVE_DEPTH)
     if strategy is None:
         return None
@@ -257,37 +257,102 @@ def evaluate_candidate(root: GameState, cards: dict[str, CardDef], puzzle_id: st
     if export_bytes > MAX_EXPORT_BYTES:
         return None
 
-    signature = maneuver_signature(result)
-    if signature in seen_signatures:
-        return None
-    seen_signatures.add(signature)
-
     result["_generation_meta"] = {
         "solution_length": len(strategy),
         "solution_count": solution_count,
         "export_bytes": export_bytes,
-        "maneuver_signature": list(signature),
+        "maneuver_signature": list(maneuver_signature(result)),
     }
     return result
 
 
-def generate(count: int, seed: Optional[int] = None, attempt_multiplier: int = 200) -> tuple[list[dict], int]:
+def evaluate_candidate(root: GameState, cards: dict[str, CardDef], puzzle_id: str,
+                        seen_signatures: set[Signature]) -> Optional[dict]:
+    """Full filter chain including maneuver dedup against
+    `seen_signatures` (already-promoted puzzles plus everything accepted
+    earlier in this run), which is updated in place on acceptance."""
+    result = evaluate_filters(root, cards, puzzle_id)
+    if result is None:
+        return None
+    signature = maneuver_signature(result)
+    if is_duplicate(signature, seen_signatures):
+        return None
+    seen_signatures.add(signature)
+    return result
+
+
+def sample_for_attempt(seed: Optional[int], attempt_index: int) -> tuple[GameState, dict[str, CardDef]]:
+    """The position for a given attempt number, derived from its own RNG
+    rather than one stream advanced across attempts — so attempt N is the
+    same position no matter how the work was divided up, which is what
+    lets attempts run in parallel while staying seed-reproducible.
+
+    Seeded with a string rather than a tuple (unsupported) — and unlike
+    the frozenset-ordering bug this project already hit, str seeding is
+    NOT affected by hash randomization: random.seed() runs str input
+    through sha512 rather than hash(), so it's stable across processes."""
+    return sample_position(random.Random(f"{seed}:{attempt_index}"))
+
+
+def _evaluate_attempt(args: tuple[Optional[int], int]) -> tuple[int, Optional[dict]]:
+    """Worker entry point — module-level and taking only picklable args,
+    since Windows spawns fresh processes rather than forking."""
+    seed, attempt_index = args
+    root, cards = sample_for_attempt(seed, attempt_index)
+    return attempt_index, evaluate_filters(root, cards, f"generated-{attempt_index:05d}")
+
+
+def generate(count: int, seed: Optional[int] = None, attempt_multiplier: int = 200,
+              workers: Optional[int] = None) -> tuple[list[dict], int]:
     """Samples candidates until `count` survive the filters or the attempt
     budget (`count * attempt_multiplier`) runs out. Returns (survivors,
-    attempts_made)."""
-    rng = random.Random(seed)
-    survivors: list[dict] = []
-    attempts = 0
+    attempts_made).
+
+    Attempts are independent, so they're spread across `workers`
+    processes (default: every core). Dedup still happens here in the
+    parent, in attempt order, so results don't depend on which worker
+    happened to finish first — the same seed gives the same survivors
+    whatever the worker count. `workers=1` runs everything in-process,
+    which is what the tests use to stay fast and debuggable.
+    """
     max_attempts = count * attempt_multiplier
     seen_signatures: set[Signature] = set(load_registry().values())
-    while len(survivors) < count and attempts < max_attempts:
-        attempts += 1
-        root, cards = sample_position(rng)
-        puzzle_id = f"generated-{attempts:05d}"
-        result = evaluate_candidate(root, cards, puzzle_id, seen_signatures)
-        if result is not None:
-            survivors.append(result)
-    return survivors, attempts
+    survivors: list[dict] = []
+    if workers is None:
+        workers = os.cpu_count() or 1
+
+    if workers <= 1:
+        for attempt in range(1, max_attempts + 1):
+            root, cards = sample_for_attempt(seed, attempt)
+            result = evaluate_candidate(root, cards, f"generated-{attempt:05d}", seen_signatures)
+            if result is not None:
+                survivors.append(result)
+                if len(survivors) >= count:
+                    return survivors, attempt
+        return survivors, max_attempts
+
+    # Work in chunks so a `count` that's reached early doesn't keep the
+    # whole budget running, while still handing each worker enough
+    # attempts at a time to amortise IPC.
+    chunk = max(workers * 32, 64)
+    attempted = 0
+    with multiprocessing.Pool(processes=workers) as pool:
+        while attempted < max_attempts and len(survivors) < count:
+            batch = range(attempted + 1, min(attempted + chunk, max_attempts) + 1)
+            results = pool.map(_evaluate_attempt, [(seed, i) for i in batch])
+            for attempt_index, result in sorted(results, key=lambda r: r[0]):
+                attempted = max(attempted, attempt_index)
+                if result is None:
+                    continue
+                signature = maneuver_signature(result)
+                if is_duplicate(signature, seen_signatures):
+                    continue
+                seen_signatures.add(signature)
+                survivors.append(result)
+                if len(survivors) >= count:
+                    return survivors, attempt_index
+            attempted = batch[-1]
+    return survivors, attempted
 
 
 def main() -> None:
@@ -296,9 +361,13 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=None, help="RNG seed, for reproducible runs")
     parser.add_argument("--attempt-multiplier", type=int, default=200,
                          help="attempt budget per survivor wanted (max_attempts = count * this)")
+    parser.add_argument("--workers", type=int, default=None,
+                         help="parallel worker processes (default: every core; 1 = in-process)")
     args = parser.parse_args()
 
-    survivors, attempts = generate(args.count, seed=args.seed, attempt_multiplier=args.attempt_multiplier)
+    survivors, attempts = generate(args.count, seed=args.seed,
+                                    attempt_multiplier=args.attempt_multiplier,
+                                    workers=args.workers)
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     for result in survivors:
         path = OUTPUT_DIR / f"{result['puzzle_id']}.json"

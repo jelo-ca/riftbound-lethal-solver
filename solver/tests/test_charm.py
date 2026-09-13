@@ -63,6 +63,25 @@ def test_charm_redirect_into_our_ground_triggers_combat_we_are_defender():
     assert next(iter(right.units)).controller == 0
 
 
+def test_charm_does_not_exhaust_the_unit_it_moves():
+    """Confirmed rule: an effect-granted move doesn't exhaust the unit
+    unless the card says so, and Charm's text doesn't. (Ride The Wind's
+    explicit "and ready it" is what makes THAT card change exhaustion.)"""
+    enemy = make_unit(1, controller=1)
+    root = _root(left_units=frozenset({enemy}), left_ctrl=1)
+    action = PlaySpell(card_id=CHARM, params=(1, "right"), rune_payment=CHARM_PAYMENT)
+    moved = abilities.resolve_spell_outcomes(root, action, CHARM_CARD)[0]
+    assert next(iter(moved.battlefields[1].units)).exhausted is False
+
+
+def test_charm_preserves_an_already_exhausted_units_state():
+    enemy = make_unit(1, controller=1, exhausted=True)
+    root = _root(left_units=frozenset({enemy}), left_ctrl=1)
+    action = PlaySpell(card_id=CHARM, params=(1, "right"), rune_payment=CHARM_PAYMENT)
+    moved = abilities.resolve_spell_outcomes(root, action, CHARM_CARD)[0]
+    assert next(iter(moved.battlefields[1].units)).exhausted is True
+
+
 def test_charm_cannot_target_a_friendly_unit():
     friendly = make_unit(1, controller=0)
     root = _root(left_units=frozenset({friendly}), left_ctrl=0)
