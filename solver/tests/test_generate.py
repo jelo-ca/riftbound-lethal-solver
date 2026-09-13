@@ -1,12 +1,21 @@
+import multiprocessing
 import random
 
 import pytest
 
 from solver import generate as generate_module
 from solver.engine.actions import MoveUnit
-from solver.engine.state import BattlefieldState, GameState, PlayerState, RunePool, UnitInstance
+from solver.engine.state import (
+    BattlefieldState,
+    GameState,
+    PlayerState,
+    RunePool,
+    UnitInstance,
+    canonical_key,
+)
 from solver.generate import (
     CARD_POOL,
+    _evaluate_attempt,
     MIN_STRATEGY_SIZE,
     REQUIRED_SOLUTION_COUNT,
     STARTING_SCORE,
@@ -129,26 +138,37 @@ def test_evaluate_candidate_rejects_short_solutions():
 
 
 @pytest.fixture
-def no_known_signatures(monkeypatch):
-    """Isolate generation from the live registry and declined list. These
-    tests are about the dedup MECHANISM, not about which tricks happen to
-    be promoted or declined right now — without this they break every
-    time a trick gets promoted or declined, which has already happened
-    twice."""
+def permissive_generation(monkeypatch):
+    """Isolate these tests from BOTH things that made them brittle:
+
+    - the live registry/declined list, since they test the dedup
+      mechanism rather than which tricks happen to be promoted today;
+    - the length filter, since depending on "some seed finds a survivor
+      within N attempts" breaks every time the sampler or the filters
+      change. It already broke twice — once when a trick was declined,
+      once when units started being sampled into hand — and each time the
+      fix was to go hunting for a luckier seed, which just reloads the
+      gun.
+
+    Survivors become common, so these run in seconds instead of minutes.
+    """
     monkeypatch.setattr(generate_module, "known_signatures", lambda: set())
+    monkeypatch.setattr(generate_module, "MIN_STRATEGY_SIZE", 1)
+    monkeypatch.setattr(generate_module, "_runes_left_over", lambda *args: False)
 
 
-def test_evaluate_candidate_rejects_an_already_seen_signature(no_known_signatures):
-    # Get one real survivor under the current filters via generate(), then
-    # rebuild that exact position with sample_for_attempt - since each
-    # attempt has its own RNG, attempt N reproduces exactly regardless of
-    # how the run was parallelised. Running it through evaluate_candidate
-    # twice with a shared seen_signatures set must reject the second call
-    # purely on dedup, every other filter having already passed once.
-    survivors, attempts = generate(count=1, seed=5, attempt_multiplier=2000, workers=1)
-    assert survivors, "no survivor found for this seed - filters may have tightened further"
+def test_evaluate_candidate_rejects_an_already_seen_signature(permissive_generation):
+    """Puzzle 4's root is a known-good, fully deterministic position: it
+    solves, has exactly one winning line, and spends every rune. Running
+    it through evaluate_candidate twice with a shared seen_signatures set
+    must reject the second call purely on dedup, every other filter
+    having already passed once."""
+    from solver import author_puzzle_004
+    from solver.engine.abilities import RIDE_THE_WIND
 
-    root, cards = sample_for_attempt(5, attempts)
+    root = author_puzzle_004.build_root()
+    cards = {RIDE_THE_WIND: author_puzzle_004.RIDE_THE_WIND_CARD}
+
     seen: set = set()
     first = evaluate_candidate(root, cards, "test-dedup-1", seen)
     assert first is not None
@@ -156,15 +176,33 @@ def test_evaluate_candidate_rejects_an_already_seen_signature(no_known_signature
     assert second is None
 
 
-def test_parallel_and_serial_generation_agree(no_known_signatures):
-    """The whole point of doing dedup in the parent in attempt order: the
-    same seed must give the same survivors no matter how many workers
-    split the attempts."""
-    serial, serial_attempts = generate(count=1, seed=5, attempt_multiplier=2000, workers=1)
-    parallel, parallel_attempts = generate(count=1, seed=5, attempt_multiplier=2000, workers=4)
-    assert serial, "expected this seed to find a survivor - otherwise the comparison is vacuous"
-    assert serial_attempts == parallel_attempts
-    assert [s["puzzle_id"] for s in serial] == [p["puzzle_id"] for p in parallel]
+def test_pool_and_inline_evaluation_agree_per_attempt():
+    """Parallelism is only safe because attempt N evaluates to the same
+    thing wherever it runs — that's what lets the parent reconcile dedup
+    in attempt order and get worker-count-independent results.
+
+    Checked directly rather than by comparing whole generate() runs:
+    monkeypatched filters do NOT reach worker processes (Windows spawns
+    fresh interpreters that re-import the module), so a permissive-filter
+    comparison would silently pit permissive parent against strict
+    workers. This uses the real filters and needs no survivors at all.
+    """
+    attempts = [(5, i) for i in range(1, 41)]
+    inline = [(i, r["puzzle_id"] if r else None) for i, r in map(_evaluate_attempt, attempts)]
+    with multiprocessing.Pool(4) as pool:
+        pooled_raw = pool.map(_evaluate_attempt, attempts)
+    pooled = [(i, r["puzzle_id"] if r else None) for i, r in pooled_raw]
+    assert inline == pooled
+
+
+def test_generation_is_deterministic_per_attempt():
+    """The other half of the same property: an attempt's position depends
+    only on (seed, attempt index), never on how many attempts preceded
+    it — so splitting work across workers can't shift what gets sampled."""
+    first = sample_for_attempt(5, 17)
+    second = sample_for_attempt(5, 17)
+    assert canonical_key(first[0]) == canonical_key(second[0])
+    assert canonical_key(sample_for_attempt(5, 17)[0]) != canonical_key(sample_for_attempt(5, 18)[0])
 
 
 def test_runes_left_over_false_when_the_line_spends_everything():

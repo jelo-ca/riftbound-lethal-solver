@@ -2,12 +2,17 @@
 design/10-generation-pipeline.md.
 
 Samples random single-turn positions from the verified card pool (plain
-vanilla stat-sticks, two Assault/Shield keyword vanillas, Sneaky
-Deckhand, and the cards with registered mechanics — everything else is
-unregistered and simply can't be sampled), keeps only positions that are
-solvable, long enough (>=4 actions), have EXACTLY one correct line, and
-use every rune, then exports survivors through the same export.py used
-for the hand-authored puzzles.
+vanilla stat-sticks, two Assault/Shield keyword vanillas, and the cards
+with registered mechanics — everything else is unregistered and simply
+can't be sampled), keeps only positions that are solvable, long enough
+(>=4 actions), have EXACTLY one correct line, and use every rune, then
+exports survivors through the same export.py used for the hand-authored
+puzzles.
+
+Units are sampled both pre-placed on the board and — for the three whose
+text only does something when PLAYED — into hand, so PlayUnit and its
+"when you play me" triggers are reachable here and not just in
+hand-authored puzzles.
 
 Run with: python -m solver.generate --count 5
 """
@@ -29,6 +34,7 @@ from .engine.abilities import (
     RIDE_THE_WIND,
     VENGEANCE,
     YASUO_WINDRIDER,
+    ZAUNITE_BOUNCER,
 )
 from .engine.battlefields import REGISTERED as BATTLEFIELD_EFFECTS
 from .engine.cards import CardDef
@@ -74,19 +80,29 @@ CARD_POOL: dict[str, CardDef] = {
                         power_cost=2, power_domain="Order", keywords=frozenset()),
     CHARM: CardDef(card_id=CHARM, card_type="Spell", energy_cost=1,
                     power_cost=1, power_domain="Calm", keywords=frozenset()),
+    ZAUNITE_BOUNCER: CardDef(card_id=ZAUNITE_BOUNCER, card_type="Unit", energy_cost=4,
+                              power_cost=2, power_domain="Chaos", might=2, keywords=frozenset()),
 }
 
 # Units that can be sampled onto the board (pre-placed) or into hand.
 OUR_UNIT_POOL = [LEGION_REARGUARD, FAITHFUL_MANUFACTOR, VANGUARD_CAPTAIN,
                   SNEAKY_DECKHAND, CAITLYN_PATROLLING, BLITZCRANK_IMPASSIVE, YASUO_WINDRIDER,
                   DARING_PORO, STALWART_PORO]
-# Cards played out of hand (design/10-generation-pipeline.md's card pool
-# table) - the mechanic UNITS above are sampled pre-placed on the board
-# instead, since nothing here samples units into hand yet (a real gap:
-# Blitzcrank's redirect trigger, and any future on-play trigger like
-# Zaunite Bouncer, can currently only fire in a HAND-authored puzzle,
-# never a generated one, until that's added).
 HAND_SPELL_POOL = [RIDE_THE_WIND, VENGEANCE, CHARM]
+# Units worth sampling into HAND rather than pre-placed on the board.
+# Deliberately only the three whose text does something *at the moment of
+# being played* - without this, PlayUnit never appeared in a generated
+# line at all and these three mechanics were invisible to generation:
+#   Blitzcrank / Zaunite Bouncer - "when you play me" triggers, so they
+#     can ONLY fire from hand;
+#   Sneaky Deckhand - can_play_to_open_battlefield, i.e. playing it IS a
+#     Conquer, the whole reason it's in the pool.
+# Plain bodies are left out on purpose: a unit enters exhausted (rule
+# 143.4.a), so in a single-turn puzzle a freshly played vanilla can't
+# move or fight afterwards, making it a dead action that would just
+# dilute sampling.
+HAND_UNIT_POOL = [BLITZCRANK_IMPASSIVE, ZAUNITE_BOUNCER, SNEAKY_DECKHAND]
+HAND_CARD_POOL = HAND_SPELL_POOL + HAND_UNIT_POOL
 
 # Battlefield effects worth sampling (engine/battlefields.py's registered
 # static ones) and how often a given battlefield carries one.
@@ -120,8 +136,12 @@ def _sample_with_cap(rng: random.Random, pool: list[str], n: int, counts: dict[s
 
 
 def _sample_hand_and_runes(rng: random.Random, card_counts: dict[str, int]) -> tuple[tuple[str, ...], RunePool]:
+    """Draws the hand and exactly enough runes to afford it. Units and
+    spells are drawn from one combined pool — the cost arithmetic below
+    reads straight off CardDef, so it never cared which of the two a card
+    was."""
     num_hand = rng.randint(0, 2)
-    hand = tuple(_sample_with_cap(rng, HAND_SPELL_POOL, num_hand, card_counts))
+    hand = tuple(_sample_with_cap(rng, HAND_CARD_POOL, num_hand, card_counts))
 
     total_energy = 0
     power_needs: dict[str, int] = {}
