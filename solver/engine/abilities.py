@@ -31,7 +31,7 @@ from .actions import (
     return_unit_to_hand,
 )
 from .cards import CardDef
-from .state import GameState
+from .state import GameState, replace_player
 
 RIDE_THE_WIND = "ogn-173-298"  # 2 Energy, 1 Chaos Power: "Move a friendly unit and ready it."
 YASUO_WINDRIDER = "ogn-205-298"  # [Ganking] "The third time I move in a turn, you score 1 point."
@@ -152,6 +152,46 @@ def _vengeance_candidates(state: GameState) -> list[tuple[int]]:
     return candidates
 
 
+PRIMAL_STRENGTH = "ogn-154-298"  # 4 Energy, 1 Body Power, [Action]: "Give a unit +7 Might this turn."
+
+
+def _grant_might(state: GameState, instance_id: int, amount: int) -> GameState:
+    """Adds `amount` to a unit's `might_bonus` wherever it stands. No
+    expiry bookkeeping: a puzzle is a single turn, so "this turn" covers
+    the rest of it (see UnitInstance.might_bonus)."""
+    located = find_unit_anywhere(state, instance_id)
+    assert located is not None
+    unit, zone = located
+    buffed = dataclasses.replace(unit, might_bonus=unit.might_bonus + amount)
+    if zone == "base":
+        player = state.players[unit.controller]
+        new_units = (player.base_units - {unit}) | {buffed}
+        return replace_player(state, unit.controller, dataclasses.replace(player, base_units=new_units))
+    bf = next(b for b in state.battlefields if b.battlefield_id == zone)
+    return replace_battlefield(state, dataclasses.replace(bf, units=(bf.units - {unit}) | {buffed}))
+
+
+def _primal_strength_is_legal(state: GameState, action: PlaySpell) -> bool:
+    """params = (target_instance_id,). "Give a unit +7 Might this turn" —
+    "a unit", so either player's, anywhere on the board."""
+    if len(action.params) != 1:
+        return False
+    return find_unit_anywhere(state, action.params[0]) is not None
+
+
+def _primal_strength_effect(state: GameState, action: PlaySpell) -> list[GameState]:
+    return [_grant_might(state, action.params[0], 7)]
+
+
+def _primal_strength_candidates(state: GameState) -> list[tuple[int]]:
+    candidates = []
+    for player in state.players:
+        candidates += [(u.instance_id,) for u in sorted(player.base_units, key=lambda u: u.instance_id)]
+    for bf in state.battlefields:
+        candidates += [(u.instance_id,) for u in sorted(bf.units, key=lambda u: u.instance_id)]
+    return candidates
+
+
 CHARM = "ogn-043-298"  # 1 Energy, 1 Calm Power: "Move an enemy unit." (Slow speed —
 # can't be played during a showdown; the engine has no showdown/priority-
 # window concept yet, so nothing currently in the action space could even
@@ -256,6 +296,7 @@ SPELL_EFFECTS: dict[str, tuple[
     RIDE_THE_WIND: (_ride_the_wind_is_legal, _ride_the_wind_effect, _ride_the_wind_candidates),
     VENGEANCE: (_vengeance_is_legal, _vengeance_effect, _vengeance_candidates),
     CHARM: (_charm_is_legal, _charm_effect, _charm_candidates),
+    PRIMAL_STRENGTH: (_primal_strength_is_legal, _primal_strength_effect, _primal_strength_candidates),
 }
 
 

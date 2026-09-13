@@ -53,9 +53,11 @@ def effective_might(unit: UnitInstance, designation: Optional[str] = None,
     A battlefield's flat bonus (`effect_id`, e.g. Trifarian War Camp's
     "Units here have +1 Might") is positional rather than conditional, so
     it applies in ANY context while the unit is standing there — including
-    against non-combat damage.
+    against non-combat damage. A unit's own `might_bonus` ("+N Might this
+    turn" from a card effect) is unconditional for the same reason and
+    likewise counts everywhere.
     """
-    bonus = battlefields.might_bonus(effect_id)
+    bonus = battlefields.might_bonus(effect_id) + unit.might_bonus
     for keyword in unit.keywords:
         match = _KEYWORD_BONUS.match(keyword)
         if not match:

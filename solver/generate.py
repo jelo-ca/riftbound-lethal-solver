@@ -31,6 +31,7 @@ from .engine.abilities import (
     BLITZCRANK_IMPASSIVE,
     CAITLYN_PATROLLING,
     CHARM,
+    PRIMAL_STRENGTH,
     RIDE_THE_WIND,
     VENGEANCE,
     YASUO_WINDRIDER,
@@ -82,13 +83,15 @@ CARD_POOL: dict[str, CardDef] = {
                     power_cost=1, power_domain="Calm", keywords=frozenset()),
     ZAUNITE_BOUNCER: CardDef(card_id=ZAUNITE_BOUNCER, card_type="Unit", energy_cost=4,
                               power_cost=2, power_domain="Chaos", might=2, keywords=frozenset()),
+    PRIMAL_STRENGTH: CardDef(card_id=PRIMAL_STRENGTH, card_type="Spell", energy_cost=4,
+                              power_cost=1, power_domain="Body", keywords=frozenset()),
 }
 
 # Units that can be sampled onto the board (pre-placed) or into hand.
 OUR_UNIT_POOL = [LEGION_REARGUARD, FAITHFUL_MANUFACTOR, VANGUARD_CAPTAIN,
                   SNEAKY_DECKHAND, CAITLYN_PATROLLING, BLITZCRANK_IMPASSIVE, YASUO_WINDRIDER,
                   DARING_PORO, STALWART_PORO]
-HAND_SPELL_POOL = [RIDE_THE_WIND, VENGEANCE, CHARM]
+HAND_SPELL_POOL = [RIDE_THE_WIND, VENGEANCE, CHARM, PRIMAL_STRENGTH]
 # Units worth sampling into HAND rather than pre-placed on the board.
 # Deliberately only the three whose text does something *at the moment of
 # being played* - without this, PlayUnit never appeared in a generated
