@@ -251,7 +251,8 @@
         "action": {
           "id": "a1",
           "type": "PlaySpell",
-          "label": "Play ogn-173-298 (1, base)"
+          "label": "Play ogn-173-298 (1, base)",
+          "card_id": "ogn-173-298"
         },
         "to": [
           "3b13002c752bfb52"
@@ -262,7 +263,8 @@
         "action": {
           "id": "a2",
           "type": "PlaySpell",
-          "label": "Play ogn-173-298 (1, right)"
+          "label": "Play ogn-173-298 (1, right)",
+          "card_id": "ogn-173-298"
         },
         "to": [
           "72a71b130fcbeaf2"
@@ -275,7 +277,8 @@
         "action": {
           "id": "a3",
           "type": "MoveUnit",
-          "label": "Move unit 1 from base to left"
+          "label": "Move unit 1 from base to left",
+          "card_id": "ogn-010-298"
         },
         "to": [
           "858d406f35a17ee9"
@@ -286,7 +289,8 @@
         "action": {
           "id": "a4",
           "type": "MoveUnit",
-          "label": "Move unit 1 from base to right"
+          "label": "Move unit 1 from base to right",
+          "card_id": "ogn-010-298"
         },
         "to": [
           "47bcc881b6c0b718"

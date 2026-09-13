@@ -1,0 +1,80 @@
+{
+  "puzzle-001-one-point-short": [
+    [
+      "MoveUnit",
+      "ogn-211-298"
+    ],
+    [
+      "MoveUnit",
+      "ogn-010-298"
+    ]
+  ],
+  "puzzle-002-borrowed-time": [
+    [
+      "MoveUnit",
+      "ogn-211-298"
+    ]
+  ],
+  "puzzle-003-the-long-way-around": [
+    [
+      "MoveUnit",
+      "ogn-205-298"
+    ],
+    [
+      "PlaySpell",
+      "ogn-173-298"
+    ],
+    [
+      "MoveUnit",
+      "ogn-205-298"
+    ]
+  ],
+  "puzzle-004-extra-innings": [
+    [
+      "PlaySpell",
+      "ogn-173-298"
+    ]
+  ],
+  "puzzle-005-clear-the-way": [
+    [
+      "ActivateAbility",
+      "ogn-068-298"
+    ],
+    [
+      "MoveUnit",
+      "ogn-010-298"
+    ]
+  ],
+  "puzzle-006-redirection": [
+    [
+      "PlayUnit",
+      "ogn-067-298"
+    ],
+    [
+      "MoveUnit",
+      "ogn-211-298"
+    ]
+  ],
+  "puzzle-007-snipe-and-trade": [
+    [
+      "MoveUnit",
+      "ogn-176-298"
+    ],
+    [
+      "PlaySpell",
+      "ogn-173-298"
+    ],
+    [
+      "ActivateAbility",
+      "ogn-068-298"
+    ],
+    [
+      "ResolveCombat",
+      "ogn-218-298"
+    ],
+    [
+      "MoveUnit",
+      "ogn-176-298"
+    ]
+  ]
+}

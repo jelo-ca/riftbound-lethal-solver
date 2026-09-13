@@ -83,25 +83,38 @@ def render_state(state: GameState) -> dict:
     }
 
 
-def render_action(action: Action, action_id: str) -> dict:
+def render_action(state: GameState, action: Action, action_id: str) -> dict:
+    """`card_id` is the card most responsible for this action's identity —
+    the mover's card for a MoveUnit/ResolveCombat, the played/activated
+    card otherwise — independent of lane/instance_id/exact Might, so two
+    structurally-identical actions on different boards render the same
+    card_id. Used by maneuvers.py to fingerprint a puzzle's winning line
+    without needing to re-simulate it."""
     if isinstance(action, PlayUnit):
         label = f"Play {action.card_id} to {action.target_zone}"
+        card_id = action.card_id
     elif isinstance(action, MoveUnit):
         label = f"Move unit {action.instance_id} from {action.from_zone} to {action.to_zone}"
+        card_id = find_unit(state, action.instance_id, action.from_zone).card_id
     elif isinstance(action, ResolveCombat):
         label = f"Move unit {action.instance_id} from {action.from_zone} to {action.to_zone} (combat)"
+        card_id = find_unit(state, action.instance_id, action.from_zone).card_id
     elif isinstance(action, PlaySpell):
         label = f"Play {action.card_id} ({', '.join(str(p) for p in action.params)})"
+        card_id = action.card_id
     elif isinstance(action, PlayGear):
         label = f"Play {action.card_id} on unit {action.target_unit}"
+        card_id = action.card_id
     elif isinstance(action, ActivateAbility):
         label = f"Activate unit {action.source_id} ({', '.join(str(p) for p in action.params)})"
+        card_id = action.ability_id
     else:
         label = type(action).__name__
-    return {"id": action_id, "type": type(action).__name__, "label": label}
+        card_id = ""
+    return {"id": action_id, "type": type(action).__name__, "label": label, "card_id": card_id}
 
 
-def _resolve_action_outcomes(state: GameState, action: Action, cards: dict[str, CardDef]) -> list[GameState]:
+def resolve_action_outcomes(state: GameState, action: Action, cards: dict[str, CardDef]) -> list[GameState]:
     """All possible resulting states for `action` — a single-element list
     for a deterministic action, multiple for a combat action with a real
     opponent choice. Raises NotImplementedError the same way apply() does
@@ -156,7 +169,7 @@ def export_puzzle(puzzle_id: str, root: GameState, cards: dict[str, CardDef],
         any_child = False
         for action in legal_actions(state, cards):
             try:
-                outcomes = _resolve_action_outcomes(state, action, cards)
+                outcomes = resolve_action_outcomes(state, action, cards)
             except NotImplementedError:
                 continue
             any_child = True
@@ -172,7 +185,7 @@ def export_puzzle(puzzle_id: str, root: GameState, cards: dict[str, CardDef],
                     nodes[child_hash] = render_state(child)
                     frontier.append((child, depth + 1))
             state_edges.append({
-                "action": render_action(action, action_id),
+                "action": render_action(state, action, action_id),
                 "to": outcome_hashes,
                 "adversarial": len(outcomes) > 1,
             })

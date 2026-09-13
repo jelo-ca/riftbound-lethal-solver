@@ -23,6 +23,7 @@ from .engine.abilities import BLITZCRANK_IMPASSIVE, CAITLYN_PATROLLING, RIDE_THE
 from .engine.cards import CardDef
 from .engine.state import BattlefieldState, GameState, PlayerState, RunePool, UnitInstance
 from .export import export_puzzle
+from .maneuvers import Signature, load_registry, maneuver_signature
 from .search import count_winning_strategies, solve
 
 OUTPUT_DIR = Path(__file__).parent.parent / "puzzles" / "generated"
@@ -176,10 +177,14 @@ def sample_position(rng: random.Random) -> tuple[GameState, dict[str, CardDef]]:
     return root, cards
 
 
-def evaluate_candidate(root: GameState, cards: dict[str, CardDef], puzzle_id: str) -> Optional[dict]:
+def evaluate_candidate(root: GameState, cards: dict[str, CardDef], puzzle_id: str,
+                        seen_signatures: set[Signature]) -> Optional[dict]:
     """Runs one candidate through the full filter chain (design/10-
     generation-pipeline.md's "Filters" section); returns the exported
-    puzzle dict if it survives, else None."""
+    puzzle dict if it survives, else None. `seen_signatures` is checked
+    (already-promoted puzzles' maneuvers, plus every survivor accepted
+    earlier in this same run) and, on acceptance, updated in place — same
+    trick, different Might numbers, still gets rejected."""
     strategy = solve(root, cards, max_depth=MAX_SOLVE_DEPTH)
     if strategy is None:
         return None
@@ -195,10 +200,16 @@ def evaluate_candidate(root: GameState, cards: dict[str, CardDef], puzzle_id: st
     if export_bytes > MAX_EXPORT_BYTES:
         return None
 
+    signature = maneuver_signature(result)
+    if signature in seen_signatures:
+        return None
+    seen_signatures.add(signature)
+
     result["_generation_meta"] = {
         "solution_length": len(strategy),
         "solution_count": solution_count,
         "export_bytes": export_bytes,
+        "maneuver_signature": list(signature),
     }
     return result
 
@@ -211,11 +222,12 @@ def generate(count: int, seed: Optional[int] = None, attempt_multiplier: int = 2
     survivors: list[dict] = []
     attempts = 0
     max_attempts = count * attempt_multiplier
+    seen_signatures: set[Signature] = set(load_registry().values())
     while len(survivors) < count and attempts < max_attempts:
         attempts += 1
         root, cards = sample_position(rng)
         puzzle_id = f"generated-{attempts:05d}"
-        result = evaluate_candidate(root, cards, puzzle_id)
+        result = evaluate_candidate(root, cards, puzzle_id, seen_signatures)
         if result is not None:
             survivors.append(result)
     return survivors, attempts

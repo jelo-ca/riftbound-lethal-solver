@@ -355,7 +355,8 @@
         "action": {
           "id": "a1",
           "type": "MoveUnit",
-          "label": "Move unit 2 from base to left"
+          "label": "Move unit 2 from base to left",
+          "card_id": "ogn-211-298"
         },
         "to": [
           "490df5333e7272d4"
@@ -366,7 +367,8 @@
         "action": {
           "id": "a2",
           "type": "MoveUnit",
-          "label": "Move unit 2 from base to right"
+          "label": "Move unit 2 from base to right",
+          "card_id": "ogn-211-298"
         },
         "to": [
           "31fe2eb47d2b0d43"
@@ -377,7 +379,8 @@
         "action": {
           "id": "a3",
           "type": "MoveUnit",
-          "label": "Move unit 1 from right to base"
+          "label": "Move unit 1 from right to base",
+          "card_id": "ogn-010-298"
         },
         "to": [
           "60d14a4e2499ead6"
@@ -390,7 +393,8 @@
         "action": {
           "id": "a4",
           "type": "MoveUnit",
-          "label": "Move unit 1 from right to base"
+          "label": "Move unit 1 from right to base",
+          "card_id": "ogn-010-298"
         },
         "to": [
           "893e33277702dbd2"
@@ -403,7 +407,8 @@
         "action": {
           "id": "a5",
           "type": "MoveUnit",
-          "label": "Move unit 2 from base to left"
+          "label": "Move unit 2 from base to left",
+          "card_id": "ogn-211-298"
         },
         "to": [
           "18d8c82d5e062c23"
@@ -414,7 +419,8 @@
         "action": {
           "id": "a6",
           "type": "MoveUnit",
-          "label": "Move unit 2 from base to right"
+          "label": "Move unit 2 from base to right",
+          "card_id": "ogn-211-298"
         },
         "to": [
           "893e33277702dbd2"

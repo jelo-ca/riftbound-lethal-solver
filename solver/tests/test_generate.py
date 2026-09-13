@@ -121,7 +121,24 @@ def test_evaluate_candidate_rejects_short_solutions():
         cards_played_this_turn=0,
     )
     assert solve(root, cards={}, max_depth=4) is not None
-    assert evaluate_candidate(root, cards={}, puzzle_id="test") is None
+    assert evaluate_candidate(root, cards={}, puzzle_id="test", seen_signatures=set()) is None
+
+
+def test_evaluate_candidate_rejects_an_already_seen_signature():
+    # puzzle 007's own root (solver.author_puzzle_007) is a known-good
+    # candidate that clears every other filter - run it through
+    # evaluate_candidate twice with a shared seen_signatures set; the
+    # second call must be rejected purely by the dedup filter.
+    from solver import author_puzzle_007
+    from solver.engine.abilities import RIDE_THE_WIND
+
+    root = author_puzzle_007.build_root()
+    cards = {RIDE_THE_WIND: author_puzzle_007.RIDE_THE_WIND_CARD}
+    seen: set = set()
+    first = evaluate_candidate(root, cards, "test-dedup-1", seen)
+    assert first is not None
+    second = evaluate_candidate(root, cards, "test-dedup-2", seen)
+    assert second is None
 
 
 def test_generate_survivors_all_satisfy_the_filters():
