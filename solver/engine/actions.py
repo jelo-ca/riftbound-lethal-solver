@@ -24,7 +24,7 @@ import dataclasses
 from dataclasses import dataclass
 from typing import Optional
 
-from . import combat
+from . import battlefields, combat
 from .cards import CardDef
 from .combat import Assignment
 from .state import (
@@ -389,6 +389,25 @@ def return_unit_to_hand(state: GameState, battlefield_id: str, instance_id: int)
     return replace_player(state, unit.controller, new_owner)
 
 
+def battlefield_effect_id(state: GameState, zone: Zone) -> Optional[str]:
+    """The registered effect on `zone`'s battlefield, or None for Base or
+    an effect-less battlefield."""
+    if zone == "base":
+        return None
+    for bf in state.battlefields:
+        if bf.battlefield_id == zone:
+            return bf.effect_id
+    return None
+
+
+def effective_keywords(state: GameState, unit: UnitInstance, zone: Zone) -> frozenset[str]:
+    """A unit's own keywords plus any its current battlefield grants it
+    (e.g. Windswept Hillock: "Units here have [Ganking]") — always ask
+    for these rather than reading `unit.keywords` directly wherever the
+    unit's location could matter."""
+    return unit.keywords | battlefields.granted_keywords(battlefield_effect_id(state, zone))
+
+
 def is_legal_destination(state: GameState, unit: UnitInstance, from_zone: Zone, to_zone: Zone) -> bool:
     """Zone-rule legality for a unit's own Standard Move only (rule
     145.2.a Base<->Battlefield, rule 810 Ganking for Battlefield-to-
@@ -397,16 +416,20 @@ def is_legal_destination(state: GameState, unit: UnitInstance, from_zone: Zone, 
     are NOT bound by it (see is_legal_ability_move_destination) — a spell
     states explicitly if it's restricted to Base (e.g. "Move a unit from a
     battlefield to its base"), otherwise it can move a unit to any zone
-    including Battlefield-to-Battlefield with no Ganking requirement."""
+    including Battlefield-to-Battlefield with no Ganking requirement.
+
+    Ganking can also come from the battlefield the unit is standing on
+    rather than the unit's own text (Windswept Hillock), so this reads
+    effective_keywords, not unit.keywords."""
     if from_zone == to_zone:
         return False
     if from_zone == "base":
         return to_zone != "base" and any(bf.battlefield_id == to_zone for bf in state.battlefields)
     if to_zone == "base":
-        return True
+        return not battlefields.blocks_move_to_base(battlefield_effect_id(state, from_zone))
     if not any(bf.battlefield_id == to_zone for bf in state.battlefields):
         return False
-    return "Ganking" in unit.keywords
+    return "Ganking" in effective_keywords(state, unit, from_zone)
 
 
 def is_legal_ability_move_destination(state: GameState, from_zone: Zone, to_zone: Zone) -> bool:
@@ -415,10 +438,16 @@ def is_legal_ability_move_destination(state: GameState, from_zone: Zone, to_zone
     default, no Ganking requirement, since that restriction is specific to
     a unit's own Standard Move (see is_legal_destination). A spell that's
     actually restricted (e.g. "Move a unit from a battlefield to its
-    base") enforces that narrower rule itself rather than calling this."""
+    base") enforces that narrower rule itself rather than calling this.
+
+    A battlefield's own movement restriction (Vilemaw's Lair: "Units
+    can't move from here to base") DOES bind spell-granted moves — its
+    text restricts movement itself, not one particular way of moving."""
     if from_zone == to_zone:
         return False
     if to_zone != "base" and not any(bf.battlefield_id == to_zone for bf in state.battlefields):
+        return False
+    if to_zone == "base" and battlefields.blocks_move_to_base(battlefield_effect_id(state, from_zone)):
         return False
     return from_zone == "base" or any(bf.battlefield_id == from_zone for bf in state.battlefields)
 
@@ -449,8 +478,10 @@ def is_legal_resolve_combat(state: GameState, action: ResolveCombat) -> bool:
     if not combat.is_combat_triggered(state, unit, action.to_zone):
         return False
     _, _, _, defender_units = combat.determine_sides(state, unit, action.to_zone)
-    our_pool = combat.unit_combat_might(unit, "attacker")
-    return action.our_assignment in combat.enumerate_assignments(defender_units, our_pool)
+    destination_effect = battlefield_effect_id(state, action.to_zone)
+    our_pool = combat.effective_might(unit, "attacker", destination_effect)
+    return action.our_assignment in combat.enumerate_assignments(
+        defender_units, our_pool, "defender", destination_effect)
 
 
 def relocate_unit(state: GameState, instance_id: int, from_zone: Zone, to_zone: Zone,
@@ -550,8 +581,10 @@ def legal_board_actions(state: GameState, cards: dict[str, CardDef]) -> list[Act
     def add_move_candidates(unit: UnitInstance, from_zone: Zone, to_zone: Zone) -> None:
         if to_zone != "base" and combat.is_combat_triggered(state, unit, to_zone):
             _, _, _, defender_units = combat.determine_sides(state, unit, to_zone)
-            our_pool = combat.unit_combat_might(unit, "attacker")
-            for assignment in combat.enumerate_assignments(defender_units, our_pool):
+            destination_effect = battlefield_effect_id(state, to_zone)
+            our_pool = combat.effective_might(unit, "attacker", destination_effect)
+            for assignment in combat.enumerate_assignments(
+                    defender_units, our_pool, "defender", destination_effect):
                 action = ResolveCombat(
                     instance_id=unit.instance_id, from_zone=from_zone, to_zone=to_zone,
                     our_assignment=assignment,

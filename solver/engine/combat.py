@@ -25,7 +25,9 @@ from __future__ import annotations
 
 import dataclasses
 import re
+from typing import Optional
 
+from . import battlefields
 from .state import BattlefieldState, GameState, UnitInstance, replace_player
 
 Assignment = tuple[tuple[int, int], ...]  # (instance_id, damage_amount) pairs
@@ -33,12 +35,27 @@ Assignment = tuple[tuple[int, int], ...]  # (instance_id, damage_amount) pairs
 _KEYWORD_BONUS = re.compile(r"^(Assault|Shield)(?: (\d+))?$")
 
 
-def unit_combat_might(unit: UnitInstance, designation: str) -> int:
-    """Effective Might for Combat Damage Step summing, including Assault
-    ("+Might while I'm an attacker") / Shield ("+Might while I'm a
-    defender") — read directly off keyword text, e.g. "Assault 2" -> +2,
-    bare "Assault" -> +1. `designation` is "attacker" or "defender"."""
-    bonus = 0
+def effective_might(unit: UnitInstance, designation: Optional[str] = None,
+                     effect_id: Optional[str] = None) -> int:
+    """Might is ONE stat doing two jobs — how much damage the unit deals,
+    and how much damage kills it (Lethal Damage is non-zero damage >=
+    Might) — so every bonus to it raises BOTH. Confirmed directly against
+    the rules; the original implementation applied bonuses only to damage
+    dealt, which made an Assault attacker hit harder without being any
+    harder to kill.
+
+    Keyword bonuses are CONDITIONAL on the keyword's own trigger, so they
+    need `designation` ("attacker"/"defender") and count only while that
+    condition holds — a 3-Might Shield unit still dies to a 3-damage spell
+    outside combat, since it isn't defending at that moment. Pass
+    designation=None for any non-combat context to get exactly that.
+
+    A battlefield's flat bonus (`effect_id`, e.g. Trifarian War Camp's
+    "Units here have +1 Might") is positional rather than conditional, so
+    it applies in ANY context while the unit is standing there — including
+    against non-combat damage.
+    """
+    bonus = battlefields.might_bonus(effect_id)
     for keyword in unit.keywords:
         match = _KEYWORD_BONUS.match(keyword)
         if not match:
@@ -86,21 +103,30 @@ def our_assignment_options(state: GameState, mover: UnitInstance, destination_id
     which side it'll end up on.
     """
     attacker_ctrl, defender_ctrl, attacker_units, defender_units = determine_sides(state, mover, destination_id)
+    destination = next(bf for bf in state.battlefields if bf.battlefield_id == destination_id)
     we_are_attacker = attacker_ctrl == state.turn_player
     our_units = attacker_units if we_are_attacker else defender_units
     our_designation = "attacker" if we_are_attacker else "defender"
     target_units = defender_units if we_are_attacker else attacker_units
-    our_pool = sum(unit_combat_might(u, our_designation) for u in our_units)
-    return enumerate_assignments(target_units, our_pool)
+    target_designation = "defender" if we_are_attacker else "attacker"
+    our_pool = sum(effective_might(u, our_designation, destination.effect_id) for u in our_units)
+    return enumerate_assignments(target_units, our_pool, target_designation, destination.effect_id)
 
 
-def enumerate_assignments(targets: frozenset[UnitInstance], pool: int) -> list[Assignment]:
+def enumerate_assignments(targets: frozenset[UnitInstance], pool: int,
+                           designation: Optional[str] = None,
+                           effect_id: Optional[str] = None) -> list[Assignment]:
     """All distinct valid ways to assign `pool` damage among `targets`,
     per the lethal-first rule (rule 465.2.c): a unit must receive its
     full remaining-lethal amount before a different unit can be targeted;
     the assigning player isn't required to touch every unit. Overkill
     beyond lethal isn't tracked separately (doesn't change which units
-    die — see design/09-combat-resolution.md)."""
+    die — see design/09-combat-resolution.md).
+
+    `designation`/`effect_id` describe the TARGETS (the side receiving
+    this damage), since what counts as lethal against them depends on
+    their own effective Might — a 3-Might Shield unit being attacked
+    needs 4, not 3."""
     target_list = sorted(targets, key=lambda u: u.instance_id)
     if pool <= 0 or not target_list:
         return [()]
@@ -112,7 +138,7 @@ def enumerate_assignments(targets: frozenset[UnitInstance], pool: int) -> list[A
             results.append(dict(assigned))
             return
         for i, unit in enumerate(remaining):
-            lethal_needed = max(1, unit.might - unit.damage)
+            lethal_needed = max(1, effective_might(unit, designation, effect_id) - unit.damage)
             hit = min(lethal_needed, pool_left)
             next_assigned = dict(assigned)
             next_assigned[unit.instance_id] = next_assigned.get(unit.instance_id, 0) + hit
@@ -133,16 +159,20 @@ def enumerate_assignments(targets: frozenset[UnitInstance], pool: int) -> list[A
     return unique
 
 
-def _apply_damage(units: frozenset[UnitInstance], assignment: Assignment) -> frozenset[UnitInstance]:
+def _apply_damage(units: frozenset[UnitInstance], assignment: Assignment,
+                   designation: Optional[str] = None,
+                   effect_id: Optional[str] = None) -> frozenset[UnitInstance]:
     """Marks damage per `assignment` and removes any unit whose damage
-    now meets or exceeds its Might (dead — rule: Lethal Damage is
-    non-zero damage >= Might)."""
+    now meets or exceeds its EFFECTIVE Might (dead — rule: Lethal Damage
+    is non-zero damage >= Might). `designation`/`effect_id` are these
+    units' own, so an Assault attacker / Shield defender / unit standing
+    on a Might-granting battlefield is correspondingly harder to kill."""
     damage_by_id = dict(assignment)
     survivors = set()
     for unit in units:
         extra = damage_by_id.get(unit.instance_id, 0)
         new_damage = unit.damage + extra
-        if new_damage < unit.might:
+        if new_damage < effective_might(unit, designation, effect_id):
             survivors.add(dataclasses.replace(unit, damage=new_damage))
     return frozenset(survivors)
 
@@ -167,7 +197,10 @@ def deal_damage_to_unit(state: GameState, battlefield_id: str, target_instance_i
     whitelist produces that case).
     """
     bf = next(b for b in state.battlefields if b.battlefield_id == battlefield_id)
-    remaining = _apply_damage(bf.units, ((target_instance_id, amount),))
+    # designation=None: this isn't combat, so no Assault/Shield bonus applies
+    # (a 3-Might Shield unit dies to 3 direct damage). The battlefield's own
+    # flat bonus is positional, so it still counts.
+    remaining = _apply_damage(bf.units, ((target_instance_id, amount),), None, bf.effect_id)
     controllers = {u.controller for u in remaining}
     new_controller = next(iter(controllers)) if len(controllers) == 1 else None
     return _replace_battlefield(state, dataclasses.replace(bf, units=remaining, controller=new_controller))
@@ -193,8 +226,13 @@ def apply_combat(state: GameState, mover: UnitInstance, from_zone: str, destinat
     attacker_units = frozenset({moved_mover})
     defender_units = destination.units
 
-    surviving_attackers = _heal(_apply_damage(attacker_units, defender_assignment))
-    surviving_defenders = _heal(_apply_damage(defender_units, attacker_assignment))
+    # Combat resolves AT the destination, so its effect_id applies to both
+    # sides — including the attacker moving in (Trifarian War Camp's text
+    # says so explicitly: "This includes attackers").
+    surviving_attackers = _heal(
+        _apply_damage(attacker_units, defender_assignment, "attacker", destination.effect_id))
+    surviving_defenders = _heal(
+        _apply_damage(defender_units, attacker_assignment, "defender", destination.effect_id))
 
     # Remove the mover from its origin zone (it's now at the destination,
     # dead or alive — either way it leaves `from_zone`).
@@ -244,15 +282,19 @@ def enumerate_combat_outcomes(state: GameState, mover: UnitInstance, from_zone: 
     # bug caught by test_and_node_accepts_when_every_opponent_response_still_wins
     # (it silently produced a single all-zero "opponent did nothing"
     # outcome instead of enumerating real opponent choices).
+    destination = next(bf for bf in state.battlefields if bf.battlefield_id == destination_id)
     if we_are_attacker:
         opponent_units, opponent_designation, opponent_targets = defender_units, "defender", attacker_units
+        target_designation = "attacker"
     else:
         opponent_units, opponent_designation, opponent_targets = attacker_units, "attacker", defender_units
+        target_designation = "defender"
 
-    opponent_pool = sum(unit_combat_might(u, opponent_designation) for u in opponent_units)
+    opponent_pool = sum(effective_might(u, opponent_designation, destination.effect_id) for u in opponent_units)
 
     outcomes = []
-    for opponent_assignment in enumerate_assignments(opponent_targets, opponent_pool):
+    for opponent_assignment in enumerate_assignments(opponent_targets, opponent_pool,
+                                                      target_designation, destination.effect_id):
         attacker_assignment = our_assignment if we_are_attacker else opponent_assignment
         defender_assignment = opponent_assignment if we_are_attacker else our_assignment
         outcomes.append(apply_combat(

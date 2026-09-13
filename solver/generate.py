@@ -28,6 +28,7 @@ from .engine.abilities import (
     VENGEANCE,
     YASUO_WINDRIDER,
 )
+from .engine.battlefields import REGISTERED as BATTLEFIELD_EFFECTS
 from .engine.cards import CardDef
 from .engine.state import BattlefieldState, GameState, PlayerState, RunePool, UnitInstance, canonical_key
 from .export import export_puzzle, resolve_action_outcomes
@@ -84,6 +85,11 @@ OUR_UNIT_POOL = [LEGION_REARGUARD, FAITHFUL_MANUFACTOR, VANGUARD_CAPTAIN,
 # Zaunite Bouncer, can currently only fire in a HAND-authored puzzle,
 # never a generated one, until that's added).
 HAND_SPELL_POOL = [RIDE_THE_WIND, VENGEANCE, CHARM]
+
+# Battlefield effects worth sampling (engine/battlefields.py's registered
+# static ones) and how often a given battlefield carries one.
+BATTLEFIELD_EFFECT_POOL = sorted(BATTLEFIELD_EFFECTS)
+BATTLEFIELD_EFFECT_CHANCE = 0.3
 
 STARTING_SCORE = 6  # design decision: forces a two-point turn, see doc
 MIN_STRATEGY_SIZE = 4
@@ -152,6 +158,11 @@ def sample_position(rng: random.Random) -> tuple[GameState, dict[str, CardDef]]:
     battlefields = []
     for bf_id in battlefield_ids:
         roll = rng.random()
+        # A battlefield carries one of the registered static effects some of
+        # the time (engine/battlefields.py) - these change combat math or
+        # movement legality for whoever stands there, so they're a real
+        # source of forced lines that no card in hand could produce.
+        effect_id = rng.choice(BATTLEFIELD_EFFECT_POOL) if rng.random() < BATTLEFIELD_EFFECT_CHANCE else None
         if remaining_our and roll < 0.4:
             card_id = remaining_our.pop(0)
             card = CARD_POOL[card_id]
@@ -164,14 +175,14 @@ def sample_position(rng: random.Random) -> tuple[GameState, dict[str, CardDef]]:
             unit = UnitInstance(card_id=card_id, instance_id=new_id(), controller=0,
                                  might=card.might, keywords=card.keywords,
                                  exhausted=False, damage=0, is_token=False)
-            battlefields.append(BattlefieldState(bf_id, 0, frozenset({unit}), None))
+            battlefields.append(BattlefieldState(bf_id, 0, frozenset({unit}), effect_id))
         elif roll < 0.65:
             unit = UnitInstance(card_id="generic-opponent", instance_id=new_id(), controller=1,
                                  might=rng.randint(1, 5), keywords=frozenset(),
                                  exhausted=False, damage=0, is_token=False)
-            battlefields.append(BattlefieldState(bf_id, 1, frozenset({unit}), None))
+            battlefields.append(BattlefieldState(bf_id, 1, frozenset({unit}), effect_id))
         else:
-            battlefields.append(BattlefieldState(bf_id, None, frozenset(), None))
+            battlefields.append(BattlefieldState(bf_id, None, frozenset(), effect_id))
 
     our_base_units = []
     for card_id in remaining_our:
