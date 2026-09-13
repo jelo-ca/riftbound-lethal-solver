@@ -1,5 +1,8 @@
 import random
 
+import pytest
+
+from solver import generate as generate_module
 from solver.engine.actions import MoveUnit
 from solver.engine.state import BattlefieldState, GameState, PlayerState, RunePool, UnitInstance
 from solver.generate import (
@@ -125,8 +128,18 @@ def test_evaluate_candidate_rejects_short_solutions():
     assert evaluate_candidate(root, cards={}, puzzle_id="test", seen_signatures=set()) is None
 
 
-def test_evaluate_candidate_rejects_an_already_seen_signature():
-    # Get one real survivor under the CURRENT filters via generate(), then
+@pytest.fixture
+def no_known_signatures(monkeypatch):
+    """Isolate generation from the live registry and declined list. These
+    tests are about the dedup MECHANISM, not about which tricks happen to
+    be promoted or declined right now — without this they break every
+    time a trick gets promoted or declined, which has already happened
+    twice."""
+    monkeypatch.setattr(generate_module, "known_signatures", lambda: set())
+
+
+def test_evaluate_candidate_rejects_an_already_seen_signature(no_known_signatures):
+    # Get one real survivor under the current filters via generate(), then
     # rebuild that exact position with sample_for_attempt - since each
     # attempt has its own RNG, attempt N reproduces exactly regardless of
     # how the run was parallelised. Running it through evaluate_candidate
@@ -143,12 +156,13 @@ def test_evaluate_candidate_rejects_an_already_seen_signature():
     assert second is None
 
 
-def test_parallel_and_serial_generation_agree():
+def test_parallel_and_serial_generation_agree(no_known_signatures):
     """The whole point of doing dedup in the parent in attempt order: the
     same seed must give the same survivors no matter how many workers
     split the attempts."""
     serial, serial_attempts = generate(count=1, seed=5, attempt_multiplier=2000, workers=1)
     parallel, parallel_attempts = generate(count=1, seed=5, attempt_multiplier=2000, workers=4)
+    assert serial, "expected this seed to find a survivor - otherwise the comparison is vacuous"
     assert serial_attempts == parallel_attempts
     assert [s["puzzle_id"] for s in serial] == [p["puzzle_id"] for p in parallel]
 

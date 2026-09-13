@@ -43,18 +43,33 @@ from .engine import abilities
 Signature = tuple[tuple[str, str], ...]
 
 REGISTRY_PATH = Path(__file__).parent.parent / "puzzles" / "maneuvers.json"
+# Tricks we've generated, audited, and decided NOT to promote. Without
+# this the registry only ever learns from puzzles we KEEP, so a trick we
+# keep rejecting keeps coming back and eating the whole attempt budget -
+# the bounce-and-double-attack line turned up in every batch from the
+# first one onward for exactly this reason.
+DECLINED_PATH = Path(__file__).parent.parent / "puzzles" / "declined-maneuvers.json"
 
 _MOVE_ACTION_TYPES = {"MoveUnit", "ResolveCombat"}
 
 
-def _registered_mechanic_card_ids() -> set[str]:
-    return (set(abilities.SPELL_EFFECTS) | set(abilities.ABILITY_EFFECTS)
-            | set(abilities.UNIT_PLAY_TRIGGERS) | set(abilities.MOVE_COUNT_TRIGGERS))
+def _move_relevant_card_ids() -> set[str]:
+    """Cards whose registered mechanic changes what a MOVE itself means —
+    only move-count triggers (Yasuo - Windrider) qualify today.
+
+    A card whose mechanic is a play-trigger (Blitzcrank) or an activated
+    ability (Caitlyn) is just a body when all it does is move, so it must
+    bucket as vanilla like any other body. Keying moves on raw card_id
+    instead let one trick read as three different ones purely because a
+    different mechanic card happened to fill the walk-in slot — seen in a
+    live batch where 50,000 attempts produced three "distinct" survivors
+    that were all the same bounce-and-double-attack line."""
+    return set(abilities.MOVE_COUNT_TRIGGERS)
 
 
 def _mover_token(action: dict) -> str:
     card_id = action["card_id"]
-    if card_id in _registered_mechanic_card_ids():
+    if card_id in _move_relevant_card_ids():
         return card_id
     return "vanilla:" + ",".join(action["keywords"])
 
@@ -126,6 +141,34 @@ def load_registry() -> dict[str, Signature]:
 def save_registry(registry: dict[str, Signature]) -> None:
     ordered = {puzzle_id: list(sig) for puzzle_id, sig in sorted(registry.items())}
     REGISTRY_PATH.write_text(json.dumps(ordered, indent=2) + "\n")
+
+
+def load_declined() -> list[Signature]:
+    if not DECLINED_PATH.exists():
+        return []
+    raw = json.loads(DECLINED_PATH.read_text())
+    return [tuple(tuple(step) for step in entry["signature"]) for entry in raw]
+
+
+def decline_signature(signature: Signature, note: str = "") -> bool:
+    """Records a signature as seen-and-rejected so later batches skip it.
+    Returns False if it was already known. `note` is for the human
+    reading the file later — why this trick wasn't worth keeping."""
+    if not signature:
+        return False
+    existing = load_declined()
+    if signature in existing:
+        return False
+    raw = json.loads(DECLINED_PATH.read_text()) if DECLINED_PATH.exists() else []
+    raw.append({"note": note, "signature": [list(step) for step in signature]})
+    DECLINED_PATH.write_text(json.dumps(raw, indent=2) + "\n")
+    return True
+
+
+def known_signatures() -> set[Signature]:
+    """Everything a new candidate has to be different from: promoted
+    puzzles plus explicitly declined tricks."""
+    return set(load_registry().values()) | set(load_declined())
 
 
 def register_puzzle(puzzle_id: str, result: dict) -> Signature:

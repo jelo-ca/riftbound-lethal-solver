@@ -34,7 +34,7 @@ from .engine.battlefields import REGISTERED as BATTLEFIELD_EFFECTS
 from .engine.cards import CardDef
 from .engine.state import BattlefieldState, GameState, PlayerState, RunePool, UnitInstance, canonical_key
 from .export import export_puzzle, resolve_action_outcomes
-from .maneuvers import Signature, is_duplicate, load_registry, maneuver_signature
+from .maneuvers import Signature, is_duplicate, known_signatures, maneuver_signature
 from .search import Strategy, count_winning_strategies, solve
 
 OUTPUT_DIR = Path(__file__).parent.parent / "puzzles" / "generated"
@@ -316,7 +316,7 @@ def generate(count: int, seed: Optional[int] = None, attempt_multiplier: int = 2
     which is what the tests use to stay fast and debuggable.
     """
     max_attempts = count * attempt_multiplier
-    seen_signatures: set[Signature] = set(load_registry().values())
+    seen_signatures: set[Signature] = known_signatures()
     survivors: list[dict] = []
     if workers is None:
         workers = os.cpu_count() or 1

@@ -1,5 +1,5 @@
 from solver import maneuvers
-from solver.engine.abilities import RIDE_THE_WIND
+from solver.engine.abilities import BLITZCRANK_IMPASSIVE, CAITLYN_PATROLLING, YASUO_WINDRIDER
 
 
 def make_export(root, solution, edges):
@@ -52,14 +52,80 @@ def test_maneuver_signature_keeps_different_keyword_sets_distinct():
     assert maneuvers.maneuver_signature(tank) == (("MoveUnit", "vanilla:Tank"),)
 
 
-def test_maneuver_signature_keeps_raw_card_id_for_a_registered_mechanic():
-    """A card with a registered mechanic (here, the real Ride The Wind)
-    keeps its actual card_id as the token even for a MoveUnit/
-    ResolveCombat step — only UNREGISTERED (vanilla) movers get bucketed
-    by keyword set."""
+def test_move_step_keeps_raw_card_id_only_for_a_move_relevant_mechanic():
+    """Yasuo - Windrider's move-count trigger changes what a move MEANS,
+    so a move by him stays keyed to his card_id."""
     result = make_export(root="s0", solution={"s0": "a1"},
-                          edges={"s0": [move_action("a1", RIDE_THE_WIND)]})
-    assert maneuvers.maneuver_signature(result) == (("MoveUnit", RIDE_THE_WIND),)
+                          edges={"s0": [move_action("a1", YASUO_WINDRIDER, keywords=("Ganking",))]})
+    assert maneuvers.maneuver_signature(result) == (("MoveUnit", YASUO_WINDRIDER),)
+
+
+def test_a_mechanic_card_that_merely_moves_buckets_as_vanilla():
+    """Caitlyn's ability and Blitzcrank's play-trigger are irrelevant when
+    all the card does is walk into a lane — treating them as distinctive
+    made one trick read as three in a live batch."""
+    caitlyn = make_export(root="s0", solution={"s0": "a1"},
+                           edges={"s0": [move_action("a1", CAITLYN_PATROLLING)]})
+    plain = make_export(root="s0", solution={"s0": "a1"},
+                         edges={"s0": [move_action("a1", "ogn-211-298")]})
+    assert maneuvers.maneuver_signature(caitlyn) == maneuvers.maneuver_signature(plain)
+    assert maneuvers.maneuver_signature(caitlyn) == (("MoveUnit", "vanilla:"),)
+
+
+def test_a_mechanic_card_moving_still_keeps_its_keywords():
+    """Blitzcrank buckets as vanilla, but Tank is still a real combat
+    difference, so it stays in the bucket label."""
+    result = make_export(root="s0", solution={"s0": "a1"},
+                          edges={"s0": [move_action("a1", BLITZCRANK_IMPASSIVE, keywords=("Tank",))]})
+    assert maneuvers.maneuver_signature(result) == (("MoveUnit", "vanilla:Tank"),)
+
+
+def test_non_move_steps_still_key_on_the_real_card():
+    """The bucketing is specific to MOVE steps - actually PLAYING a spell
+    or ACTIVATING an ability is entirely about which card it is."""
+    result = make_export(
+        root="s0", solution={"s0": "a1"},
+        edges={"s0": [{"action": {"id": "a1", "type": "ActivateAbility",
+                                   "card_id": CAITLYN_PATROLLING, "keywords": []}, "to": ["s1"]}]},
+    )
+    assert maneuvers.maneuver_signature(result) == (("ActivateAbility", CAITLYN_PATROLLING),)
+
+
+# --- declined tricks ---
+
+
+def test_declined_signatures_are_persisted_and_reloaded(tmp_path, monkeypatch):
+    monkeypatch.setattr(maneuvers, "DECLINED_PATH", tmp_path / "declined.json")
+    assert maneuvers.load_declined() == []
+
+    trick = sig(("ResolveCombat", "vanilla:"), ("PlaySpell", "rtw"), ("ResolveCombat", "vanilla:"))
+    assert maneuvers.decline_signature(trick, note="seen every batch, not interesting") is True
+    assert maneuvers.load_declined() == [trick]
+    # Declining the same trick twice is a no-op rather than a duplicate entry.
+    assert maneuvers.decline_signature(trick) is False
+    assert maneuvers.load_declined() == [trick]
+
+
+def test_known_signatures_covers_promoted_and_declined(tmp_path, monkeypatch):
+    monkeypatch.setattr(maneuvers, "REGISTRY_PATH", tmp_path / "maneuvers.json")
+    monkeypatch.setattr(maneuvers, "DECLINED_PATH", tmp_path / "declined.json")
+    promoted = make_export(root="s0", solution={"s0": "a1"}, edges={"s0": [move_action("a1", "cardA")]})
+    maneuvers.register_puzzle("puzzle-x", promoted)
+    declined = sig(("PlaySpell", "rtw"), ("MoveUnit", "vanilla:"), ("ResolveCombat", "vanilla:"))
+    maneuvers.decline_signature(declined)
+
+    known = maneuvers.known_signatures()
+    assert declined in known
+    assert maneuvers.maneuver_signature(promoted) in known
+
+
+def test_a_declined_trick_is_treated_as_duplicate(tmp_path, monkeypatch):
+    """The point of the declined list: a trick we've already rejected
+    stops consuming the attempt budget in later batches."""
+    monkeypatch.setattr(maneuvers, "DECLINED_PATH", tmp_path / "declined.json")
+    trick = sig(("ResolveCombat", "vanilla:"), ("PlaySpell", "rtw"), ("ResolveCombat", "vanilla:"))
+    maneuvers.decline_signature(trick)
+    assert maneuvers.is_duplicate(trick, maneuvers.known_signatures())
 
 
 # --- is_duplicate: exact match plus dominant-containment ---
