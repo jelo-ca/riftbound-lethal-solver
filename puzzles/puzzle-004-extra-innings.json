@@ -1,12 +1,12 @@
 {
   "schema_version": 2,
   "puzzle_id": "puzzle-004-extra-innings",
-  "root": "a9ba3e31db3015b8",
+  "root": "f92feaa0e092b757",
   "solution": {
-    "a9ba3e31db3015b8": "a2"
+    "f92feaa0e092b757": "a2"
   },
   "nodes": {
-    "a9ba3e31db3015b8": {
+    "f92feaa0e092b757": {
       "turn_player": 0,
       "players": [
         {
@@ -58,7 +58,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "3b13002c752bfb52": {
+    "efbf3e039f1a8f27": {
       "turn_player": 0,
       "players": [
         {
@@ -104,7 +104,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "72a71b130fcbeaf2": {
+    "60e62eb9f150bec2": {
       "turn_player": 0,
       "players": [
         {
@@ -151,7 +151,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "858d406f35a17ee9": {
+    "0a67ff2dd651e41c": {
       "turn_player": 0,
       "players": [
         {
@@ -197,7 +197,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "47bcc881b6c0b718": {
+    "9609aeb9c1dbe1f9": {
       "turn_player": 0,
       "players": [
         {
@@ -246,7 +246,7 @@
     }
   },
   "edges": {
-    "a9ba3e31db3015b8": [
+    "f92feaa0e092b757": [
       {
         "action": {
           "id": "a1",
@@ -256,7 +256,7 @@
           "keywords": []
         },
         "to": [
-          "3b13002c752bfb52"
+          "efbf3e039f1a8f27"
         ],
         "adversarial": false
       },
@@ -269,12 +269,12 @@
           "keywords": []
         },
         "to": [
-          "72a71b130fcbeaf2"
+          "60e62eb9f150bec2"
         ],
         "adversarial": false
       }
     ],
-    "3b13002c752bfb52": [
+    "efbf3e039f1a8f27": [
       {
         "action": {
           "id": "a3",
@@ -284,7 +284,7 @@
           "keywords": []
         },
         "to": [
-          "858d406f35a17ee9"
+          "0a67ff2dd651e41c"
         ],
         "adversarial": false
       },
@@ -297,15 +297,15 @@
           "keywords": []
         },
         "to": [
-          "47bcc881b6c0b718"
+          "9609aeb9c1dbe1f9"
         ],
         "adversarial": false
       }
     ]
   },
   "terminal": {
-    "72a71b130fcbeaf2": "win",
-    "858d406f35a17ee9": "dead_end",
-    "47bcc881b6c0b718": "win"
+    "60e62eb9f150bec2": "win",
+    "0a67ff2dd651e41c": "dead_end",
+    "9609aeb9c1dbe1f9": "win"
   }
 }

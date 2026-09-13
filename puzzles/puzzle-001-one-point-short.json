@@ -1,13 +1,13 @@
 {
   "schema_version": 2,
   "puzzle_id": "puzzle-001-one-point-short",
-  "root": "a1a905b761fec2b3",
+  "root": "6d718803da46d691",
   "solution": {
-    "fe54bc80b210fae8": "a6",
-    "a1a905b761fec2b3": "a1"
+    "3a18cc04987602f4": "a6",
+    "6d718803da46d691": "a1"
   },
   "nodes": {
-    "a1a905b761fec2b3": {
+    "6d718803da46d691": {
       "turn_player": 0,
       "players": [
         {
@@ -61,7 +61,7 @@
       "scored_this_turn": [],
       "cards_played_this_turn": 0
     },
-    "fe54bc80b210fae8": {
+    "3a18cc04987602f4": {
       "turn_player": 0,
       "players": [
         {
@@ -118,7 +118,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "59a1688648dbf381": {
+    "7ed5f3dfa5574d00": {
       "turn_player": 0,
       "players": [
         {
@@ -175,7 +175,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "7783c9158c69bc68": {
+    "cedb224d1ec9a305": {
       "turn_player": 0,
       "players": [
         {
@@ -232,7 +232,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "de5ecacea90d0ca3": {
+    "78fd18d04bef76ee": {
       "turn_player": 0,
       "players": [
         {
@@ -289,7 +289,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "be8a49f0359240f3": {
+    "b908fe5039286a2f": {
       "turn_player": 0,
       "players": [
         {
@@ -345,7 +345,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "5a41570707a0ba31": {
+    "93c15164e52daaf8": {
       "turn_player": 0,
       "players": [
         {
@@ -403,7 +403,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "5c9ac19ea27f145a": {
+    "e66f28c9d42181ec": {
       "turn_player": 0,
       "players": [
         {
@@ -461,7 +461,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "3795a771b01eb2f6": {
+    "95bd2d5c95455eef": {
       "turn_player": 0,
       "players": [
         {
@@ -519,7 +519,7 @@
     }
   },
   "edges": {
-    "a1a905b761fec2b3": [
+    "6d718803da46d691": [
       {
         "action": {
           "id": "a1",
@@ -529,7 +529,7 @@
           "keywords": []
         },
         "to": [
-          "fe54bc80b210fae8"
+          "3a18cc04987602f4"
         ],
         "adversarial": false
       },
@@ -542,7 +542,7 @@
           "keywords": []
         },
         "to": [
-          "59a1688648dbf381"
+          "7ed5f3dfa5574d00"
         ],
         "adversarial": false
       },
@@ -555,7 +555,7 @@
           "keywords": []
         },
         "to": [
-          "7783c9158c69bc68"
+          "cedb224d1ec9a305"
         ],
         "adversarial": false
       },
@@ -568,12 +568,12 @@
           "keywords": []
         },
         "to": [
-          "de5ecacea90d0ca3"
+          "78fd18d04bef76ee"
         ],
         "adversarial": false
       }
     ],
-    "fe54bc80b210fae8": [
+    "3a18cc04987602f4": [
       {
         "action": {
           "id": "a5",
@@ -583,7 +583,7 @@
           "keywords": []
         },
         "to": [
-          "be8a49f0359240f3"
+          "b908fe5039286a2f"
         ],
         "adversarial": false
       },
@@ -596,12 +596,12 @@
           "keywords": []
         },
         "to": [
-          "5a41570707a0ba31"
+          "93c15164e52daaf8"
         ],
         "adversarial": false
       }
     ],
-    "59a1688648dbf381": [
+    "7ed5f3dfa5574d00": [
       {
         "action": {
           "id": "a7",
@@ -611,7 +611,7 @@
           "keywords": []
         },
         "to": [
-          "5c9ac19ea27f145a"
+          "e66f28c9d42181ec"
         ],
         "adversarial": false
       },
@@ -624,12 +624,12 @@
           "keywords": []
         },
         "to": [
-          "3795a771b01eb2f6"
+          "95bd2d5c95455eef"
         ],
         "adversarial": false
       }
     ],
-    "7783c9158c69bc68": [
+    "cedb224d1ec9a305": [
       {
         "action": {
           "id": "a9",
@@ -639,7 +639,7 @@
           "keywords": []
         },
         "to": [
-          "be8a49f0359240f3"
+          "b908fe5039286a2f"
         ],
         "adversarial": false
       },
@@ -652,12 +652,12 @@
           "keywords": []
         },
         "to": [
-          "5c9ac19ea27f145a"
+          "e66f28c9d42181ec"
         ],
         "adversarial": false
       }
     ],
-    "de5ecacea90d0ca3": [
+    "78fd18d04bef76ee": [
       {
         "action": {
           "id": "a11",
@@ -667,7 +667,7 @@
           "keywords": []
         },
         "to": [
-          "5a41570707a0ba31"
+          "93c15164e52daaf8"
         ],
         "adversarial": false
       },
@@ -680,16 +680,16 @@
           "keywords": []
         },
         "to": [
-          "3795a771b01eb2f6"
+          "95bd2d5c95455eef"
         ],
         "adversarial": false
       }
     ]
   },
   "terminal": {
-    "be8a49f0359240f3": "dead_end",
-    "5a41570707a0ba31": "win",
-    "5c9ac19ea27f145a": "win",
-    "3795a771b01eb2f6": "dead_end"
+    "b908fe5039286a2f": "dead_end",
+    "93c15164e52daaf8": "win",
+    "e66f28c9d42181ec": "win",
+    "95bd2d5c95455eef": "dead_end"
   }
 }

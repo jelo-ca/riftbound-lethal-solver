@@ -1,13 +1,13 @@
 {
   "schema_version": 2,
   "puzzle_id": "puzzle-005-clear-the-way",
-  "root": "2c6af389d11a9ac0",
+  "root": "ac93b7f270f6b97b",
   "solution": {
-    "86e5a70d8fccbd2d": "a18",
-    "2c6af389d11a9ac0": "a5"
+    "4363364298c7d98c": "a18",
+    "ac93b7f270f6b97b": "a5"
   },
   "nodes": {
-    "2c6af389d11a9ac0": {
+    "ac93b7f270f6b97b": {
       "turn_player": 0,
       "players": [
         {
@@ -75,7 +75,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "c32571c74a465d78": {
+    "2b7e628f28ce6107": {
       "turn_player": 0,
       "players": [
         {
@@ -142,7 +142,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "911806070df0380f": {
+    "bc36f8da5b86c6dc": {
       "turn_player": 0,
       "players": [
         {
@@ -199,7 +199,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "03f69a4d6bbe9530": {
+    "0dbf1de4e7c46ac1": {
       "turn_player": 0,
       "players": [
         {
@@ -266,7 +266,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "ba6a68bb03cc8fd9": {
+    "c41bb0587470945e": {
       "turn_player": 0,
       "players": [
         {
@@ -323,7 +323,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "86e5a70d8fccbd2d": {
+    "4363364298c7d98c": {
       "turn_player": 0,
       "players": [
         {
@@ -380,7 +380,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "39ef797431917d0c": {
+    "c3c0dca12b14a29d": {
       "turn_player": 0,
       "players": [
         {
@@ -448,7 +448,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "e7e0d37beac4f8df": {
+    "6c5d2b7ab85d3b69": {
       "turn_player": 0,
       "players": [
         {
@@ -505,7 +505,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "b3d159a02f8e3e1b": {
+    "0f9eb8a7fa83890f": {
       "turn_player": 0,
       "players": [
         {
@@ -562,7 +562,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "a93037487478cc1e": {
+    "dfcc05c23327d2f4": {
       "turn_player": 0,
       "players": [
         {
@@ -618,7 +618,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "d8ca53ce9c2e56b3": {
+    "ddcdef6a29fd9a9b": {
       "turn_player": 0,
       "players": [
         {
@@ -675,7 +675,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "ece0dd30196b36bf": {
+    "1f169aefb7723779": {
       "turn_player": 0,
       "players": [
         {
@@ -721,7 +721,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "eb1fc87e24250f92": {
+    "38111ed9ad1d0513": {
       "turn_player": 0,
       "players": [
         {
@@ -767,7 +767,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "2c5745105061b1c7": {
+    "e3758b8b0d311c00": {
       "turn_player": 0,
       "players": [
         {
@@ -827,7 +827,7 @@
     }
   },
   "edges": {
-    "2c6af389d11a9ac0": [
+    "ac93b7f270f6b97b": [
       {
         "action": {
           "id": "a1",
@@ -837,7 +837,7 @@
           "keywords": []
         },
         "to": [
-          "c32571c74a465d78"
+          "2b7e628f28ce6107"
         ],
         "adversarial": false
       },
@@ -850,7 +850,7 @@
           "keywords": []
         },
         "to": [
-          "911806070df0380f"
+          "bc36f8da5b86c6dc"
         ],
         "adversarial": false
       },
@@ -863,7 +863,7 @@
           "keywords": []
         },
         "to": [
-          "03f69a4d6bbe9530"
+          "0dbf1de4e7c46ac1"
         ],
         "adversarial": false
       },
@@ -876,7 +876,7 @@
           "keywords": []
         },
         "to": [
-          "ba6a68bb03cc8fd9"
+          "c41bb0587470945e"
         ],
         "adversarial": false
       },
@@ -889,12 +889,12 @@
           "keywords": []
         },
         "to": [
-          "86e5a70d8fccbd2d"
+          "4363364298c7d98c"
         ],
         "adversarial": false
       }
     ],
-    "c32571c74a465d78": [
+    "2b7e628f28ce6107": [
       {
         "action": {
           "id": "a6",
@@ -904,7 +904,7 @@
           "keywords": []
         },
         "to": [
-          "39ef797431917d0c"
+          "c3c0dca12b14a29d"
         ],
         "adversarial": false
       },
@@ -917,7 +917,7 @@
           "keywords": []
         },
         "to": [
-          "e7e0d37beac4f8df"
+          "6c5d2b7ab85d3b69"
         ],
         "adversarial": false
       },
@@ -930,7 +930,7 @@
           "keywords": []
         },
         "to": [
-          "b3d159a02f8e3e1b"
+          "0f9eb8a7fa83890f"
         ],
         "adversarial": false
       },
@@ -943,12 +943,12 @@
           "keywords": []
         },
         "to": [
-          "a93037487478cc1e"
+          "dfcc05c23327d2f4"
         ],
         "adversarial": false
       }
     ],
-    "911806070df0380f": [
+    "bc36f8da5b86c6dc": [
       {
         "action": {
           "id": "a10",
@@ -958,7 +958,7 @@
           "keywords": []
         },
         "to": [
-          "d8ca53ce9c2e56b3"
+          "ddcdef6a29fd9a9b"
         ],
         "adversarial": false
       },
@@ -971,7 +971,7 @@
           "keywords": []
         },
         "to": [
-          "ece0dd30196b36bf"
+          "1f169aefb7723779"
         ],
         "adversarial": false
       },
@@ -984,12 +984,12 @@
           "keywords": []
         },
         "to": [
-          "eb1fc87e24250f92"
+          "38111ed9ad1d0513"
         ],
         "adversarial": false
       }
     ],
-    "03f69a4d6bbe9530": [
+    "0dbf1de4e7c46ac1": [
       {
         "action": {
           "id": "a13",
@@ -999,7 +999,7 @@
           "keywords": []
         },
         "to": [
-          "39ef797431917d0c"
+          "c3c0dca12b14a29d"
         ],
         "adversarial": false
       },
@@ -1012,12 +1012,12 @@
           "keywords": []
         },
         "to": [
-          "d8ca53ce9c2e56b3"
+          "ddcdef6a29fd9a9b"
         ],
         "adversarial": false
       }
     ],
-    "ba6a68bb03cc8fd9": [
+    "c41bb0587470945e": [
       {
         "action": {
           "id": "a15",
@@ -1027,7 +1027,7 @@
           "keywords": []
         },
         "to": [
-          "e7e0d37beac4f8df"
+          "6c5d2b7ab85d3b69"
         ],
         "adversarial": false
       },
@@ -1040,12 +1040,12 @@
           "keywords": []
         },
         "to": [
-          "ece0dd30196b36bf"
+          "1f169aefb7723779"
         ],
         "adversarial": false
       }
     ],
-    "86e5a70d8fccbd2d": [
+    "4363364298c7d98c": [
       {
         "action": {
           "id": "a17",
@@ -1055,7 +1055,7 @@
           "keywords": []
         },
         "to": [
-          "a93037487478cc1e"
+          "dfcc05c23327d2f4"
         ],
         "adversarial": false
       },
@@ -1068,20 +1068,20 @@
           "keywords": []
         },
         "to": [
-          "2c5745105061b1c7"
+          "e3758b8b0d311c00"
         ],
         "adversarial": false
       }
     ]
   },
   "terminal": {
-    "39ef797431917d0c": "dead_end",
-    "e7e0d37beac4f8df": "dead_end",
-    "b3d159a02f8e3e1b": "dead_end",
-    "a93037487478cc1e": "dead_end",
-    "d8ca53ce9c2e56b3": "dead_end",
-    "ece0dd30196b36bf": "dead_end",
-    "eb1fc87e24250f92": "dead_end",
-    "2c5745105061b1c7": "win"
+    "c3c0dca12b14a29d": "dead_end",
+    "6c5d2b7ab85d3b69": "dead_end",
+    "0f9eb8a7fa83890f": "dead_end",
+    "dfcc05c23327d2f4": "dead_end",
+    "ddcdef6a29fd9a9b": "dead_end",
+    "1f169aefb7723779": "dead_end",
+    "38111ed9ad1d0513": "dead_end",
+    "e3758b8b0d311c00": "win"
   }
 }

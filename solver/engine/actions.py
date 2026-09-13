@@ -215,16 +215,22 @@ def is_legal_play_unit(state: GameState, action: PlayUnit, card: CardDef) -> boo
         pool.remove(domain)
     if action.target_zone == "base":
         return True
-    # rule 355.7/355.8: a battlefield is only a valid PlayUnit target if the
-    # controller already controls it, UNLESS the card's own text grants an
+    # rule 355.7/355.8: a battlefield is only a valid PlayUnit target if you
+    # already have UNITS there, UNLESS the card's own text grants an
     # exception (e.g. Sneaky Deckhand: "You may play me to an open
     # battlefield") — rule 170.11.c: "open" means unoccupied AND
     # uncontrolled, not merely uncontrolled.
+    #
+    # Checked as "do we have a unit here", which is what the rule says,
+    # rather than "do we control here". Those coincide today only because
+    # every path that empties a battlefield also clears its controller —
+    # an invariant held elsewhere in this module and in combat.py, not
+    # something this check should be quietly depending on.
     try:
         bf = _battlefield(state, action.target_zone)
     except KeyError:
         return False
-    if bf.controller == state.turn_player:
+    if any(u.controller == state.turn_player for u in bf.units):
         return True
     return card.can_play_to_open_battlefield and bf.controller is None and not bf.units
 

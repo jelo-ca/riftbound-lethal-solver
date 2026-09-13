@@ -1,14 +1,14 @@
 {
   "schema_version": 2,
   "puzzle_id": "puzzle-006-redirection",
-  "root": "2daea4e2e05ee229",
+  "root": "f379cce7b2b2ca1d",
   "solution": {
-    "18c41982c22a6b6b": "a24",
-    "95431fa7ea62cdfe": "a26",
-    "2daea4e2e05ee229": "a6"
+    "759137b6c2fff0da": "a24",
+    "b7c49269e8a2c451": "a26",
+    "f379cce7b2b2ca1d": "a6"
   },
   "nodes": {
-    "2daea4e2e05ee229": {
+    "f379cce7b2b2ca1d": {
       "turn_player": 0,
       "players": [
         {
@@ -84,7 +84,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "615481f880ec21b9": {
+    "9bdee2c2929c459a": {
       "turn_player": 0,
       "players": [
         {
@@ -164,7 +164,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "eb72cfa5c4b0917b": {
+    "9472b43a53f9aae4": {
       "turn_player": 0,
       "players": [
         {
@@ -244,7 +244,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "2cd0a5a9c1c4e732": {
+    "28fefbb2f017c4db": {
       "turn_player": 0,
       "players": [
         {
@@ -309,7 +309,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "1f0770d7aeaeed39": {
+    "86ac3a293fd7a36d": {
       "turn_player": 0,
       "players": [
         {
@@ -384,7 +384,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "a8e3ff9b37a61c42": {
+    "0135976e4ee37805": {
       "turn_player": 0,
       "players": [
         {
@@ -459,7 +459,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "18c41982c22a6b6b": {
+    "759137b6c2fff0da": {
       "turn_player": 0,
       "players": [
         {
@@ -518,7 +518,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "95431fa7ea62cdfe": {
+    "b7c49269e8a2c451": {
       "turn_player": 0,
       "players": [
         {
@@ -587,7 +587,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "5aef91fa50e79cd6": {
+    "7776cfd29cd801c4": {
       "turn_player": 0,
       "players": [
         {
@@ -657,7 +657,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "48bbb047441194d1": {
+    "31b8c963657d3c74": {
       "turn_player": 0,
       "players": [
         {
@@ -737,7 +737,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "7a4d8915ad454fbf": {
+    "e8be716270d67a09": {
       "turn_player": 0,
       "players": [
         {
@@ -816,7 +816,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "dd6829bf959a8f41": {
+    "5e828aba3629d834": {
       "turn_player": 0,
       "players": [
         {
@@ -885,7 +885,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "50eece234fd2c37d": {
+    "8a5fb2bea4906dbf": {
       "turn_player": 0,
       "players": [
         {
@@ -964,7 +964,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "d3c3c34d9d903393": {
+    "f072734a1a7d6b39": {
       "turn_player": 0,
       "players": [
         {
@@ -1044,178 +1044,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "2b0ee0f359caca12": {
-      "turn_player": 0,
-      "players": [
-        {
-          "base_units": [
-            {
-              "card_id": "ogn-010-298",
-              "instance_id": 1,
-              "controller": 0,
-              "might": 2,
-              "keywords": [],
-              "exhausted": true,
-              "damage": 0,
-              "is_token": false
-            }
-          ],
-          "hand": [
-            "ogn-067-298"
-          ],
-          "runes": [
-            "Fury",
-            "Fury",
-            "Fury",
-            "Fury",
-            "Fury"
-          ],
-          "score": 7
-        },
-        {
-          "base_units": [],
-          "hand": [],
-          "runes": [],
-          "score": 0
-        }
-      ],
-      "battlefields": [
-        {
-          "battlefield_id": "left",
-          "controller": 1,
-          "units": [
-            {
-              "card_id": "ogn-218-298",
-              "instance_id": 3,
-              "controller": 1,
-              "might": 3,
-              "keywords": [],
-              "exhausted": false,
-              "damage": 0,
-              "is_token": false
-            }
-          ],
-          "effect_id": null
-        },
-        {
-          "battlefield_id": "right",
-          "controller": null,
-          "units": [],
-          "effect_id": null
-        }
-      ],
-      "scored_this_turn": [
-        "right"
-      ],
-      "cards_played_this_turn": 0
-    },
-    "dc7487b8a9c7ab8a": {
-      "turn_player": 0,
-      "players": [
-        {
-          "base_units": [],
-          "hand": [],
-          "runes": [],
-          "score": 7
-        },
-        {
-          "base_units": [],
-          "hand": [],
-          "runes": [],
-          "score": 0
-        }
-      ],
-      "battlefields": [
-        {
-          "battlefield_id": "left",
-          "controller": null,
-          "units": [],
-          "effect_id": null
-        },
-        {
-          "battlefield_id": "right",
-          "controller": 0,
-          "units": [
-            {
-              "card_id": "ogn-067-298",
-              "instance_id": 4,
-              "controller": 0,
-              "might": 5,
-              "keywords": [
-                "Tank"
-              ],
-              "exhausted": true,
-              "damage": 0,
-              "is_token": false
-            }
-          ],
-          "effect_id": null
-        }
-      ],
-      "scored_this_turn": [
-        "right"
-      ],
-      "cards_played_this_turn": 0
-    },
-    "43c2dbea0c359351": {
-      "turn_player": 0,
-      "players": [
-        {
-          "base_units": [],
-          "hand": [],
-          "runes": [],
-          "score": 7
-        },
-        {
-          "base_units": [],
-          "hand": [],
-          "runes": [],
-          "score": 0
-        }
-      ],
-      "battlefields": [
-        {
-          "battlefield_id": "left",
-          "controller": null,
-          "units": [],
-          "effect_id": null
-        },
-        {
-          "battlefield_id": "right",
-          "controller": 0,
-          "units": [
-            {
-              "card_id": "ogn-010-298",
-              "instance_id": 1,
-              "controller": 0,
-              "might": 2,
-              "keywords": [],
-              "exhausted": false,
-              "damage": 0,
-              "is_token": false
-            },
-            {
-              "card_id": "ogn-067-298",
-              "instance_id": 4,
-              "controller": 0,
-              "might": 5,
-              "keywords": [
-                "Tank"
-              ],
-              "exhausted": true,
-              "damage": 0,
-              "is_token": false
-            }
-          ],
-          "effect_id": null
-        }
-      ],
-      "scored_this_turn": [
-        "right"
-      ],
-      "cards_played_this_turn": 0
-    },
-    "e4943a35d304501e": {
+    "405f6f61cc2478fe": {
       "turn_player": 0,
       "players": [
         {
@@ -1270,6 +1099,177 @@
         },
         {
           "battlefield_id": "right",
+          "controller": null,
+          "units": [],
+          "effect_id": null
+        }
+      ],
+      "scored_this_turn": [
+        "right"
+      ],
+      "cards_played_this_turn": 0
+    },
+    "f96ea6ff2163e3b0": {
+      "turn_player": 0,
+      "players": [
+        {
+          "base_units": [],
+          "hand": [],
+          "runes": [],
+          "score": 7
+        },
+        {
+          "base_units": [],
+          "hand": [],
+          "runes": [],
+          "score": 0
+        }
+      ],
+      "battlefields": [
+        {
+          "battlefield_id": "left",
+          "controller": null,
+          "units": [],
+          "effect_id": null
+        },
+        {
+          "battlefield_id": "right",
+          "controller": 0,
+          "units": [
+            {
+              "card_id": "ogn-067-298",
+              "instance_id": 4,
+              "controller": 0,
+              "might": 5,
+              "keywords": [
+                "Tank"
+              ],
+              "exhausted": true,
+              "damage": 0,
+              "is_token": false
+            }
+          ],
+          "effect_id": null
+        }
+      ],
+      "scored_this_turn": [
+        "right"
+      ],
+      "cards_played_this_turn": 0
+    },
+    "31a8a1722854ffba": {
+      "turn_player": 0,
+      "players": [
+        {
+          "base_units": [],
+          "hand": [],
+          "runes": [],
+          "score": 7
+        },
+        {
+          "base_units": [],
+          "hand": [],
+          "runes": [],
+          "score": 0
+        }
+      ],
+      "battlefields": [
+        {
+          "battlefield_id": "left",
+          "controller": null,
+          "units": [],
+          "effect_id": null
+        },
+        {
+          "battlefield_id": "right",
+          "controller": 0,
+          "units": [
+            {
+              "card_id": "ogn-010-298",
+              "instance_id": 1,
+              "controller": 0,
+              "might": 2,
+              "keywords": [],
+              "exhausted": false,
+              "damage": 0,
+              "is_token": false
+            },
+            {
+              "card_id": "ogn-067-298",
+              "instance_id": 4,
+              "controller": 0,
+              "might": 5,
+              "keywords": [
+                "Tank"
+              ],
+              "exhausted": true,
+              "damage": 0,
+              "is_token": false
+            }
+          ],
+          "effect_id": null
+        }
+      ],
+      "scored_this_turn": [
+        "right"
+      ],
+      "cards_played_this_turn": 0
+    },
+    "86e22fdaf5cd792f": {
+      "turn_player": 0,
+      "players": [
+        {
+          "base_units": [
+            {
+              "card_id": "ogn-010-298",
+              "instance_id": 1,
+              "controller": 0,
+              "might": 2,
+              "keywords": [],
+              "exhausted": true,
+              "damage": 0,
+              "is_token": false
+            }
+          ],
+          "hand": [
+            "ogn-067-298"
+          ],
+          "runes": [
+            "Fury",
+            "Fury",
+            "Fury",
+            "Fury",
+            "Fury"
+          ],
+          "score": 7
+        },
+        {
+          "base_units": [],
+          "hand": [],
+          "runes": [],
+          "score": 0
+        }
+      ],
+      "battlefields": [
+        {
+          "battlefield_id": "left",
+          "controller": 1,
+          "units": [
+            {
+              "card_id": "ogn-218-298",
+              "instance_id": 3,
+              "controller": 1,
+              "might": 3,
+              "keywords": [],
+              "exhausted": false,
+              "damage": 0,
+              "is_token": false
+            }
+          ],
+          "effect_id": null
+        },
+        {
+          "battlefield_id": "right",
           "controller": 0,
           "units": [
             {
@@ -1291,7 +1291,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "e26d82d7a7ddc377": {
+    "3d971476ec9f2d37": {
       "turn_player": 0,
       "players": [
         {
@@ -1349,7 +1349,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "b30c3d5f7425db79": {
+    "3f8724ddcf034e72": {
       "turn_player": 0,
       "players": [
         {
@@ -1417,7 +1417,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "7a06fac8996d39b5": {
+    "4ee3ae1dc902d5ee": {
       "turn_player": 0,
       "players": [
         {
@@ -1477,7 +1477,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "cc763cfeb76374fd": {
+    "b2c45df49ebaabc8": {
       "turn_player": 0,
       "players": [
         {
@@ -1547,7 +1547,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "27eac697270605a4": {
+    "321aafaa02efa72d": {
       "turn_player": 0,
       "players": [
         {
@@ -1616,7 +1616,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "5be9209e0f978d32": {
+    "418bf6cc0f89ad73": {
       "turn_player": 0,
       "players": [
         {
@@ -1685,7 +1685,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "abf04beb15225367": {
+    "fbe6f352052e541a": {
       "turn_player": 0,
       "players": [
         {
@@ -1765,7 +1765,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "bc47225e337b53a0": {
+    "8df6f31304ad869d": {
       "turn_player": 0,
       "players": [
         {
@@ -1835,7 +1835,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "9ad42c9ff107c54e": {
+    "5c705e2da10d94a5": {
       "turn_player": 0,
       "players": [
         {
@@ -1915,7 +1915,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "4e93355823aeafeb": {
+    "663740e8e479b081": {
       "turn_player": 0,
       "players": [
         {
@@ -1974,7 +1974,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "3aa82533e7f86964": {
+    "16e38fbea1fce6b8": {
       "turn_player": 0,
       "players": [
         {
@@ -2043,7 +2043,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "420422d19ba4543e": {
+    "4eb3f77d9b16d605": {
       "turn_player": 0,
       "players": [
         {
@@ -2116,7 +2116,7 @@
     }
   },
   "edges": {
-    "2daea4e2e05ee229": [
+    "f379cce7b2b2ca1d": [
       {
         "action": {
           "id": "a1",
@@ -2126,7 +2126,7 @@
           "keywords": []
         },
         "to": [
-          "615481f880ec21b9"
+          "9bdee2c2929c459a"
         ],
         "adversarial": false
       },
@@ -2139,7 +2139,7 @@
           "keywords": []
         },
         "to": [
-          "eb72cfa5c4b0917b"
+          "9472b43a53f9aae4"
         ],
         "adversarial": false
       },
@@ -2152,7 +2152,7 @@
           "keywords": []
         },
         "to": [
-          "2cd0a5a9c1c4e732"
+          "28fefbb2f017c4db"
         ],
         "adversarial": false
       },
@@ -2165,7 +2165,7 @@
           "keywords": []
         },
         "to": [
-          "1f0770d7aeaeed39"
+          "86ac3a293fd7a36d"
         ],
         "adversarial": false
       },
@@ -2178,7 +2178,7 @@
           "keywords": []
         },
         "to": [
-          "a8e3ff9b37a61c42"
+          "0135976e4ee37805"
         ],
         "adversarial": false
       },
@@ -2191,14 +2191,14 @@
           "keywords": []
         },
         "to": [
-          "18c41982c22a6b6b",
-          "18c41982c22a6b6b",
-          "95431fa7ea62cdfe"
+          "759137b6c2fff0da",
+          "759137b6c2fff0da",
+          "b7c49269e8a2c451"
         ],
         "adversarial": true
       }
     ],
-    "615481f880ec21b9": [
+    "9bdee2c2929c459a": [
       {
         "action": {
           "id": "a7",
@@ -2208,7 +2208,7 @@
           "keywords": []
         },
         "to": [
-          "5aef91fa50e79cd6"
+          "7776cfd29cd801c4"
         ],
         "adversarial": false
       },
@@ -2221,7 +2221,7 @@
           "keywords": []
         },
         "to": [
-          "48bbb047441194d1"
+          "31b8c963657d3c74"
         ],
         "adversarial": false
       },
@@ -2234,12 +2234,12 @@
           "keywords": []
         },
         "to": [
-          "7a4d8915ad454fbf"
+          "e8be716270d67a09"
         ],
         "adversarial": false
       }
     ],
-    "eb72cfa5c4b0917b": [
+    "9472b43a53f9aae4": [
       {
         "action": {
           "id": "a10",
@@ -2249,7 +2249,7 @@
           "keywords": []
         },
         "to": [
-          "dd6829bf959a8f41"
+          "5e828aba3629d834"
         ],
         "adversarial": false
       },
@@ -2262,7 +2262,7 @@
           "keywords": []
         },
         "to": [
-          "50eece234fd2c37d"
+          "8a5fb2bea4906dbf"
         ],
         "adversarial": false
       },
@@ -2275,12 +2275,12 @@
           "keywords": []
         },
         "to": [
-          "d3c3c34d9d903393"
+          "f072734a1a7d6b39"
         ],
         "adversarial": false
       }
     ],
-    "2cd0a5a9c1c4e732": [
+    "28fefbb2f017c4db": [
       {
         "action": {
           "id": "a13",
@@ -2290,7 +2290,7 @@
           "keywords": []
         },
         "to": [
-          "5aef91fa50e79cd6"
+          "7776cfd29cd801c4"
         ],
         "adversarial": false
       },
@@ -2303,7 +2303,7 @@
           "keywords": []
         },
         "to": [
-          "dd6829bf959a8f41"
+          "5e828aba3629d834"
         ],
         "adversarial": false
       },
@@ -2316,7 +2316,7 @@
           "keywords": []
         },
         "to": [
-          "2b0ee0f359caca12"
+          "405f6f61cc2478fe"
         ],
         "adversarial": false
       },
@@ -2329,14 +2329,14 @@
           "keywords": []
         },
         "to": [
-          "dc7487b8a9c7ab8a",
-          "dc7487b8a9c7ab8a",
-          "43c2dbea0c359351"
+          "f96ea6ff2163e3b0",
+          "f96ea6ff2163e3b0",
+          "31a8a1722854ffba"
         ],
         "adversarial": true
       }
     ],
-    "1f0770d7aeaeed39": [
+    "86ac3a293fd7a36d": [
       {
         "action": {
           "id": "a17",
@@ -2346,7 +2346,7 @@
           "keywords": []
         },
         "to": [
-          "48bbb047441194d1"
+          "31b8c963657d3c74"
         ],
         "adversarial": false
       },
@@ -2359,7 +2359,7 @@
           "keywords": []
         },
         "to": [
-          "50eece234fd2c37d"
+          "8a5fb2bea4906dbf"
         ],
         "adversarial": false
       },
@@ -2372,7 +2372,7 @@
           "keywords": []
         },
         "to": [
-          "e4943a35d304501e"
+          "86e22fdaf5cd792f"
         ],
         "adversarial": false
       },
@@ -2385,18 +2385,18 @@
           "keywords": []
         },
         "to": [
-          "e26d82d7a7ddc377",
-          "e26d82d7a7ddc377",
-          "e26d82d7a7ddc377",
-          "43c2dbea0c359351",
-          "43c2dbea0c359351",
-          "43c2dbea0c359351",
-          "b30c3d5f7425db79"
+          "3d971476ec9f2d37",
+          "3d971476ec9f2d37",
+          "3d971476ec9f2d37",
+          "31a8a1722854ffba",
+          "31a8a1722854ffba",
+          "31a8a1722854ffba",
+          "3f8724ddcf034e72"
         ],
         "adversarial": true
       }
     ],
-    "a8e3ff9b37a61c42": [
+    "0135976e4ee37805": [
       {
         "action": {
           "id": "a21",
@@ -2406,7 +2406,7 @@
           "keywords": []
         },
         "to": [
-          "7a4d8915ad454fbf"
+          "e8be716270d67a09"
         ],
         "adversarial": false
       },
@@ -2419,7 +2419,7 @@
           "keywords": []
         },
         "to": [
-          "2b0ee0f359caca12"
+          "405f6f61cc2478fe"
         ],
         "adversarial": false
       },
@@ -2432,12 +2432,12 @@
           "keywords": []
         },
         "to": [
-          "e4943a35d304501e"
+          "86e22fdaf5cd792f"
         ],
         "adversarial": false
       }
     ],
-    "18c41982c22a6b6b": [
+    "759137b6c2fff0da": [
       {
         "action": {
           "id": "a24",
@@ -2447,7 +2447,7 @@
           "keywords": []
         },
         "to": [
-          "7a06fac8996d39b5"
+          "4ee3ae1dc902d5ee"
         ],
         "adversarial": false
       },
@@ -2460,12 +2460,12 @@
           "keywords": []
         },
         "to": [
-          "e26d82d7a7ddc377"
+          "3d971476ec9f2d37"
         ],
         "adversarial": false
       }
     ],
-    "95431fa7ea62cdfe": [
+    "b7c49269e8a2c451": [
       {
         "action": {
           "id": "a26",
@@ -2475,7 +2475,7 @@
           "keywords": []
         },
         "to": [
-          "cc763cfeb76374fd"
+          "b2c45df49ebaabc8"
         ],
         "adversarial": false
       },
@@ -2488,7 +2488,7 @@
           "keywords": []
         },
         "to": [
-          "b30c3d5f7425db79"
+          "3f8724ddcf034e72"
         ],
         "adversarial": false
       },
@@ -2501,12 +2501,12 @@
           "keywords": []
         },
         "to": [
-          "27eac697270605a4"
+          "321aafaa02efa72d"
         ],
         "adversarial": false
       }
     ],
-    "5aef91fa50e79cd6": [
+    "7776cfd29cd801c4": [
       {
         "action": {
           "id": "a29",
@@ -2516,12 +2516,12 @@
           "keywords": []
         },
         "to": [
-          "5be9209e0f978d32"
+          "418bf6cc0f89ad73"
         ],
         "adversarial": false
       }
     ],
-    "48bbb047441194d1": [
+    "31b8c963657d3c74": [
       {
         "action": {
           "id": "a30",
@@ -2531,12 +2531,12 @@
           "keywords": []
         },
         "to": [
-          "abf04beb15225367"
+          "fbe6f352052e541a"
         ],
         "adversarial": false
       }
     ],
-    "7a4d8915ad454fbf": [
+    "e8be716270d67a09": [
       {
         "action": {
           "id": "a31",
@@ -2546,7 +2546,7 @@
           "keywords": []
         },
         "to": [
-          "5be9209e0f978d32"
+          "418bf6cc0f89ad73"
         ],
         "adversarial": false
       },
@@ -2559,12 +2559,12 @@
           "keywords": []
         },
         "to": [
-          "abf04beb15225367"
+          "fbe6f352052e541a"
         ],
         "adversarial": false
       }
     ],
-    "dd6829bf959a8f41": [
+    "5e828aba3629d834": [
       {
         "action": {
           "id": "a33",
@@ -2574,12 +2574,12 @@
           "keywords": []
         },
         "to": [
-          "bc47225e337b53a0"
+          "8df6f31304ad869d"
         ],
         "adversarial": false
       }
     ],
-    "50eece234fd2c37d": [
+    "8a5fb2bea4906dbf": [
       {
         "action": {
           "id": "a34",
@@ -2589,12 +2589,12 @@
           "keywords": []
         },
         "to": [
-          "9ad42c9ff107c54e"
+          "5c705e2da10d94a5"
         ],
         "adversarial": false
       }
     ],
-    "d3c3c34d9d903393": [
+    "f072734a1a7d6b39": [
       {
         "action": {
           "id": "a35",
@@ -2604,7 +2604,7 @@
           "keywords": []
         },
         "to": [
-          "bc47225e337b53a0"
+          "8df6f31304ad869d"
         ],
         "adversarial": false
       },
@@ -2617,12 +2617,12 @@
           "keywords": []
         },
         "to": [
-          "9ad42c9ff107c54e"
+          "5c705e2da10d94a5"
         ],
         "adversarial": false
       }
     ],
-    "2b0ee0f359caca12": [
+    "405f6f61cc2478fe": [
       {
         "action": {
           "id": "a37",
@@ -2632,12 +2632,12 @@
           "keywords": []
         },
         "to": [
-          "5be9209e0f978d32"
+          "418bf6cc0f89ad73"
         ],
         "adversarial": false
       }
     ],
-    "43c2dbea0c359351": [
+    "31a8a1722854ffba": [
       {
         "action": {
           "id": "a38",
@@ -2647,12 +2647,12 @@
           "keywords": []
         },
         "to": [
-          "4e93355823aeafeb"
+          "663740e8e479b081"
         ],
         "adversarial": false
       }
     ],
-    "e4943a35d304501e": [
+    "86e22fdaf5cd792f": [
       {
         "action": {
           "id": "a39",
@@ -2662,7 +2662,7 @@
           "keywords": []
         },
         "to": [
-          "abf04beb15225367"
+          "fbe6f352052e541a"
         ],
         "adversarial": false
       },
@@ -2675,7 +2675,7 @@
           "keywords": []
         },
         "to": [
-          "9ad42c9ff107c54e"
+          "5c705e2da10d94a5"
         ],
         "adversarial": false
       },
@@ -2688,14 +2688,14 @@
           "keywords": []
         },
         "to": [
-          "4e93355823aeafeb",
-          "4e93355823aeafeb",
-          "3aa82533e7f86964"
+          "663740e8e479b081",
+          "663740e8e479b081",
+          "16e38fbea1fce6b8"
         ],
         "adversarial": true
       }
     ],
-    "b30c3d5f7425db79": [
+    "3f8724ddcf034e72": [
       {
         "action": {
           "id": "a42",
@@ -2705,12 +2705,12 @@
           "keywords": []
         },
         "to": [
-          "3aa82533e7f86964"
+          "16e38fbea1fce6b8"
         ],
         "adversarial": false
       }
     ],
-    "27eac697270605a4": [
+    "321aafaa02efa72d": [
       {
         "action": {
           "id": "a43",
@@ -2720,7 +2720,7 @@
           "keywords": []
         },
         "to": [
-          "420422d19ba4543e"
+          "4eb3f77d9b16d605"
         ],
         "adversarial": false
       },
@@ -2733,23 +2733,23 @@
           "keywords": []
         },
         "to": [
-          "3aa82533e7f86964"
+          "16e38fbea1fce6b8"
         ],
         "adversarial": false
       }
     ]
   },
   "terminal": {
-    "dc7487b8a9c7ab8a": "dead_end",
-    "e26d82d7a7ddc377": "dead_end",
-    "7a06fac8996d39b5": "win",
-    "cc763cfeb76374fd": "win",
-    "5be9209e0f978d32": "dead_end",
-    "abf04beb15225367": "dead_end",
-    "bc47225e337b53a0": "dead_end",
-    "9ad42c9ff107c54e": "dead_end",
-    "4e93355823aeafeb": "dead_end",
-    "3aa82533e7f86964": "dead_end",
-    "420422d19ba4543e": "win"
+    "f96ea6ff2163e3b0": "dead_end",
+    "3d971476ec9f2d37": "dead_end",
+    "4ee3ae1dc902d5ee": "win",
+    "b2c45df49ebaabc8": "win",
+    "418bf6cc0f89ad73": "dead_end",
+    "fbe6f352052e541a": "dead_end",
+    "8df6f31304ad869d": "dead_end",
+    "5c705e2da10d94a5": "dead_end",
+    "663740e8e479b081": "dead_end",
+    "16e38fbea1fce6b8": "dead_end",
+    "4eb3f77d9b16d605": "win"
   }
 }

@@ -112,20 +112,44 @@ def test_play_unit_insufficient_runes_illegal():
 
 def test_play_unit_to_uncontrolled_battlefield_illegal():
     # rule 355.7/355.8: can only play directly to Base or a battlefield you
-    # already control — not an open or opponent-controlled one.
+    # already have units on — not an open or opponent-held one.
     state = make_state(hand=("ogn-010-298",), runes=("Fury", "Fury"), bf0_controller=None)
     payment = generate_rune_payments(state.players[0].runes, 2, 0, None)[0]
     action = PlayUnit(card_id="ogn-010-298", target_zone="left", rune_payment=payment)
     assert not is_legal_play_unit(state, action, CHEAP_UNIT)
 
 
-def test_play_unit_to_controlled_battlefield_legal():
-    state = make_state(hand=("ogn-010-298",), runes=("Fury", "Fury"), bf0_controller=0)
+def test_play_unit_to_a_battlefield_we_have_units_on_is_legal():
+    state = make_state(hand=("ogn-010-298",), runes=("Fury", "Fury"),
+                        bf0_units=frozenset({make_unit(instance_id=9)}), bf0_controller=0)
     payment = generate_rune_payments(state.players[0].runes, 2, 0, None)[0]
     action = PlayUnit(card_id="ogn-010-298", target_zone="left", rune_payment=payment)
     assert is_legal_play_unit(state, action, CHEAP_UNIT)
     new_state = apply_play_unit(state, action, CHEAP_UNIT)
-    assert len(new_state.battlefields[0].units) == 1
+    assert len(new_state.battlefields[0].units) == 2
+
+
+def test_play_unit_needs_units_present_not_merely_control():
+    """The rule is "a battlefield you have units on", which is NOT the same
+    statement as "a battlefield you control" — they only coincide because
+    every path that empties a battlefield also clears its controller. This
+    pins the rule itself, so the check can't silently drift back to
+    keying on control if some future effect ever grants control without
+    presence."""
+    state = make_state(hand=("ogn-010-298",), runes=("Fury", "Fury"),
+                        bf0_units=frozenset(), bf0_controller=0)
+    payment = generate_rune_payments(state.players[0].runes, 2, 0, None)[0]
+    action = PlayUnit(card_id="ogn-010-298", target_zone="left", rune_payment=payment)
+    assert not is_legal_play_unit(state, action, CHEAP_UNIT)
+
+
+def test_play_unit_to_a_battlefield_holding_only_enemy_units_illegal():
+    enemy = make_unit(instance_id=9, controller=1)
+    state = make_state(hand=("ogn-010-298",), runes=("Fury", "Fury"),
+                        bf0_units=frozenset({enemy}), bf0_controller=1)
+    payment = generate_rune_payments(state.players[0].runes, 2, 0, None)[0]
+    action = PlayUnit(card_id="ogn-010-298", target_zone="left", rune_payment=payment)
+    assert not is_legal_play_unit(state, action, CHEAP_UNIT)
 
 
 def test_play_unit_wrong_power_domain_illegal():
