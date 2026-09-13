@@ -116,6 +116,20 @@ REQUIRED_SOLUTION_COUNT = 1  # tightened from a 1-3 range: exactly one correct l
 MAX_EXPORT_BYTES = 2 * 1024 * 1024
 CARD_COPY_CAP = 3  # standard format: max 3 copies of the same card in a deck
 
+# Cores deliberately left free. A long run at workers=os.cpu_count() was
+# killed for exhausting system memory - though measurement afterwards put
+# a worker at only ~30MB typical (~136MB total across four), so the
+# workers themselves are cheap and the real cause was a machine already
+# near capacity from other processes. Leaving headroom is still the right
+# default for a dev box: the throughput lost is small (solving is the
+# bottleneck, not core count) and being killed mid-run costs far more.
+RESERVED_CORES = 4
+# Recycle a worker after this many attempts. Typical positions are small,
+# but export_puzzle builds a position's whole reachable-state graph BEFORE
+# the MAX_EXPORT_BYTES check can reject it, so a branchy outlier can spike
+# well above that average; recycling hands such a spike back promptly.
+WORKER_MAX_TASKS = 25
+
 
 def _sample_with_cap(rng: random.Random, pool: list[str], n: int, counts: dict[str, int]) -> list[str]:
     """Draws `n` card ids from `pool`, never letting any single card_id's
@@ -329,17 +343,21 @@ def generate(count: int, seed: Optional[int] = None, attempt_multiplier: int = 2
     attempts_made).
 
     Attempts are independent, so they're spread across `workers`
-    processes (default: every core). Dedup still happens here in the
-    parent, in attempt order, so results don't depend on which worker
-    happened to finish first — the same seed gives the same survivors
-    whatever the worker count. `workers=1` runs everything in-process,
-    which is what the tests use to stay fast and debuggable.
+    processes. Dedup still happens here in the parent, in attempt order,
+    so results don't depend on which worker happened to finish first —
+    the same seed gives the same survivors whatever the worker count.
+    `workers=1` runs everything in-process, which is what the tests use
+    to stay fast and debuggable.
+
+    The default leaves cores free rather than taking all of them — see
+    RESERVED_CORES for why (a run at full core count was killed for
+    exhausting system memory, on a machine already near capacity).
     """
     max_attempts = count * attempt_multiplier
     seen_signatures: set[Signature] = known_signatures()
     survivors: list[dict] = []
     if workers is None:
-        workers = os.cpu_count() or 1
+        workers = max(1, (os.cpu_count() or 1) - RESERVED_CORES)
 
     if workers <= 1:
         for attempt in range(1, max_attempts + 1):
@@ -353,10 +371,15 @@ def generate(count: int, seed: Optional[int] = None, attempt_multiplier: int = 2
 
     # Work in chunks so a `count` that's reached early doesn't keep the
     # whole budget running, while still handing each worker enough
-    # attempts at a time to amortise IPC.
-    chunk = max(workers * 32, 64)
+    # attempts at a time to amortise IPC. Kept modest on purpose: a chunk
+    # holds every result it produced in memory at once, and a survivor's
+    # export dict can be megabytes.
+    chunk = max(workers * 8, 32)
     attempted = 0
-    with multiprocessing.Pool(processes=workers) as pool:
+    # maxtasksperchild recycles workers periodically so the peak memory of
+    # one unlucky position (a big search tree, a big export graph) is
+    # released instead of accumulating for the life of the pool.
+    with multiprocessing.Pool(processes=workers, maxtasksperchild=WORKER_MAX_TASKS) as pool:
         while attempted < max_attempts and len(survivors) < count:
             batch = range(attempted + 1, min(attempted + chunk, max_attempts) + 1)
             results = pool.map(_evaluate_attempt, [(seed, i) for i in batch])
