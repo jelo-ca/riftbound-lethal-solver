@@ -479,7 +479,7 @@ def legal_board_actions(state: GameState, cards: dict[str, CardDef]) -> list[Act
         bf.battlefield_id for bf in state.battlefields if bf.controller == state.turn_player
     ]
 
-    for card_id in set(player.hand):
+    for card_id in sorted(set(player.hand)):
         card = cards.get(card_id)
         if card is None or card.card_type != "Unit":
             continue
@@ -513,11 +513,11 @@ def legal_board_actions(state: GameState, cards: dict[str, CardDef]) -> list[Act
         if is_legal_move_unit(state, action):
             actions.append(action)
 
-    for unit in player.base_units:
+    for unit in sorted(player.base_units, key=lambda u: u.instance_id):
         for bf_id in battlefield_ids:
             add_move_candidates(unit, "base", bf_id)
     for bf in state.battlefields:
-        for unit in bf.units:
+        for unit in sorted(bf.units, key=lambda u: u.instance_id):
             if unit.controller != state.turn_player:
                 continue
             for to_zone in ["base"] + [b for b in battlefield_ids if b != bf.battlefield_id]:

@@ -237,147 +237,6 @@
       ],
       "cards_played_this_turn": 0
     },
-    "3d6d7fba15d65325": {
-      "turn_player": 0,
-      "players": [
-        {
-          "base_units": [
-            {
-              "card_id": "ogn-010-298",
-              "instance_id": 2,
-              "controller": 0,
-              "might": 1,
-              "keywords": [],
-              "exhausted": false,
-              "damage": 0,
-              "is_token": false
-            }
-          ],
-          "hand": [],
-          "runes": [],
-          "score": 7
-        },
-        {
-          "base_units": [],
-          "hand": [],
-          "runes": [],
-          "score": 0
-        }
-      ],
-      "battlefields": [
-        {
-          "battlefield_id": "left",
-          "controller": 0,
-          "units": [
-            {
-              "card_id": "ogn-205-298",
-              "instance_id": 1,
-              "controller": 0,
-              "might": 2,
-              "keywords": [
-                "Ganking"
-              ],
-              "exhausted": false,
-              "damage": 0,
-              "is_token": false
-            }
-          ],
-          "effect_id": null
-        },
-        {
-          "battlefield_id": "right",
-          "controller": 0,
-          "units": [
-            {
-              "card_id": "ogn-211-298",
-              "instance_id": 3,
-              "controller": 0,
-              "might": 1,
-              "keywords": [],
-              "exhausted": true,
-              "damage": 0,
-              "is_token": false
-            }
-          ],
-          "effect_id": null
-        }
-      ],
-      "scored_this_turn": [
-        "left",
-        "right"
-      ],
-      "cards_played_this_turn": 0
-    },
-    "9c5cb3a74384290d": {
-      "turn_player": 0,
-      "players": [
-        {
-          "base_units": [],
-          "hand": [],
-          "runes": [],
-          "score": 7
-        },
-        {
-          "base_units": [],
-          "hand": [],
-          "runes": [],
-          "score": 0
-        }
-      ],
-      "battlefields": [
-        {
-          "battlefield_id": "left",
-          "controller": 0,
-          "units": [
-            {
-              "card_id": "ogn-205-298",
-              "instance_id": 1,
-              "controller": 0,
-              "might": 2,
-              "keywords": [
-                "Ganking"
-              ],
-              "exhausted": false,
-              "damage": 0,
-              "is_token": false
-            }
-          ],
-          "effect_id": null
-        },
-        {
-          "battlefield_id": "right",
-          "controller": 0,
-          "units": [
-            {
-              "card_id": "ogn-010-298",
-              "instance_id": 2,
-              "controller": 0,
-              "might": 1,
-              "keywords": [],
-              "exhausted": false,
-              "damage": 0,
-              "is_token": false
-            },
-            {
-              "card_id": "ogn-211-298",
-              "instance_id": 3,
-              "controller": 0,
-              "might": 1,
-              "keywords": [],
-              "exhausted": true,
-              "damage": 0,
-              "is_token": false
-            }
-          ],
-          "effect_id": null
-        }
-      ],
-      "scored_this_turn": [
-        "left",
-        "right"
-      ],
-      "cards_played_this_turn": 0
-    },
     "d9e245841114740b": {
       "turn_player": 0,
       "players": [
@@ -495,6 +354,147 @@
               "keywords": [
                 "Ganking"
               ],
+              "exhausted": false,
+              "damage": 0,
+              "is_token": false
+            },
+            {
+              "card_id": "ogn-211-298",
+              "instance_id": 3,
+              "controller": 0,
+              "might": 1,
+              "keywords": [],
+              "exhausted": true,
+              "damage": 0,
+              "is_token": false
+            }
+          ],
+          "effect_id": null
+        }
+      ],
+      "scored_this_turn": [
+        "left",
+        "right"
+      ],
+      "cards_played_this_turn": 0
+    },
+    "3d6d7fba15d65325": {
+      "turn_player": 0,
+      "players": [
+        {
+          "base_units": [
+            {
+              "card_id": "ogn-010-298",
+              "instance_id": 2,
+              "controller": 0,
+              "might": 1,
+              "keywords": [],
+              "exhausted": false,
+              "damage": 0,
+              "is_token": false
+            }
+          ],
+          "hand": [],
+          "runes": [],
+          "score": 7
+        },
+        {
+          "base_units": [],
+          "hand": [],
+          "runes": [],
+          "score": 0
+        }
+      ],
+      "battlefields": [
+        {
+          "battlefield_id": "left",
+          "controller": 0,
+          "units": [
+            {
+              "card_id": "ogn-205-298",
+              "instance_id": 1,
+              "controller": 0,
+              "might": 2,
+              "keywords": [
+                "Ganking"
+              ],
+              "exhausted": false,
+              "damage": 0,
+              "is_token": false
+            }
+          ],
+          "effect_id": null
+        },
+        {
+          "battlefield_id": "right",
+          "controller": 0,
+          "units": [
+            {
+              "card_id": "ogn-211-298",
+              "instance_id": 3,
+              "controller": 0,
+              "might": 1,
+              "keywords": [],
+              "exhausted": true,
+              "damage": 0,
+              "is_token": false
+            }
+          ],
+          "effect_id": null
+        }
+      ],
+      "scored_this_turn": [
+        "left",
+        "right"
+      ],
+      "cards_played_this_turn": 0
+    },
+    "9c5cb3a74384290d": {
+      "turn_player": 0,
+      "players": [
+        {
+          "base_units": [],
+          "hand": [],
+          "runes": [],
+          "score": 7
+        },
+        {
+          "base_units": [],
+          "hand": [],
+          "runes": [],
+          "score": 0
+        }
+      ],
+      "battlefields": [
+        {
+          "battlefield_id": "left",
+          "controller": 0,
+          "units": [
+            {
+              "card_id": "ogn-205-298",
+              "instance_id": 1,
+              "controller": 0,
+              "might": 2,
+              "keywords": [
+                "Ganking"
+              ],
+              "exhausted": false,
+              "damage": 0,
+              "is_token": false
+            }
+          ],
+          "effect_id": null
+        },
+        {
+          "battlefield_id": "right",
+          "controller": 0,
+          "units": [
+            {
+              "card_id": "ogn-010-298",
+              "instance_id": 2,
+              "controller": 0,
+              "might": 1,
+              "keywords": [],
               "exhausted": false,
               "damage": 0,
               "is_token": false
@@ -1217,6 +1217,77 @@
       ],
       "cards_played_this_turn": 0
     },
+    "b2405a422006297e": {
+      "turn_player": 0,
+      "players": [
+        {
+          "base_units": [
+            {
+              "card_id": "ogn-205-298",
+              "instance_id": 1,
+              "controller": 0,
+              "might": 2,
+              "keywords": [
+                "Ganking"
+              ],
+              "exhausted": false,
+              "damage": 0,
+              "is_token": false
+            }
+          ],
+          "hand": [],
+          "runes": [],
+          "score": 7
+        },
+        {
+          "base_units": [],
+          "hand": [],
+          "runes": [],
+          "score": 0
+        }
+      ],
+      "battlefields": [
+        {
+          "battlefield_id": "left",
+          "controller": 0,
+          "units": [
+            {
+              "card_id": "ogn-010-298",
+              "instance_id": 2,
+              "controller": 0,
+              "might": 1,
+              "keywords": [],
+              "exhausted": true,
+              "damage": 0,
+              "is_token": false
+            }
+          ],
+          "effect_id": null
+        },
+        {
+          "battlefield_id": "right",
+          "controller": 0,
+          "units": [
+            {
+              "card_id": "ogn-211-298",
+              "instance_id": 3,
+              "controller": 0,
+              "might": 1,
+              "keywords": [],
+              "exhausted": true,
+              "damage": 0,
+              "is_token": false
+            }
+          ],
+          "effect_id": null
+        }
+      ],
+      "scored_this_turn": [
+        "left",
+        "right"
+      ],
+      "cards_played_this_turn": 0
+    },
     "4fff17885ba24e25": {
       "turn_player": 0,
       "players": [
@@ -1358,7 +1429,147 @@
       ],
       "cards_played_this_turn": 0
     },
-    "b2405a422006297e": {
+    "3a92ceb84608a9e9": {
+      "turn_player": 0,
+      "players": [
+        {
+          "base_units": [],
+          "hand": [],
+          "runes": [],
+          "score": 7
+        },
+        {
+          "base_units": [],
+          "hand": [],
+          "runes": [],
+          "score": 0
+        }
+      ],
+      "battlefields": [
+        {
+          "battlefield_id": "left",
+          "controller": 0,
+          "units": [
+            {
+              "card_id": "ogn-205-298",
+              "instance_id": 1,
+              "controller": 0,
+              "might": 2,
+              "keywords": [
+                "Ganking"
+              ],
+              "exhausted": true,
+              "damage": 0,
+              "is_token": false
+            },
+            {
+              "card_id": "ogn-010-298",
+              "instance_id": 2,
+              "controller": 0,
+              "might": 1,
+              "keywords": [],
+              "exhausted": true,
+              "damage": 0,
+              "is_token": false
+            }
+          ],
+          "effect_id": null
+        },
+        {
+          "battlefield_id": "right",
+          "controller": 0,
+          "units": [
+            {
+              "card_id": "ogn-211-298",
+              "instance_id": 3,
+              "controller": 0,
+              "might": 1,
+              "keywords": [],
+              "exhausted": true,
+              "damage": 0,
+              "is_token": false
+            }
+          ],
+          "effect_id": null
+        }
+      ],
+      "scored_this_turn": [
+        "left",
+        "right"
+      ],
+      "cards_played_this_turn": 0
+    },
+    "0416a1d44a6c5eeb": {
+      "turn_player": 0,
+      "players": [
+        {
+          "base_units": [],
+          "hand": [],
+          "runes": [],
+          "score": 7
+        },
+        {
+          "base_units": [],
+          "hand": [],
+          "runes": [],
+          "score": 0
+        }
+      ],
+      "battlefields": [
+        {
+          "battlefield_id": "left",
+          "controller": 0,
+          "units": [
+            {
+              "card_id": "ogn-010-298",
+              "instance_id": 2,
+              "controller": 0,
+              "might": 1,
+              "keywords": [],
+              "exhausted": true,
+              "damage": 0,
+              "is_token": false
+            }
+          ],
+          "effect_id": null
+        },
+        {
+          "battlefield_id": "right",
+          "controller": 0,
+          "units": [
+            {
+              "card_id": "ogn-205-298",
+              "instance_id": 1,
+              "controller": 0,
+              "might": 2,
+              "keywords": [
+                "Ganking"
+              ],
+              "exhausted": true,
+              "damage": 0,
+              "is_token": false
+            },
+            {
+              "card_id": "ogn-211-298",
+              "instance_id": 3,
+              "controller": 0,
+              "might": 1,
+              "keywords": [],
+              "exhausted": true,
+              "damage": 0,
+              "is_token": false
+            }
+          ],
+          "effect_id": null
+        }
+      ],
+      "scored_this_turn": [
+        "left",
+        "right"
+      ],
+      "cards_played_this_turn": 0
+    },
+    "555f20333d4dd649": {
       "turn_player": 0,
       "players": [
         {
@@ -1371,7 +1582,7 @@
               "keywords": [
                 "Ganking"
               ],
-              "exhausted": false,
+              "exhausted": true,
               "damage": 0,
               "is_token": false
             }
@@ -1610,217 +1821,6 @@
                 "Ganking"
               ],
               "exhausted": false,
-              "damage": 0,
-              "is_token": false
-            }
-          ],
-          "effect_id": null
-        },
-        {
-          "battlefield_id": "right",
-          "controller": 0,
-          "units": [
-            {
-              "card_id": "ogn-211-298",
-              "instance_id": 3,
-              "controller": 0,
-              "might": 1,
-              "keywords": [],
-              "exhausted": true,
-              "damage": 0,
-              "is_token": false
-            }
-          ],
-          "effect_id": null
-        }
-      ],
-      "scored_this_turn": [
-        "left",
-        "right"
-      ],
-      "cards_played_this_turn": 0
-    },
-    "3a92ceb84608a9e9": {
-      "turn_player": 0,
-      "players": [
-        {
-          "base_units": [],
-          "hand": [],
-          "runes": [],
-          "score": 7
-        },
-        {
-          "base_units": [],
-          "hand": [],
-          "runes": [],
-          "score": 0
-        }
-      ],
-      "battlefields": [
-        {
-          "battlefield_id": "left",
-          "controller": 0,
-          "units": [
-            {
-              "card_id": "ogn-205-298",
-              "instance_id": 1,
-              "controller": 0,
-              "might": 2,
-              "keywords": [
-                "Ganking"
-              ],
-              "exhausted": true,
-              "damage": 0,
-              "is_token": false
-            },
-            {
-              "card_id": "ogn-010-298",
-              "instance_id": 2,
-              "controller": 0,
-              "might": 1,
-              "keywords": [],
-              "exhausted": true,
-              "damage": 0,
-              "is_token": false
-            }
-          ],
-          "effect_id": null
-        },
-        {
-          "battlefield_id": "right",
-          "controller": 0,
-          "units": [
-            {
-              "card_id": "ogn-211-298",
-              "instance_id": 3,
-              "controller": 0,
-              "might": 1,
-              "keywords": [],
-              "exhausted": true,
-              "damage": 0,
-              "is_token": false
-            }
-          ],
-          "effect_id": null
-        }
-      ],
-      "scored_this_turn": [
-        "left",
-        "right"
-      ],
-      "cards_played_this_turn": 0
-    },
-    "0416a1d44a6c5eeb": {
-      "turn_player": 0,
-      "players": [
-        {
-          "base_units": [],
-          "hand": [],
-          "runes": [],
-          "score": 7
-        },
-        {
-          "base_units": [],
-          "hand": [],
-          "runes": [],
-          "score": 0
-        }
-      ],
-      "battlefields": [
-        {
-          "battlefield_id": "left",
-          "controller": 0,
-          "units": [
-            {
-              "card_id": "ogn-010-298",
-              "instance_id": 2,
-              "controller": 0,
-              "might": 1,
-              "keywords": [],
-              "exhausted": true,
-              "damage": 0,
-              "is_token": false
-            }
-          ],
-          "effect_id": null
-        },
-        {
-          "battlefield_id": "right",
-          "controller": 0,
-          "units": [
-            {
-              "card_id": "ogn-205-298",
-              "instance_id": 1,
-              "controller": 0,
-              "might": 2,
-              "keywords": [
-                "Ganking"
-              ],
-              "exhausted": true,
-              "damage": 0,
-              "is_token": false
-            },
-            {
-              "card_id": "ogn-211-298",
-              "instance_id": 3,
-              "controller": 0,
-              "might": 1,
-              "keywords": [],
-              "exhausted": true,
-              "damage": 0,
-              "is_token": false
-            }
-          ],
-          "effect_id": null
-        }
-      ],
-      "scored_this_turn": [
-        "left",
-        "right"
-      ],
-      "cards_played_this_turn": 0
-    },
-    "555f20333d4dd649": {
-      "turn_player": 0,
-      "players": [
-        {
-          "base_units": [
-            {
-              "card_id": "ogn-205-298",
-              "instance_id": 1,
-              "controller": 0,
-              "might": 2,
-              "keywords": [
-                "Ganking"
-              ],
-              "exhausted": true,
-              "damage": 0,
-              "is_token": false
-            }
-          ],
-          "hand": [],
-          "runes": [],
-          "score": 7
-        },
-        {
-          "base_units": [],
-          "hand": [],
-          "runes": [],
-          "score": 0
-        }
-      ],
-      "battlefields": [
-        {
-          "battlefield_id": "left",
-          "controller": 0,
-          "units": [
-            {
-              "card_id": "ogn-010-298",
-              "instance_id": 2,
-              "controller": 0,
-              "might": 1,
-              "keywords": [],
-              "exhausted": true,
               "damage": 0,
               "is_token": false
             }
@@ -3144,30 +3144,6 @@
         "action": {
           "id": "a3",
           "type": "PlaySpell",
-          "label": "Play ogn-173-298 (2, base)",
-          "card_id": "ogn-173-298"
-        },
-        "to": [
-          "3d6d7fba15d65325"
-        ],
-        "adversarial": false
-      },
-      {
-        "action": {
-          "id": "a4",
-          "type": "PlaySpell",
-          "label": "Play ogn-173-298 (2, right)",
-          "card_id": "ogn-173-298"
-        },
-        "to": [
-          "9c5cb3a74384290d"
-        ],
-        "adversarial": false
-      },
-      {
-        "action": {
-          "id": "a5",
-          "type": "PlaySpell",
           "label": "Play ogn-173-298 (1, base)",
           "card_id": "ogn-173-298"
         },
@@ -3178,13 +3154,37 @@
       },
       {
         "action": {
-          "id": "a6",
+          "id": "a4",
           "type": "PlaySpell",
           "label": "Play ogn-173-298 (1, right)",
           "card_id": "ogn-173-298"
         },
         "to": [
           "6d4e133a65cfea41"
+        ],
+        "adversarial": false
+      },
+      {
+        "action": {
+          "id": "a5",
+          "type": "PlaySpell",
+          "label": "Play ogn-173-298 (2, base)",
+          "card_id": "ogn-173-298"
+        },
+        "to": [
+          "3d6d7fba15d65325"
+        ],
+        "adversarial": false
+      },
+      {
+        "action": {
+          "id": "a6",
+          "type": "PlaySpell",
+          "label": "Play ogn-173-298 (2, right)",
+          "card_id": "ogn-173-298"
+        },
+        "to": [
+          "9c5cb3a74384290d"
         ],
         "adversarial": false
       },
@@ -3316,30 +3316,6 @@
         "action": {
           "id": "a17",
           "type": "PlaySpell",
-          "label": "Play ogn-173-298 (3, base)",
-          "card_id": "ogn-173-298"
-        },
-        "to": [
-          "4fff17885ba24e25"
-        ],
-        "adversarial": false
-      },
-      {
-        "action": {
-          "id": "a18",
-          "type": "PlaySpell",
-          "label": "Play ogn-173-298 (3, left)",
-          "card_id": "ogn-173-298"
-        },
-        "to": [
-          "ff75769ddc8d6c5e"
-        ],
-        "adversarial": false
-      },
-      {
-        "action": {
-          "id": "a19",
-          "type": "PlaySpell",
           "label": "Play ogn-173-298 (1, base)",
           "card_id": "ogn-173-298"
         },
@@ -3350,7 +3326,7 @@
       },
       {
         "action": {
-          "id": "a20",
+          "id": "a18",
           "type": "PlaySpell",
           "label": "Play ogn-173-298 (1, left)",
           "card_id": "ogn-173-298"
@@ -3359,92 +3335,28 @@
           "18ffb7ac31c6b656"
         ],
         "adversarial": false
-      }
-    ],
-    "3d6d7fba15d65325": [
+      },
       {
         "action": {
-          "id": "a21",
-          "type": "MoveUnit",
-          "label": "Move unit 2 from base to left",
-          "card_id": "ogn-010-298"
+          "id": "a19",
+          "type": "PlaySpell",
+          "label": "Play ogn-173-298 (3, base)",
+          "card_id": "ogn-173-298"
         },
         "to": [
-          "b06d4e677e05978c"
+          "4fff17885ba24e25"
         ],
         "adversarial": false
       },
       {
         "action": {
-          "id": "a22",
-          "type": "MoveUnit",
-          "label": "Move unit 2 from base to right",
-          "card_id": "ogn-010-298"
+          "id": "a20",
+          "type": "PlaySpell",
+          "label": "Play ogn-173-298 (3, left)",
+          "card_id": "ogn-173-298"
         },
         "to": [
-          "a7931b972c09386e"
-        ],
-        "adversarial": false
-      },
-      {
-        "action": {
-          "id": "a23",
-          "type": "MoveUnit",
-          "label": "Move unit 1 from left to base",
-          "card_id": "ogn-205-298"
-        },
-        "to": [
-          "eca8e88764a8d9c7"
-        ],
-        "adversarial": false
-      },
-      {
-        "action": {
-          "id": "a24",
-          "type": "MoveUnit",
-          "label": "Move unit 1 from left to right",
-          "card_id": "ogn-205-298"
-        },
-        "to": [
-          "5b07ef58fef09245"
-        ],
-        "adversarial": false
-      }
-    ],
-    "9c5cb3a74384290d": [
-      {
-        "action": {
-          "id": "a25",
-          "type": "MoveUnit",
-          "label": "Move unit 1 from left to base",
-          "card_id": "ogn-205-298"
-        },
-        "to": [
-          "cb022585dfccd5bd"
-        ],
-        "adversarial": false
-      },
-      {
-        "action": {
-          "id": "a26",
-          "type": "MoveUnit",
-          "label": "Move unit 1 from left to right",
-          "card_id": "ogn-205-298"
-        },
-        "to": [
-          "5f83c967f37cb14f"
-        ],
-        "adversarial": false
-      },
-      {
-        "action": {
-          "id": "a27",
-          "type": "MoveUnit",
-          "label": "Move unit 2 from right to base",
-          "card_id": "ogn-010-298"
-        },
-        "to": [
-          "fb10a1c6fcbd1bcf"
+          "ff75769ddc8d6c5e"
         ],
         "adversarial": false
       }
@@ -3452,7 +3364,7 @@
     "d9e245841114740b": [
       {
         "action": {
-          "id": "a28",
+          "id": "a21",
           "type": "MoveUnit",
           "label": "Move unit 1 from base to left",
           "card_id": "ogn-205-298"
@@ -3464,7 +3376,7 @@
       },
       {
         "action": {
-          "id": "a29",
+          "id": "a22",
           "type": "MoveUnit",
           "label": "Move unit 1 from base to right",
           "card_id": "ogn-205-298"
@@ -3478,7 +3390,7 @@
     "6d4e133a65cfea41": [
       {
         "action": {
-          "id": "a30",
+          "id": "a23",
           "type": "MoveUnit",
           "label": "Move unit 1 from right to base",
           "card_id": "ogn-205-298"
@@ -3490,13 +3402,101 @@
       },
       {
         "action": {
-          "id": "a31",
+          "id": "a24",
           "type": "MoveUnit",
           "label": "Move unit 1 from right to left",
           "card_id": "ogn-205-298"
         },
         "to": [
           "3a92ceb84608a9e9"
+        ],
+        "adversarial": false
+      }
+    ],
+    "3d6d7fba15d65325": [
+      {
+        "action": {
+          "id": "a25",
+          "type": "MoveUnit",
+          "label": "Move unit 2 from base to left",
+          "card_id": "ogn-010-298"
+        },
+        "to": [
+          "b06d4e677e05978c"
+        ],
+        "adversarial": false
+      },
+      {
+        "action": {
+          "id": "a26",
+          "type": "MoveUnit",
+          "label": "Move unit 2 from base to right",
+          "card_id": "ogn-010-298"
+        },
+        "to": [
+          "a7931b972c09386e"
+        ],
+        "adversarial": false
+      },
+      {
+        "action": {
+          "id": "a27",
+          "type": "MoveUnit",
+          "label": "Move unit 1 from left to base",
+          "card_id": "ogn-205-298"
+        },
+        "to": [
+          "eca8e88764a8d9c7"
+        ],
+        "adversarial": false
+      },
+      {
+        "action": {
+          "id": "a28",
+          "type": "MoveUnit",
+          "label": "Move unit 1 from left to right",
+          "card_id": "ogn-205-298"
+        },
+        "to": [
+          "5b07ef58fef09245"
+        ],
+        "adversarial": false
+      }
+    ],
+    "9c5cb3a74384290d": [
+      {
+        "action": {
+          "id": "a29",
+          "type": "MoveUnit",
+          "label": "Move unit 1 from left to base",
+          "card_id": "ogn-205-298"
+        },
+        "to": [
+          "cb022585dfccd5bd"
+        ],
+        "adversarial": false
+      },
+      {
+        "action": {
+          "id": "a30",
+          "type": "MoveUnit",
+          "label": "Move unit 1 from left to right",
+          "card_id": "ogn-205-298"
+        },
+        "to": [
+          "5f83c967f37cb14f"
+        ],
+        "adversarial": false
+      },
+      {
+        "action": {
+          "id": "a31",
+          "type": "MoveUnit",
+          "label": "Move unit 2 from right to base",
+          "card_id": "ogn-010-298"
+        },
+        "to": [
+          "fb10a1c6fcbd1bcf"
         ],
         "adversarial": false
       }
@@ -3761,10 +3761,36 @@
         "adversarial": false
       }
     ],
-    "4fff17885ba24e25": [
+    "b2405a422006297e": [
       {
         "action": {
           "id": "a52",
+          "type": "MoveUnit",
+          "label": "Move unit 1 from base to left",
+          "card_id": "ogn-205-298"
+        },
+        "to": [
+          "a0c28d254b4ea7a7"
+        ],
+        "adversarial": false
+      },
+      {
+        "action": {
+          "id": "a53",
+          "type": "MoveUnit",
+          "label": "Move unit 1 from base to right",
+          "card_id": "ogn-205-298"
+        },
+        "to": [
+          "30abd8ebc156f016"
+        ],
+        "adversarial": false
+      }
+    ],
+    "4fff17885ba24e25": [
+      {
+        "action": {
+          "id": "a54",
           "type": "MoveUnit",
           "label": "Move unit 3 from base to left",
           "card_id": "ogn-211-298"
@@ -3776,7 +3802,7 @@
       },
       {
         "action": {
-          "id": "a53",
+          "id": "a55",
           "type": "MoveUnit",
           "label": "Move unit 3 from base to right",
           "card_id": "ogn-211-298"
@@ -3790,39 +3816,13 @@
     "ff75769ddc8d6c5e": [
       {
         "action": {
-          "id": "a54",
+          "id": "a56",
           "type": "MoveUnit",
           "label": "Move unit 3 from left to base",
           "card_id": "ogn-211-298"
         },
         "to": [
           "5ee12f35a2170a44"
-        ],
-        "adversarial": false
-      }
-    ],
-    "b2405a422006297e": [
-      {
-        "action": {
-          "id": "a55",
-          "type": "MoveUnit",
-          "label": "Move unit 1 from base to left",
-          "card_id": "ogn-205-298"
-        },
-        "to": [
-          "a0c28d254b4ea7a7"
-        ],
-        "adversarial": false
-      },
-      {
-        "action": {
-          "id": "a56",
-          "type": "MoveUnit",
-          "label": "Move unit 1 from base to right",
-          "card_id": "ogn-205-298"
-        },
-        "to": [
-          "30abd8ebc156f016"
         ],
         "adversarial": false
       }

@@ -448,7 +448,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "b3d159a02f8e3e1b": {
+    "e7e0d37beac4f8df": {
       "turn_player": 0,
       "players": [
         {
@@ -470,10 +470,10 @@
           "controller": 0,
           "units": [
             {
-              "card_id": "ogn-068-298",
-              "instance_id": 1,
+              "card_id": "ogn-010-298",
+              "instance_id": 2,
               "controller": 0,
-              "might": 3,
+              "might": 2,
               "keywords": [],
               "exhausted": true,
               "damage": 0,
@@ -505,7 +505,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "e7e0d37beac4f8df": {
+    "b3d159a02f8e3e1b": {
       "turn_player": 0,
       "players": [
         {
@@ -527,10 +527,10 @@
           "controller": 0,
           "units": [
             {
-              "card_id": "ogn-010-298",
-              "instance_id": 2,
+              "card_id": "ogn-068-298",
+              "instance_id": 1,
               "controller": 0,
-              "might": 2,
+              "might": 3,
               "keywords": [],
               "exhausted": true,
               "damage": 0,
@@ -906,11 +906,11 @@
         "action": {
           "id": "a7",
           "type": "ActivateAbility",
-          "label": "Activate unit 1 (2)",
+          "label": "Activate unit 1 (1)",
           "card_id": "ogn-068-298"
         },
         "to": [
-          "b3d159a02f8e3e1b"
+          "e7e0d37beac4f8df"
         ],
         "adversarial": false
       },
@@ -918,11 +918,11 @@
         "action": {
           "id": "a8",
           "type": "ActivateAbility",
-          "label": "Activate unit 1 (1)",
+          "label": "Activate unit 1 (2)",
           "card_id": "ogn-068-298"
         },
         "to": [
-          "e7e0d37beac4f8df"
+          "b3d159a02f8e3e1b"
         ],
         "adversarial": false
       },
@@ -1058,8 +1058,8 @@
   },
   "terminal": {
     "39ef797431917d0c": "dead_end",
-    "b3d159a02f8e3e1b": "dead_end",
     "e7e0d37beac4f8df": "dead_end",
+    "b3d159a02f8e3e1b": "dead_end",
     "a93037487478cc1e": "dead_end",
     "d8ca53ce9c2e56b3": "dead_end",
     "ece0dd30196b36bf": "dead_end",
