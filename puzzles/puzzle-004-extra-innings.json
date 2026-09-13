@@ -1,12 +1,12 @@
 {
   "schema_version": 2,
   "puzzle_id": "puzzle-004-extra-innings",
-  "root": "283e4f57ec73e320",
+  "root": "a9ba3e31db3015b8",
   "solution": {
-    "283e4f57ec73e320": "a2"
+    "a9ba3e31db3015b8": "a2"
   },
   "nodes": {
-    "283e4f57ec73e320": {
+    "a9ba3e31db3015b8": {
       "turn_player": 0,
       "players": [
         {
@@ -58,7 +58,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "a7414550997b5824": {
+    "3b13002c752bfb52": {
       "turn_player": 0,
       "players": [
         {
@@ -104,7 +104,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "66aad2b6915402a8": {
+    "72a71b130fcbeaf2": {
       "turn_player": 0,
       "players": [
         {
@@ -151,7 +151,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "f1ec94887c1bc66d": {
+    "858d406f35a17ee9": {
       "turn_player": 0,
       "players": [
         {
@@ -197,7 +197,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "4a15c33f0c550528": {
+    "47bcc881b6c0b718": {
       "turn_player": 0,
       "players": [
         {
@@ -246,7 +246,7 @@
     }
   },
   "edges": {
-    "283e4f57ec73e320": [
+    "a9ba3e31db3015b8": [
       {
         "action": {
           "id": "a1",
@@ -254,7 +254,7 @@
           "label": "Play ogn-173-298 (1, base)"
         },
         "to": [
-          "a7414550997b5824"
+          "3b13002c752bfb52"
         ],
         "adversarial": false
       },
@@ -265,12 +265,12 @@
           "label": "Play ogn-173-298 (1, right)"
         },
         "to": [
-          "66aad2b6915402a8"
+          "72a71b130fcbeaf2"
         ],
         "adversarial": false
       }
     ],
-    "a7414550997b5824": [
+    "3b13002c752bfb52": [
       {
         "action": {
           "id": "a3",
@@ -278,7 +278,7 @@
           "label": "Move unit 1 from base to left"
         },
         "to": [
-          "f1ec94887c1bc66d"
+          "858d406f35a17ee9"
         ],
         "adversarial": false
       },
@@ -289,15 +289,15 @@
           "label": "Move unit 1 from base to right"
         },
         "to": [
-          "4a15c33f0c550528"
+          "47bcc881b6c0b718"
         ],
         "adversarial": false
       }
     ]
   },
   "terminal": {
-    "66aad2b6915402a8": "win",
-    "f1ec94887c1bc66d": "dead_end",
-    "4a15c33f0c550528": "win"
+    "72a71b130fcbeaf2": "win",
+    "858d406f35a17ee9": "dead_end",
+    "47bcc881b6c0b718": "win"
   }
 }
