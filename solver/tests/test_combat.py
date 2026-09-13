@@ -136,6 +136,18 @@ def test_apply_combat_both_survive_stays_contested():
     assert len(left.units) == 2
 
 
+def test_apply_combat_survivors_heal_fully():
+    # Both sides take non-lethal damage and survive; damage must clear
+    # once this combat resolves, not persist to the next one.
+    defender = make_unit(1, controller=1, might=5)
+    mover = make_unit(2, controller=0, might=5, damage=3)  # pre-existing damage from an earlier combat
+    state = make_combat_state(frozenset({defender}), mover)
+    result = combat.apply_combat(state, mover, "base", "left",
+                                  attacker_assignment=((1, 2),), defender_assignment=((2, 1),))
+    left = result.battlefields[0]
+    assert {u.instance_id: u.damage for u in left.units} == {1: 0, 2: 0}
+
+
 def test_apply_combat_exhausted_after_flag():
     defender = make_unit(1, controller=1, might=1)
     mover = make_unit(2, controller=0, might=3)

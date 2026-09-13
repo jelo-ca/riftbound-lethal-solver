@@ -147,6 +147,14 @@ def _apply_damage(units: frozenset[UnitInstance], assignment: Assignment) -> fro
     return frozenset(survivors)
 
 
+def _heal(units: frozenset[UnitInstance]) -> frozenset[UnitInstance]:
+    """Survivors of a resolved combat heal fully (rule: damage clears
+    once the Combat Damage Step ends, not at end of turn) — direct
+    effect damage via deal_damage_to_unit is unaffected, since that's
+    not a combat resolution."""
+    return frozenset(dataclasses.replace(u, damage=0) for u in units)
+
+
 def deal_damage_to_unit(state: GameState, battlefield_id: str, target_instance_id: int, amount: int) -> GameState:
     """Direct, single-target damage from an effect outside the Combat
     Damage Step (e.g. Caitlyn - Patrolling's activated ability) — not a
@@ -185,8 +193,8 @@ def apply_combat(state: GameState, mover: UnitInstance, from_zone: str, destinat
     attacker_units = frozenset({moved_mover})
     defender_units = destination.units
 
-    surviving_attackers = _apply_damage(attacker_units, defender_assignment)
-    surviving_defenders = _apply_damage(defender_units, attacker_assignment)
+    surviving_attackers = _heal(_apply_damage(attacker_units, defender_assignment))
+    surviving_defenders = _heal(_apply_damage(defender_units, attacker_assignment))
 
     # Remove the mover from its origin zone (it's now at the destination,
     # dead or alive — either way it leaves `from_zone`).
