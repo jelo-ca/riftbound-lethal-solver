@@ -11,6 +11,24 @@ def move_action(action_id, card_id, keywords=(), to="s1"):
                         "keywords": list(keywords)}, "to": [to]}
 
 
+def combat_action(action_id, card_id, keywords=(), to="s1", action_type="ResolveCombat"):
+    return {"action": {"id": action_id, "type": action_type, "card_id": card_id,
+                        "keywords": list(keywords)}, "to": [to]}
+
+
+def chain(*actions):
+    """Builds an export whose solution walks `actions` in order, one per
+    state, so a multi-step signature can be written inline."""
+    solution, edges = {}, {}
+    for i, action in enumerate(actions):
+        state = f"s{i}"
+        action["to"] = [f"s{i + 1}"]
+        action["action"]["id"] = f"a{i}"
+        solution[state] = f"a{i}"
+        edges[state] = [action]
+    return make_export(root="s0", solution=solution, edges=edges)
+
+
 def test_maneuver_signature_walks_the_solution_path():
     result = make_export(
         root="s0",
@@ -44,12 +62,34 @@ def test_maneuver_signature_collapses_different_vanilla_cards_with_the_same_keyw
     assert maneuvers.maneuver_signature(deckhand) == (("MoveUnit", "vanilla:"),)
 
 
-def test_maneuver_signature_keeps_different_keyword_sets_distinct():
-    tank = make_export(root="s0", solution={"s0": "a1"}, edges={"s0": [move_action("a1", "cardA", keywords=("Tank",))]})
+def test_a_plain_move_keeps_only_movement_relevant_keywords():
+    """A combat keyword on a step that doesn't fight is not a different
+    trick. Ganking is, because it decides where the mover may legally go
+    (rule 810, Battlefield-to-Battlefield).
+
+    generated-07640 and generated-08685 were the same Blitzcrank line and
+    survived dedup as two, purely because one walked a Shield body into
+    the cleared lane and the other a bare one."""
+    tank = make_export(root="s0", solution={"s0": "a1"},
+                        edges={"s0": [move_action("a1", "cardA", keywords=("Tank",))]})
+    bare = make_export(root="s0", solution={"s0": "a1"},
+                        edges={"s0": [move_action("a1", "cardA")]})
     ganking = make_export(root="s0", solution={"s0": "a1"},
                            edges={"s0": [move_action("a1", "cardB", keywords=("Ganking",))]})
-    assert maneuvers.maneuver_signature(tank) != maneuvers.maneuver_signature(ganking)
-    assert maneuvers.maneuver_signature(tank) == (("MoveUnit", "vanilla:Tank"),)
+    assert maneuvers.maneuver_signature(tank) == maneuvers.maneuver_signature(bare)
+    assert maneuvers.maneuver_signature(tank) == (("MoveUnit", "vanilla:"),)
+    assert maneuvers.maneuver_signature(ganking) == (("MoveUnit", "vanilla:Ganking"),)
+
+
+def test_a_fighting_step_keeps_its_combat_keywords():
+    """The same keyword that's inert on a plain move is a real difference
+    once the step actually resolves damage."""
+    tank = make_export(root="s0", solution={"s0": "a1"},
+                        edges={"s0": [combat_action("a1", "cardA", keywords=("Tank",))]})
+    bare = make_export(root="s0", solution={"s0": "a1"},
+                        edges={"s0": [combat_action("a1", "cardA")]})
+    assert maneuvers.maneuver_signature(tank) != maneuvers.maneuver_signature(bare)
+    assert maneuvers.maneuver_signature(tank) == (("ResolveCombat", "vanilla:Tank"),)
 
 
 def test_move_step_keeps_raw_card_id_only_for_a_move_relevant_mechanic():
@@ -73,11 +113,15 @@ def test_a_mechanic_card_that_merely_moves_buckets_as_vanilla():
 
 
 def test_a_mechanic_card_moving_still_keeps_its_keywords():
-    """Blitzcrank buckets as vanilla, but Tank is still a real combat
-    difference, so it stays in the bucket label."""
-    result = make_export(root="s0", solution={"s0": "a1"},
-                          edges={"s0": [move_action("a1", BLITZCRANK_IMPASSIVE, keywords=("Tank",))]})
-    assert maneuvers.maneuver_signature(result) == (("MoveUnit", "vanilla:Tank"),)
+    """Blitzcrank buckets as vanilla when all he does is walk. His Tank
+    comes with him into the bucket label on a step that fights, and drops
+    out on one that doesn't."""
+    walking = make_export(root="s0", solution={"s0": "a1"},
+                           edges={"s0": [move_action("a1", BLITZCRANK_IMPASSIVE, keywords=("Tank",))]})
+    fighting = make_export(root="s0", solution={"s0": "a1"},
+                            edges={"s0": [combat_action("a1", BLITZCRANK_IMPASSIVE, keywords=("Tank",))]})
+    assert maneuvers.maneuver_signature(walking) == (("MoveUnit", "vanilla:"),)
+    assert maneuvers.maneuver_signature(fighting) == (("ResolveCombat", "vanilla:Tank"),)
 
 
 def test_non_move_steps_still_key_on_the_real_card():
@@ -206,3 +250,69 @@ def test_registry_overwrites_existing_entry_for_same_puzzle_id(tmp_path, monkeyp
     maneuvers.register_puzzle("puzzle-001-x", second)
     registry = maneuvers.load_registry()
     assert registry == {"puzzle-001-x": (("PlaySpell", "cardB"),)}
+
+
+# --- normalizations that keep equivalent lines tokenizing alike ---
+
+
+def spell_action(action_id, card_id, to="s1"):
+    return {"action": {"id": action_id, "type": "PlaySpell", "card_id": card_id,
+                        "keywords": []}, "to": [to]}
+
+
+def showdown_pair(card_id, keywords=()):
+    return [combat_action("x", card_id, keywords, action_type="EnterShowdown"),
+            {"action": {"id": "x", "type": "ResolveShowdown", "card_id": "", "keywords": []},
+             "to": ["s"]}]
+
+
+def test_an_unused_showdown_window_collapses_to_the_combat_it_equals():
+    """Opening a showdown and immediately resolving it, with nothing
+    played in between, is an ordinary combat written across two steps —
+    so it has to tokenize as one."""
+    split = chain(*showdown_pair("cardA"))
+    atomic = chain(combat_action("x", "cardA"))
+    assert maneuvers.maneuver_signature(split) == maneuvers.maneuver_signature(atomic)
+    assert maneuvers.maneuver_signature(split) == (("ResolveCombat", "vanilla:"),)
+
+
+def test_a_showdown_that_is_actually_used_is_not_collapsed():
+    """A window someone acts inside is a real decision and stays two
+    steps — that is the whole difference showdowns add."""
+    used = chain(showdown_pair("cardA")[0], spell_action("x", "ogn-173-298"),
+                 showdown_pair("cardA")[1])
+    assert maneuvers.maneuver_signature(used) == (
+        ("EnterShowdown", "vanilla:"), ("PlaySpell", "ogn-173-298"), ("ResolveShowdown", ""))
+
+
+def test_a_known_trick_with_a_step_spliced_into_it_is_still_a_duplicate():
+    """generated-05347 was puzzle 3's signature exactly, with one combat
+    inserted to clear the destination first, and containment missed it
+    because the run was no longer contiguous."""
+    puzzle_3 = (("MoveUnit", YASUO_WINDRIDER), ("PlaySpell", "ogn-173-298"),
+                ("MoveUnit", YASUO_WINDRIDER))
+    spliced = (("MoveUnit", YASUO_WINDRIDER), ("PlaySpell", "ogn-173-298"),
+               ("ResolveCombat", "vanilla:"), ("MoveUnit", YASUO_WINDRIDER))
+    assert maneuvers.is_duplicate(spliced, {puzzle_3})
+
+
+def test_splicing_in_enough_new_work_still_reads_as_a_composite():
+    """The coverage gate still protects genuine composites: a known trick
+    stops accounting for the bulk of a candidate once enough else is
+    happening, and subsequence matching does not change that."""
+    puzzle_3 = (("MoveUnit", YASUO_WINDRIDER), ("PlaySpell", "ogn-173-298"),
+                ("MoveUnit", YASUO_WINDRIDER))
+    composite = (("ResolveCombat", "vanilla:"), ("MoveUnit", YASUO_WINDRIDER),
+                 ("PlayUnit", BLITZCRANK_IMPASSIVE), ("PlaySpell", "ogn-173-298"),
+                 ("MoveUnit", YASUO_WINDRIDER))
+    assert not maneuvers.is_duplicate(composite, {puzzle_3})
+
+
+def test_subsequence_matching_still_respects_order():
+    """Order carries the trick: the same steps performed in a different
+    sequence are a different line, not a duplicate."""
+    trick = (("MoveUnit", YASUO_WINDRIDER), ("PlaySpell", "ogn-173-298"),
+             ("ResolveCombat", "vanilla:"))
+    reordered = (("PlaySpell", "ogn-173-298"), ("MoveUnit", YASUO_WINDRIDER),
+                 ("ResolveCombat", "vanilla:"))
+    assert not maneuvers.is_duplicate(reordered, {trick})
