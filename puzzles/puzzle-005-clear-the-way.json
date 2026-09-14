@@ -20,18 +20,22 @@
               "keywords": [],
               "exhausted": false,
               "damage": 0,
-              "is_token": false
+              "is_token": false,
+              "moved_this_turn": 0,
+              "might_bonus": 0
             }
           ],
           "hand": [],
           "runes": [],
-          "score": 7
+          "score": 7,
+          "legend": null
         },
         {
           "base_units": [],
           "hand": [],
           "runes": [],
-          "score": 0
+          "score": 0,
+          "legend": null
         }
       ],
       "battlefields": [
@@ -47,7 +51,9 @@
               "keywords": [],
               "exhausted": false,
               "damage": 0,
-              "is_token": false
+              "is_token": false,
+              "moved_this_turn": 0,
+              "might_bonus": 0
             }
           ],
           "effect_id": null
@@ -64,7 +70,9 @@
               "keywords": [],
               "exhausted": false,
               "damage": 0,
-              "is_token": false
+              "is_token": false,
+              "moved_this_turn": 0,
+              "might_bonus": 0
             }
           ],
           "effect_id": null
@@ -73,7 +81,8 @@
       "scored_this_turn": [
         "left"
       ],
-      "cards_played_this_turn": 0
+      "cards_played_this_turn": 0,
+      "showdown": null
     },
     "5e214c7fdb7afab0": {
       "turn_player": 0,
@@ -82,13 +91,15 @@
           "base_units": [],
           "hand": [],
           "runes": [],
-          "score": 7
+          "score": 7,
+          "legend": null
         },
         {
           "base_units": [],
           "hand": [],
           "runes": [],
-          "score": 0
+          "score": 0,
+          "legend": null
         }
       ],
       "battlefields": [
@@ -104,7 +115,9 @@
               "keywords": [],
               "exhausted": false,
               "damage": 0,
-              "is_token": false
+              "is_token": false,
+              "moved_this_turn": 0,
+              "might_bonus": 0
             },
             {
               "card_id": "ogn-010-298",
@@ -114,7 +127,9 @@
               "keywords": [],
               "exhausted": true,
               "damage": 0,
-              "is_token": false
+              "is_token": false,
+              "moved_this_turn": 1,
+              "might_bonus": 0
             }
           ],
           "effect_id": null
@@ -131,7 +146,9 @@
               "keywords": [],
               "exhausted": false,
               "damage": 0,
-              "is_token": false
+              "is_token": false,
+              "moved_this_turn": 0,
+              "might_bonus": 0
             }
           ],
           "effect_id": null
@@ -140,7 +157,8 @@
       "scored_this_turn": [
         "left"
       ],
-      "cards_played_this_turn": 0
+      "cards_played_this_turn": 0,
+      "showdown": null
     },
     "601ed151f166ee9a": {
       "turn_player": 0,
@@ -155,7 +173,9 @@
               "keywords": [],
               "exhausted": true,
               "damage": 0,
-              "is_token": false
+              "is_token": false,
+              "moved_this_turn": 1,
+              "might_bonus": 0
             },
             {
               "card_id": "ogn-010-298",
@@ -165,18 +185,22 @@
               "keywords": [],
               "exhausted": false,
               "damage": 0,
-              "is_token": false
+              "is_token": false,
+              "moved_this_turn": 0,
+              "might_bonus": 0
             }
           ],
           "hand": [],
           "runes": [],
-          "score": 7
+          "score": 7,
+          "legend": null
         },
         {
           "base_units": [],
           "hand": [],
           "runes": [],
-          "score": 0
+          "score": 0,
+          "legend": null
         }
       ],
       "battlefields": [
@@ -198,7 +222,9 @@
               "keywords": [],
               "exhausted": false,
               "damage": 0,
-              "is_token": false
+              "is_token": false,
+              "moved_this_turn": 0,
+              "might_bonus": 0
             }
           ],
           "effect_id": null
@@ -207,7 +233,8 @@
       "scored_this_turn": [
         "left"
       ],
-      "cards_played_this_turn": 0
+      "cards_played_this_turn": 0,
+      "showdown": null
     },
     "8c622b34e5aaf8d7": {
       "turn_player": 0,
@@ -216,13 +243,15 @@
           "base_units": [],
           "hand": [],
           "runes": [],
-          "score": 7
+          "score": 7,
+          "legend": null
         },
         {
           "base_units": [],
           "hand": [],
           "runes": [],
-          "score": 0
+          "score": 0,
+          "legend": null
         }
       ],
       "battlefields": [
@@ -238,7 +267,9 @@
               "keywords": [],
               "exhausted": false,
               "damage": 0,
-              "is_token": false
+              "is_token": false,
+              "moved_this_turn": 0,
+              "might_bonus": 0
             }
           ],
           "effect_id": null
@@ -255,7 +286,9 @@
               "keywords": [],
               "exhausted": false,
               "damage": 0,
-              "is_token": false
+              "is_token": false,
+              "moved_this_turn": 0,
+              "might_bonus": 0
             }
           ],
           "effect_id": null
@@ -264,7 +297,8 @@
       "scored_this_turn": [
         "left"
       ],
-      "cards_played_this_turn": 0
+      "cards_played_this_turn": 0,
+      "showdown": null
     },
     "17ee14189fd1c9a6": {
       "turn_player": 0,
@@ -279,18 +313,22 @@
               "keywords": [],
               "exhausted": false,
               "damage": 0,
-              "is_token": false
+              "is_token": false,
+              "moved_this_turn": 0,
+              "might_bonus": 0
             }
           ],
           "hand": [],
           "runes": [],
-          "score": 7
+          "score": 7,
+          "legend": null
         },
         {
           "base_units": [],
           "hand": [],
           "runes": [],
-          "score": 0
+          "score": 0,
+          "legend": null
         }
       ],
       "battlefields": [
@@ -312,7 +350,9 @@
               "keywords": [],
               "exhausted": false,
               "damage": 0,
-              "is_token": false
+              "is_token": false,
+              "moved_this_turn": 0,
+              "might_bonus": 0
             }
           ],
           "effect_id": null
@@ -321,7 +361,8 @@
       "scored_this_turn": [
         "left"
       ],
-      "cards_played_this_turn": 0
+      "cards_played_this_turn": 0,
+      "showdown": null
     },
     "200477f546521de6": {
       "turn_player": 0,
@@ -336,18 +377,22 @@
               "keywords": [],
               "exhausted": false,
               "damage": 0,
-              "is_token": false
+              "is_token": false,
+              "moved_this_turn": 0,
+              "might_bonus": 0
             }
           ],
           "hand": [],
           "runes": [],
-          "score": 7
+          "score": 7,
+          "legend": null
         },
         {
           "base_units": [],
           "hand": [],
           "runes": [],
-          "score": 0
+          "score": 0,
+          "legend": null
         }
       ],
       "battlefields": [
@@ -363,7 +408,9 @@
               "keywords": [],
               "exhausted": true,
               "damage": 0,
-              "is_token": false
+              "is_token": false,
+              "moved_this_turn": 0,
+              "might_bonus": 0
             }
           ],
           "effect_id": null
@@ -378,7 +425,8 @@
       "scored_this_turn": [
         "left"
       ],
-      "cards_played_this_turn": 0
+      "cards_played_this_turn": 0,
+      "showdown": null
     },
     "67b9a98f52075ecd": {
       "turn_player": 0,
@@ -393,18 +441,22 @@
               "keywords": [],
               "exhausted": true,
               "damage": 0,
-              "is_token": false
+              "is_token": false,
+              "moved_this_turn": 1,
+              "might_bonus": 0
             }
           ],
           "hand": [],
           "runes": [],
-          "score": 7
+          "score": 7,
+          "legend": null
         },
         {
           "base_units": [],
           "hand": [],
           "runes": [],
-          "score": 0
+          "score": 0,
+          "legend": null
         }
       ],
       "battlefields": [
@@ -420,7 +472,9 @@
               "keywords": [],
               "exhausted": true,
               "damage": 0,
-              "is_token": false
+              "is_token": false,
+              "moved_this_turn": 1,
+              "might_bonus": 0
             }
           ],
           "effect_id": null
@@ -437,7 +491,9 @@
               "keywords": [],
               "exhausted": false,
               "damage": 0,
-              "is_token": false
+              "is_token": false,
+              "moved_this_turn": 0,
+              "might_bonus": 0
             }
           ],
           "effect_id": null
@@ -446,7 +502,8 @@
       "scored_this_turn": [
         "left"
       ],
-      "cards_played_this_turn": 0
+      "cards_played_this_turn": 0,
+      "showdown": null
     },
     "9d6d8cff91f3d21b": {
       "turn_player": 0,
@@ -455,13 +512,15 @@
           "base_units": [],
           "hand": [],
           "runes": [],
-          "score": 7
+          "score": 7,
+          "legend": null
         },
         {
           "base_units": [],
           "hand": [],
           "runes": [],
-          "score": 0
+          "score": 0,
+          "legend": null
         }
       ],
       "battlefields": [
@@ -477,7 +536,9 @@
               "keywords": [],
               "exhausted": true,
               "damage": 0,
-              "is_token": false
+              "is_token": false,
+              "moved_this_turn": 1,
+              "might_bonus": 0
             }
           ],
           "effect_id": null
@@ -494,7 +555,9 @@
               "keywords": [],
               "exhausted": false,
               "damage": 0,
-              "is_token": false
+              "is_token": false,
+              "moved_this_turn": 0,
+              "might_bonus": 0
             }
           ],
           "effect_id": null
@@ -503,7 +566,8 @@
       "scored_this_turn": [
         "left"
       ],
-      "cards_played_this_turn": 0
+      "cards_played_this_turn": 0,
+      "showdown": null
     },
     "da9950df3f9b8a50": {
       "turn_player": 0,
@@ -512,13 +576,15 @@
           "base_units": [],
           "hand": [],
           "runes": [],
-          "score": 7
+          "score": 7,
+          "legend": null
         },
         {
           "base_units": [],
           "hand": [],
           "runes": [],
-          "score": 0
+          "score": 0,
+          "legend": null
         }
       ],
       "battlefields": [
@@ -534,7 +600,9 @@
               "keywords": [],
               "exhausted": true,
               "damage": 0,
-              "is_token": false
+              "is_token": false,
+              "moved_this_turn": 0,
+              "might_bonus": 0
             }
           ],
           "effect_id": null
@@ -551,7 +619,9 @@
               "keywords": [],
               "exhausted": false,
               "damage": 0,
-              "is_token": false
+              "is_token": false,
+              "moved_this_turn": 0,
+              "might_bonus": 0
             }
           ],
           "effect_id": null
@@ -560,7 +630,8 @@
       "scored_this_turn": [
         "left"
       ],
-      "cards_played_this_turn": 0
+      "cards_played_this_turn": 0,
+      "showdown": null
     },
     "3d0fea615a832a00": {
       "turn_player": 0,
@@ -569,13 +640,15 @@
           "base_units": [],
           "hand": [],
           "runes": [],
-          "score": 7
+          "score": 7,
+          "legend": null
         },
         {
           "base_units": [],
           "hand": [],
           "runes": [],
-          "score": 0
+          "score": 0,
+          "legend": null
         }
       ],
       "battlefields": [
@@ -591,7 +664,9 @@
               "keywords": [],
               "exhausted": true,
               "damage": 0,
-              "is_token": false
+              "is_token": false,
+              "moved_this_turn": 0,
+              "might_bonus": 0
             },
             {
               "card_id": "ogn-010-298",
@@ -601,7 +676,9 @@
               "keywords": [],
               "exhausted": true,
               "damage": 0,
-              "is_token": false
+              "is_token": false,
+              "moved_this_turn": 1,
+              "might_bonus": 0
             }
           ],
           "effect_id": null
@@ -616,7 +693,8 @@
       "scored_this_turn": [
         "left"
       ],
-      "cards_played_this_turn": 0
+      "cards_played_this_turn": 0,
+      "showdown": null
     },
     "77b32299c925c80c": {
       "turn_player": 0,
@@ -631,18 +709,22 @@
               "keywords": [],
               "exhausted": true,
               "damage": 0,
-              "is_token": false
+              "is_token": false,
+              "moved_this_turn": 1,
+              "might_bonus": 0
             }
           ],
           "hand": [],
           "runes": [],
-          "score": 7
+          "score": 7,
+          "legend": null
         },
         {
           "base_units": [],
           "hand": [],
           "runes": [],
-          "score": 0
+          "score": 0,
+          "legend": null
         }
       ],
       "battlefields": [
@@ -664,7 +746,9 @@
               "keywords": [],
               "exhausted": false,
               "damage": 0,
-              "is_token": false
+              "is_token": false,
+              "moved_this_turn": 0,
+              "might_bonus": 0
             }
           ],
           "effect_id": null
@@ -673,7 +757,8 @@
       "scored_this_turn": [
         "left"
       ],
-      "cards_played_this_turn": 0
+      "cards_played_this_turn": 0,
+      "showdown": null
     },
     "d995d1641dc79bf1": {
       "turn_player": 0,
@@ -682,13 +767,15 @@
           "base_units": [],
           "hand": [],
           "runes": [],
-          "score": 7
+          "score": 7,
+          "legend": null
         },
         {
           "base_units": [],
           "hand": [],
           "runes": [],
-          "score": 0
+          "score": 0,
+          "legend": null
         }
       ],
       "battlefields": [
@@ -710,7 +797,9 @@
               "keywords": [],
               "exhausted": false,
               "damage": 0,
-              "is_token": false
+              "is_token": false,
+              "moved_this_turn": 0,
+              "might_bonus": 0
             }
           ],
           "effect_id": null
@@ -719,7 +808,8 @@
       "scored_this_turn": [
         "left"
       ],
-      "cards_played_this_turn": 0
+      "cards_played_this_turn": 0,
+      "showdown": null
     },
     "3824c5457830379b": {
       "turn_player": 0,
@@ -728,13 +818,15 @@
           "base_units": [],
           "hand": [],
           "runes": [],
-          "score": 7
+          "score": 7,
+          "legend": null
         },
         {
           "base_units": [],
           "hand": [],
           "runes": [],
-          "score": 0
+          "score": 0,
+          "legend": null
         }
       ],
       "battlefields": [
@@ -750,7 +842,9 @@
               "keywords": [],
               "exhausted": true,
               "damage": 0,
-              "is_token": false
+              "is_token": false,
+              "moved_this_turn": 0,
+              "might_bonus": 0
             }
           ],
           "effect_id": null
@@ -765,7 +859,8 @@
       "scored_this_turn": [
         "left"
       ],
-      "cards_played_this_turn": 0
+      "cards_played_this_turn": 0,
+      "showdown": null
     },
     "8e4bd7a0dfc29c14": {
       "turn_player": 0,
@@ -774,13 +869,15 @@
           "base_units": [],
           "hand": [],
           "runes": [],
-          "score": 8
+          "score": 8,
+          "legend": null
         },
         {
           "base_units": [],
           "hand": [],
           "runes": [],
-          "score": 0
+          "score": 0,
+          "legend": null
         }
       ],
       "battlefields": [
@@ -796,7 +893,9 @@
               "keywords": [],
               "exhausted": true,
               "damage": 0,
-              "is_token": false
+              "is_token": false,
+              "moved_this_turn": 0,
+              "might_bonus": 0
             }
           ],
           "effect_id": null
@@ -813,7 +912,9 @@
               "keywords": [],
               "exhausted": true,
               "damage": 0,
-              "is_token": false
+              "is_token": false,
+              "moved_this_turn": 1,
+              "might_bonus": 0
             }
           ],
           "effect_id": null
@@ -823,7 +924,8 @@
         "left",
         "right"
       ],
-      "cards_played_this_turn": 0
+      "cards_played_this_turn": 0,
+      "showdown": null
     }
   },
   "edges": {

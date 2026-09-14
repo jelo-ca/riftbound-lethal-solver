@@ -52,6 +52,13 @@ def state_hash(state: GameState) -> str:
 
 
 def render_unit(unit: UnitInstance) -> dict:
+    """Every field canonical_key considers significant has to appear here,
+    or the export loses information the engine acts on: two states with
+    different hashes would render identically and a consumer replaying
+    the puzzle couldn't tell them apart. That was live for
+    `moved_this_turn` — puzzle 3's whole mechanic is Yasuo's move count,
+    and it wasn't in the file at all, leaving 8 pairs of
+    indistinguishable states in that one puzzle."""
     return {
         "card_id": unit.card_id,
         "instance_id": unit.instance_id,
@@ -61,6 +68,8 @@ def render_unit(unit: UnitInstance) -> dict:
         "exhausted": unit.exhausted,
         "damage": unit.damage,
         "is_token": unit.is_token,
+        "moved_this_turn": unit.moved_this_turn,
+        "might_bonus": unit.might_bonus,
     }
 
 
@@ -70,6 +79,8 @@ def render_player(player: PlayerState) -> dict:
         "hand": sorted(player.hand),
         "runes": sorted(player.runes.available),
         "score": player.score,
+        "legend": ({"card_id": player.legend.card_id, "exhausted": player.legend.exhausted}
+                   if player.legend else None),
     }
 
 
@@ -91,6 +102,9 @@ def render_state(state: GameState) -> dict:
         "battlefields": [render_battlefield(b) for b in state.battlefields],
         "scored_this_turn": sorted(state.scored_this_turn),
         "cards_played_this_turn": state.cards_played_this_turn,
+        "showdown": ({"battlefield_id": state.showdown.battlefield_id,
+                      "attacker_controller": state.showdown.attacker_controller}
+                     if state.showdown else None),
     }
 
 
