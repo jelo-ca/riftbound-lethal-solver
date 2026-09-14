@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import hashlib
 
-from .engine import abilities, combat, scoring
+from .engine import abilities, card_names, combat, scoring
 from .engine.actions import (
     ActivateAbility,
     Action,
@@ -128,44 +128,54 @@ def render_action(state: GameState, action: Action, action_id: str) -> dict:
     from a state diff.
     """
     from_zone = to_zone = None
+    instance_id = None
     if isinstance(action, PlayUnit):
-        label = f"Play {action.card_id} to {action.target_zone}"
+        label = f"Play {card_names.display_name(action.card_id)} to {action.target_zone}"
         card_id, keywords = action.card_id, []
         to_zone = action.target_zone
     elif isinstance(action, MoveUnit):
-        label = f"Move unit {action.instance_id} from {action.from_zone} to {action.to_zone}"
         mover = find_unit(state, action.instance_id, action.from_zone)
+        label = (f"Move {card_names.display_name(mover.card_id)} "
+                  f"from {action.from_zone} to {action.to_zone}")
         card_id, keywords = mover.card_id, sorted(mover.keywords)
         from_zone, to_zone = action.from_zone, action.to_zone
+        instance_id = action.instance_id
     elif isinstance(action, ResolveCombat):
-        label = f"Move unit {action.instance_id} from {action.from_zone} to {action.to_zone} (combat)"
         mover = find_unit(state, action.instance_id, action.from_zone)
+        label = (f"Move {card_names.display_name(mover.card_id)} "
+                  f"from {action.from_zone} to {action.to_zone} (combat)")
         card_id, keywords = mover.card_id, sorted(mover.keywords)
         from_zone, to_zone = action.from_zone, action.to_zone
+        instance_id = action.instance_id
     elif isinstance(action, EnterShowdown):
-        label = (f"Move unit {action.instance_id} from {action.from_zone} to {action.to_zone} "
-                  "(enter showdown)")
         mover = find_unit(state, action.instance_id, action.from_zone)
+        label = (f"Move {card_names.display_name(mover.card_id)} "
+                  f"from {action.from_zone} to {action.to_zone} (enter showdown)")
         card_id, keywords = mover.card_id, sorted(mover.keywords)
         from_zone, to_zone = action.from_zone, action.to_zone
+        instance_id = action.instance_id
     elif isinstance(action, ResolveShowdown):
         label = "Resolve showdown damage"
         card_id, keywords = "", []
     elif isinstance(action, PlaySpell):
-        label = f"Play {action.card_id} ({', '.join(str(p) for p in action.params)})"
+        label = (f"Play {card_names.display_name(action.card_id)} "
+                  f"({', '.join(str(p) for p in action.params)})")
         card_id, keywords = action.card_id, []
     elif isinstance(action, PlayGear):
-        label = f"Play {action.card_id} on unit {action.target_unit}"
+        label = f"Play {card_names.display_name(action.card_id)} on unit {action.target_unit}"
         card_id, keywords = action.card_id, []
     elif isinstance(action, ActivateAbility):
-        label = f"Activate unit {action.source_id} ({', '.join(str(p) for p in action.params)})"
+        label = (f"Activate {card_names.display_name(action.ability_id)} "
+                  f"({', '.join(str(p) for p in action.params)})")
         card_id, keywords = action.ability_id, []
+        instance_id = action.source_id
     else:
         label = type(action).__name__
         card_id, keywords = "", []
     return {"id": action_id, "type": type(action).__name__, "label": label,
             "card_id": card_id, "keywords": keywords,
-            "from_zone": from_zone, "to_zone": to_zone}
+            "from_zone": from_zone, "to_zone": to_zone,
+            "instance_id": instance_id}
 
 
 def resolve_action_outcomes(state: GameState, action: Action, cards: dict[str, CardDef]) -> list[GameState]:

@@ -64,7 +64,11 @@ flowchart TD
 
 Source: [`diagrams/01-pipeline.mmd`](diagrams/01-pipeline.mmd)
 
-- `fetch_cards.py` — one-time/on-demand script, hits Riftcodex, writes `solver/data/cards_raw.json`. Never called from solver or export code paths.
-- `cards_raw.json` — small enough to commit (298 base cards, well under any size concern).
+**As built** (the names differ slightly from the sketch above; the shape does not):
+
+- `solver/fetch_cards.py` — one-time/on-demand script, hits Riftcodex, writes `data/cards-ogn.json`. Never called from solver or export code paths. Four paginated requests for the whole set.
+- `data/cards-ogn.json` — verbatim API dump keyed by `riftbound_id`, small enough to commit (298 base cards) and **committed on purpose**: a fresh clone, a CI run and an offline build all need names without network, and Riftcodex is a fan project with no uptime guarantee. It was down — timeouts and 502s on every path including `/` — when the ingestion was written, which is exactly why nothing may depend on reaching it.
+- The curation step below stayed hand-written rather than generated: `solver/engine/card_pool.py` is the whitelist, transcribed by hand, and there is no `cards_curated.json`. The dump feeds **display only**, through `solver/engine/card_names.py` (action labels) and `web/scripts/fetch-card-names.mjs` (a trimmed derivative for the browser).
+- Both readers fall back to the raw `card_id`, so an absent or stale cache degrades presentation and nothing else. The engine and its tests behave identically without the file. See [`data/README.md`](../data/README.md).
 - Curation step filters to the whitelist and attaches a hand-written `ability_id` pointing into a structured effects registry (module of Python callables/data, not parsed from `text.plain`).
 - Any card not on the whitelist is simply absent from `cards_curated.json` — the engine never sees it, so it can't be played into a puzzle by accident.

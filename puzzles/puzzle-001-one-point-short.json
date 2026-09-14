@@ -587,11 +587,12 @@
         "action": {
           "id": "a1",
           "type": "MoveUnit",
-          "label": "Move unit 1 from base to left",
+          "label": "Move ogn-010-298 from base to left",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "base",
-          "to_zone": "left"
+          "to_zone": "left",
+          "instance_id": 1
         },
         "to": [
           "5f034ad1bcf0317e"
@@ -602,11 +603,12 @@
         "action": {
           "id": "a2",
           "type": "MoveUnit",
-          "label": "Move unit 1 from base to right",
+          "label": "Move ogn-010-298 from base to right",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "base",
-          "to_zone": "right"
+          "to_zone": "right",
+          "instance_id": 1
         },
         "to": [
           "ccec0ebbaf99dd95"
@@ -617,11 +619,12 @@
         "action": {
           "id": "a3",
           "type": "MoveUnit",
-          "label": "Move unit 2 from base to left",
+          "label": "Move ogn-211-298 from base to left",
           "card_id": "ogn-211-298",
           "keywords": [],
           "from_zone": "base",
-          "to_zone": "left"
+          "to_zone": "left",
+          "instance_id": 2
         },
         "to": [
           "2067018553abfb14"
@@ -632,11 +635,12 @@
         "action": {
           "id": "a4",
           "type": "MoveUnit",
-          "label": "Move unit 2 from base to right",
+          "label": "Move ogn-211-298 from base to right",
           "card_id": "ogn-211-298",
           "keywords": [],
           "from_zone": "base",
-          "to_zone": "right"
+          "to_zone": "right",
+          "instance_id": 2
         },
         "to": [
           "df85afeeec66c14e"
@@ -649,11 +653,12 @@
         "action": {
           "id": "a5",
           "type": "MoveUnit",
-          "label": "Move unit 2 from base to left",
+          "label": "Move ogn-211-298 from base to left",
           "card_id": "ogn-211-298",
           "keywords": [],
           "from_zone": "base",
-          "to_zone": "left"
+          "to_zone": "left",
+          "instance_id": 2
         },
         "to": [
           "42f355769b5b6c7e"
@@ -664,11 +669,12 @@
         "action": {
           "id": "a6",
           "type": "MoveUnit",
-          "label": "Move unit 2 from base to right",
+          "label": "Move ogn-211-298 from base to right",
           "card_id": "ogn-211-298",
           "keywords": [],
           "from_zone": "base",
-          "to_zone": "right"
+          "to_zone": "right",
+          "instance_id": 2
         },
         "to": [
           "8f486c7c807f6795"
@@ -681,11 +687,12 @@
         "action": {
           "id": "a7",
           "type": "MoveUnit",
-          "label": "Move unit 2 from base to left",
+          "label": "Move ogn-211-298 from base to left",
           "card_id": "ogn-211-298",
           "keywords": [],
           "from_zone": "base",
-          "to_zone": "left"
+          "to_zone": "left",
+          "instance_id": 2
         },
         "to": [
           "d2a77a0618b2f6f9"
@@ -696,11 +703,12 @@
         "action": {
           "id": "a8",
           "type": "MoveUnit",
-          "label": "Move unit 2 from base to right",
+          "label": "Move ogn-211-298 from base to right",
           "card_id": "ogn-211-298",
           "keywords": [],
           "from_zone": "base",
-          "to_zone": "right"
+          "to_zone": "right",
+          "instance_id": 2
         },
         "to": [
           "894b63e87ce882f8"
@@ -713,11 +721,12 @@
         "action": {
           "id": "a9",
           "type": "MoveUnit",
-          "label": "Move unit 1 from base to left",
+          "label": "Move ogn-010-298 from base to left",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "base",
-          "to_zone": "left"
+          "to_zone": "left",
+          "instance_id": 1
         },
         "to": [
           "42f355769b5b6c7e"
@@ -728,11 +737,12 @@
         "action": {
           "id": "a10",
           "type": "MoveUnit",
-          "label": "Move unit 1 from base to right",
+          "label": "Move ogn-010-298 from base to right",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "base",
-          "to_zone": "right"
+          "to_zone": "right",
+          "instance_id": 1
         },
         "to": [
           "d2a77a0618b2f6f9"
@@ -745,11 +755,12 @@
         "action": {
           "id": "a11",
           "type": "MoveUnit",
-          "label": "Move unit 1 from base to left",
+          "label": "Move ogn-010-298 from base to left",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "base",
-          "to_zone": "left"
+          "to_zone": "left",
+          "instance_id": 1
         },
         "to": [
           "8f486c7c807f6795"
@@ -760,11 +771,12 @@
         "action": {
           "id": "a12",
           "type": "MoveUnit",
-          "label": "Move unit 1 from base to right",
+          "label": "Move ogn-010-298 from base to right",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "base",
-          "to_zone": "right"
+          "to_zone": "right",
+          "instance_id": 1
         },
         "to": [
           "894b63e87ce882f8"

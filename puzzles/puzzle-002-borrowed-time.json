@@ -397,11 +397,12 @@
         "action": {
           "id": "a1",
           "type": "MoveUnit",
-          "label": "Move unit 2 from base to left",
+          "label": "Move ogn-211-298 from base to left",
           "card_id": "ogn-211-298",
           "keywords": [],
           "from_zone": "base",
-          "to_zone": "left"
+          "to_zone": "left",
+          "instance_id": 2
         },
         "to": [
           "e45984f8868ff060"
@@ -412,11 +413,12 @@
         "action": {
           "id": "a2",
           "type": "MoveUnit",
-          "label": "Move unit 2 from base to right",
+          "label": "Move ogn-211-298 from base to right",
           "card_id": "ogn-211-298",
           "keywords": [],
           "from_zone": "base",
-          "to_zone": "right"
+          "to_zone": "right",
+          "instance_id": 2
         },
         "to": [
           "fbf9686e4d548439"
@@ -427,11 +429,12 @@
         "action": {
           "id": "a3",
           "type": "MoveUnit",
-          "label": "Move unit 1 from right to base",
+          "label": "Move ogn-010-298 from right to base",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "right",
-          "to_zone": "base"
+          "to_zone": "base",
+          "instance_id": 1
         },
         "to": [
           "6982761f82fdc26f"
@@ -444,11 +447,12 @@
         "action": {
           "id": "a4",
           "type": "MoveUnit",
-          "label": "Move unit 1 from right to base",
+          "label": "Move ogn-010-298 from right to base",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "right",
-          "to_zone": "base"
+          "to_zone": "base",
+          "instance_id": 1
         },
         "to": [
           "0b4d28ae250398b9"
@@ -461,11 +465,12 @@
         "action": {
           "id": "a5",
           "type": "MoveUnit",
-          "label": "Move unit 2 from base to left",
+          "label": "Move ogn-211-298 from base to left",
           "card_id": "ogn-211-298",
           "keywords": [],
           "from_zone": "base",
-          "to_zone": "left"
+          "to_zone": "left",
+          "instance_id": 2
         },
         "to": [
           "7b84f5828a822353"
@@ -476,11 +481,12 @@
         "action": {
           "id": "a6",
           "type": "MoveUnit",
-          "label": "Move unit 2 from base to right",
+          "label": "Move ogn-211-298 from base to right",
           "card_id": "ogn-211-298",
           "keywords": [],
           "from_zone": "base",
-          "to_zone": "right"
+          "to_zone": "right",
+          "instance_id": 2
         },
         "to": [
           "0b4d28ae250398b9"

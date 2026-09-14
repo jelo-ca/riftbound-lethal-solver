@@ -3186,11 +3186,12 @@
         "action": {
           "id": "a1",
           "type": "MoveUnit",
-          "label": "Move unit 3 from base to left",
+          "label": "Move ogn-010-298 from base to left",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "base",
-          "to_zone": "left"
+          "to_zone": "left",
+          "instance_id": 3
         },
         "to": [
           "1bdb5e1df7aa9271"
@@ -3201,11 +3202,12 @@
         "action": {
           "id": "a2",
           "type": "EnterShowdown",
-          "label": "Move unit 3 from base to right (enter showdown)",
+          "label": "Move ogn-010-298 from base to right (enter showdown)",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "base",
-          "to_zone": "right"
+          "to_zone": "right",
+          "instance_id": 3
         },
         "to": [
           "695bb3430fe4ccd3"
@@ -3216,13 +3218,14 @@
         "action": {
           "id": "a3",
           "type": "EnterShowdown",
-          "label": "Move unit 1 from left to right (enter showdown)",
+          "label": "Move ogn-205-298 from left to right (enter showdown)",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
           ],
           "from_zone": "left",
-          "to_zone": "right"
+          "to_zone": "right",
+          "instance_id": 1
         },
         "to": [
           "d4a363a1bfcc9cf7"
@@ -3237,7 +3240,8 @@
           "card_id": "ogn-173-298",
           "keywords": [],
           "from_zone": null,
-          "to_zone": null
+          "to_zone": null,
+          "instance_id": null
         },
         "to": [
           "1f6bc36e4ccf7b68"
@@ -3250,13 +3254,14 @@
         "action": {
           "id": "a5",
           "type": "EnterShowdown",
-          "label": "Move unit 1 from left to right (enter showdown)",
+          "label": "Move ogn-205-298 from left to right (enter showdown)",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
           ],
           "from_zone": "left",
-          "to_zone": "right"
+          "to_zone": "right",
+          "instance_id": 1
         },
         "to": [
           "fc2baac766f5afe2"
@@ -3273,7 +3278,8 @@
           "card_id": "ogn-173-298",
           "keywords": [],
           "from_zone": null,
-          "to_zone": null
+          "to_zone": null,
+          "instance_id": null
         },
         "to": [
           "0123a675ce9b9f37"
@@ -3288,7 +3294,8 @@
           "card_id": "ogn-173-298",
           "keywords": [],
           "from_zone": null,
-          "to_zone": null
+          "to_zone": null,
+          "instance_id": null
         },
         "to": [
           "3408bb09a5632d53"
@@ -3303,7 +3310,8 @@
           "card_id": "",
           "keywords": [],
           "from_zone": null,
-          "to_zone": null
+          "to_zone": null,
+          "instance_id": null
         },
         "to": [
           "e9773961702a32f1"
@@ -3320,7 +3328,8 @@
           "card_id": "ogn-173-298",
           "keywords": [],
           "from_zone": null,
-          "to_zone": null
+          "to_zone": null,
+          "instance_id": null
         },
         "to": [
           "b30628dd3b1cc887"
@@ -3335,7 +3344,8 @@
           "card_id": "ogn-173-298",
           "keywords": [],
           "from_zone": null,
-          "to_zone": null
+          "to_zone": null,
+          "instance_id": null
         },
         "to": [
           "e83b1cb20cf90c3d"
@@ -3350,7 +3360,8 @@
           "card_id": "ogn-173-298",
           "keywords": [],
           "from_zone": null,
-          "to_zone": null
+          "to_zone": null,
+          "instance_id": null
         },
         "to": [
           "695816a806d33d30"
@@ -3365,7 +3376,8 @@
           "card_id": "",
           "keywords": [],
           "from_zone": null,
-          "to_zone": null
+          "to_zone": null,
+          "instance_id": null
         },
         "to": [
           "407c0b80b81ed45f"
@@ -3378,13 +3390,14 @@
         "action": {
           "id": "a13",
           "type": "ResolveCombat",
-          "label": "Move unit 1 from left to right (combat)",
+          "label": "Move ogn-205-298 from left to right (combat)",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
           ],
           "from_zone": "left",
-          "to_zone": "right"
+          "to_zone": "right",
+          "instance_id": 1
         },
         "to": [
           "baa565f669db3fc4"
@@ -3401,7 +3414,8 @@
           "card_id": "ogn-173-298",
           "keywords": [],
           "from_zone": null,
-          "to_zone": null
+          "to_zone": null,
+          "instance_id": null
         },
         "to": [
           "aa483c55a68acc70"
@@ -3416,7 +3430,8 @@
           "card_id": "ogn-173-298",
           "keywords": [],
           "from_zone": null,
-          "to_zone": null
+          "to_zone": null,
+          "instance_id": null
         },
         "to": [
           "fbf495ded9635a7d"
@@ -3431,7 +3446,8 @@
           "card_id": "",
           "keywords": [],
           "from_zone": null,
-          "to_zone": null
+          "to_zone": null,
+          "instance_id": null
         },
         "to": [
           "43e129ff5f5664ea"
@@ -3448,7 +3464,8 @@
           "card_id": "",
           "keywords": [],
           "from_zone": null,
-          "to_zone": null
+          "to_zone": null,
+          "instance_id": null
         },
         "to": [
           "64d866b2c264ec66"
@@ -3465,7 +3482,8 @@
           "card_id": "",
           "keywords": [],
           "from_zone": null,
-          "to_zone": null
+          "to_zone": null,
+          "instance_id": null
         },
         "to": [
           "ade22126e81a2e33"
@@ -3478,13 +3496,14 @@
         "action": {
           "id": "a19",
           "type": "EnterShowdown",
-          "label": "Move unit 1 from left to right (enter showdown)",
+          "label": "Move ogn-205-298 from left to right (enter showdown)",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
           ],
           "from_zone": "left",
-          "to_zone": "right"
+          "to_zone": "right",
+          "instance_id": 1
         },
         "to": [
           "f463c713b34e0db1"
@@ -3501,7 +3520,8 @@
           "card_id": "",
           "keywords": [],
           "from_zone": null,
-          "to_zone": null
+          "to_zone": null,
+          "instance_id": null
         },
         "to": [
           "baa565f669db3fc4"
@@ -3518,7 +3538,8 @@
           "card_id": "",
           "keywords": [],
           "from_zone": null,
-          "to_zone": null
+          "to_zone": null,
+          "instance_id": null
         },
         "to": [
           "b5378a7d99f7bc88"
@@ -3535,7 +3556,8 @@
           "card_id": "",
           "keywords": [],
           "from_zone": null,
-          "to_zone": null
+          "to_zone": null,
+          "instance_id": null
         },
         "to": [
           "8ea3ee3a1a746cd5"
@@ -3548,11 +3570,12 @@
         "action": {
           "id": "a23",
           "type": "MoveUnit",
-          "label": "Move unit 3 from base to left",
+          "label": "Move ogn-010-298 from base to left",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "base",
-          "to_zone": "left"
+          "to_zone": "left",
+          "instance_id": 3
         },
         "to": [
           "43e129ff5f5664ea"
@@ -3563,11 +3586,12 @@
         "action": {
           "id": "a24",
           "type": "EnterShowdown",
-          "label": "Move unit 3 from base to right (enter showdown)",
+          "label": "Move ogn-010-298 from base to right (enter showdown)",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "base",
-          "to_zone": "right"
+          "to_zone": "right",
+          "instance_id": 3
         },
         "to": [
           "09df9c02910d6a76"
@@ -3582,7 +3606,8 @@
           "card_id": "ogn-173-298",
           "keywords": [],
           "from_zone": null,
-          "to_zone": null
+          "to_zone": null,
+          "instance_id": null
         },
         "to": [
           "baa565f669db3fc4"
@@ -3599,7 +3624,8 @@
           "card_id": "",
           "keywords": [],
           "from_zone": null,
-          "to_zone": null
+          "to_zone": null,
+          "instance_id": null
         },
         "to": [
           "4953a587f0b076b1"
@@ -3616,7 +3642,8 @@
           "card_id": "",
           "keywords": [],
           "from_zone": null,
-          "to_zone": null
+          "to_zone": null,
+          "instance_id": null
         },
         "to": [
           "9ac16119aea6b687"
@@ -3629,11 +3656,12 @@
         "action": {
           "id": "a28",
           "type": "MoveUnit",
-          "label": "Move unit 3 from base to left",
+          "label": "Move ogn-010-298 from base to left",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "base",
-          "to_zone": "left"
+          "to_zone": "left",
+          "instance_id": 3
         },
         "to": [
           "6237dbbc8c954e58"
@@ -3644,11 +3672,12 @@
         "action": {
           "id": "a29",
           "type": "ResolveCombat",
-          "label": "Move unit 3 from base to right (combat)",
+          "label": "Move ogn-010-298 from base to right (combat)",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "base",
-          "to_zone": "right"
+          "to_zone": "right",
+          "instance_id": 3
         },
         "to": [
           "0f884ab8bbfc86fe"
@@ -3659,13 +3688,14 @@
         "action": {
           "id": "a30",
           "type": "ResolveCombat",
-          "label": "Move unit 1 from left to right (combat)",
+          "label": "Move ogn-205-298 from left to right (combat)",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
           ],
           "from_zone": "left",
-          "to_zone": "right"
+          "to_zone": "right",
+          "instance_id": 1
         },
         "to": [
           "e83f01e7cce28804"
@@ -3678,13 +3708,14 @@
         "action": {
           "id": "a31",
           "type": "ResolveCombat",
-          "label": "Move unit 1 from left to right (combat)",
+          "label": "Move ogn-205-298 from left to right (combat)",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
           ],
           "from_zone": "left",
-          "to_zone": "right"
+          "to_zone": "right",
+          "instance_id": 1
         },
         "to": [
           "e75d3d2cf241eb8a"
@@ -3701,7 +3732,8 @@
           "card_id": "ogn-173-298",
           "keywords": [],
           "from_zone": null,
-          "to_zone": null
+          "to_zone": null,
+          "instance_id": null
         },
         "to": [
           "906991ddec6be419"
@@ -3716,7 +3748,8 @@
           "card_id": "ogn-173-298",
           "keywords": [],
           "from_zone": null,
-          "to_zone": null
+          "to_zone": null,
+          "instance_id": null
         },
         "to": [
           "3e5ac9422df5c789"
@@ -3731,7 +3764,8 @@
           "card_id": "",
           "keywords": [],
           "from_zone": null,
-          "to_zone": null
+          "to_zone": null,
+          "instance_id": null
         },
         "to": [
           "cde0db0b574193ff"
@@ -3744,13 +3778,14 @@
         "action": {
           "id": "a35",
           "type": "MoveUnit",
-          "label": "Move unit 1 from base to left",
+          "label": "Move ogn-205-298 from base to left",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
           ],
           "from_zone": "base",
-          "to_zone": "left"
+          "to_zone": "left",
+          "instance_id": 1
         },
         "to": [
           "81549aa5dbb1af56"
@@ -3761,11 +3796,12 @@
         "action": {
           "id": "a36",
           "type": "MoveUnit",
-          "label": "Move unit 3 from base to left",
+          "label": "Move ogn-010-298 from base to left",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "base",
-          "to_zone": "left"
+          "to_zone": "left",
+          "instance_id": 3
         },
         "to": [
           "4953a587f0b076b1"
@@ -3776,13 +3812,14 @@
         "action": {
           "id": "a37",
           "type": "ResolveCombat",
-          "label": "Move unit 1 from base to right (combat)",
+          "label": "Move ogn-205-298 from base to right (combat)",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
           ],
           "from_zone": "base",
-          "to_zone": "right"
+          "to_zone": "right",
+          "instance_id": 1
         },
         "to": [
           "8fd2c20b0ae1c8f2"
@@ -3793,11 +3830,12 @@
         "action": {
           "id": "a38",
           "type": "ResolveCombat",
-          "label": "Move unit 3 from base to right (combat)",
+          "label": "Move ogn-010-298 from base to right (combat)",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "base",
-          "to_zone": "right"
+          "to_zone": "right",
+          "instance_id": 3
         },
         "to": [
           "544a22fb103852ad"
@@ -3810,11 +3848,12 @@
         "action": {
           "id": "a39",
           "type": "MoveUnit",
-          "label": "Move unit 3 from base to left",
+          "label": "Move ogn-010-298 from base to left",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "base",
-          "to_zone": "left"
+          "to_zone": "left",
+          "instance_id": 3
         },
         "to": [
           "9ac16119aea6b687"
@@ -3825,11 +3864,12 @@
         "action": {
           "id": "a40",
           "type": "ResolveCombat",
-          "label": "Move unit 3 from base to right (combat)",
+          "label": "Move ogn-010-298 from base to right (combat)",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "base",
-          "to_zone": "right"
+          "to_zone": "right",
+          "instance_id": 3
         },
         "to": [
           "5582c8b89fcdc179"
@@ -3840,13 +3880,14 @@
         "action": {
           "id": "a41",
           "type": "ResolveCombat",
-          "label": "Move unit 1 from left to right (combat)",
+          "label": "Move ogn-205-298 from left to right (combat)",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
           ],
           "from_zone": "left",
-          "to_zone": "right"
+          "to_zone": "right",
+          "instance_id": 1
         },
         "to": [
           "8fd2c20b0ae1c8f2"
@@ -3863,7 +3904,8 @@
           "card_id": "ogn-173-298",
           "keywords": [],
           "from_zone": null,
-          "to_zone": null
+          "to_zone": null,
+          "instance_id": null
         },
         "to": [
           "d6eb1d4f529c9499"
@@ -3878,7 +3920,8 @@
           "card_id": "ogn-173-298",
           "keywords": [],
           "from_zone": null,
-          "to_zone": null
+          "to_zone": null,
+          "instance_id": null
         },
         "to": [
           "6c595b96c7d349fc"
@@ -3893,7 +3936,8 @@
           "card_id": "",
           "keywords": [],
           "from_zone": null,
-          "to_zone": null
+          "to_zone": null,
+          "instance_id": null
         },
         "to": [
           "cde0db0b574193ff"
@@ -3906,13 +3950,14 @@
         "action": {
           "id": "a45",
           "type": "MoveUnit",
-          "label": "Move unit 1 from base to left",
+          "label": "Move ogn-205-298 from base to left",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
           ],
           "from_zone": "base",
-          "to_zone": "left"
+          "to_zone": "left",
+          "instance_id": 1
         },
         "to": [
           "6ba2e89879bff247"
@@ -3923,13 +3968,14 @@
         "action": {
           "id": "a46",
           "type": "ResolveCombat",
-          "label": "Move unit 1 from base to right (combat)",
+          "label": "Move ogn-205-298 from base to right (combat)",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
           ],
           "from_zone": "base",
-          "to_zone": "right"
+          "to_zone": "right",
+          "instance_id": 1
         },
         "to": [
           "f915a7f7b31d6d53"
@@ -3942,13 +3988,14 @@
         "action": {
           "id": "a47",
           "type": "ResolveCombat",
-          "label": "Move unit 1 from left to right (combat)",
+          "label": "Move ogn-205-298 from left to right (combat)",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
           ],
           "from_zone": "left",
-          "to_zone": "right"
+          "to_zone": "right",
+          "instance_id": 1
         },
         "to": [
           "f915a7f7b31d6d53"
@@ -3961,13 +4008,14 @@
         "action": {
           "id": "a48",
           "type": "ResolveCombat",
-          "label": "Move unit 1 from left to right (combat)",
+          "label": "Move ogn-205-298 from left to right (combat)",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
           ],
           "from_zone": "left",
-          "to_zone": "right"
+          "to_zone": "right",
+          "instance_id": 1
         },
         "to": [
           "439d9868722957b8"
@@ -3980,13 +4028,14 @@
         "action": {
           "id": "a49",
           "type": "ResolveCombat",
-          "label": "Move unit 1 from left to right (combat)",
+          "label": "Move ogn-205-298 from left to right (combat)",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
           ],
           "from_zone": "left",
-          "to_zone": "right"
+          "to_zone": "right",
+          "instance_id": 1
         },
         "to": [
           "a69cc1d8c765350c"
@@ -3999,11 +4048,12 @@
         "action": {
           "id": "a50",
           "type": "MoveUnit",
-          "label": "Move unit 3 from base to left",
+          "label": "Move ogn-010-298 from base to left",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "base",
-          "to_zone": "left"
+          "to_zone": "left",
+          "instance_id": 3
         },
         "to": [
           "439d9868722957b8"
@@ -4014,11 +4064,12 @@
         "action": {
           "id": "a51",
           "type": "ResolveCombat",
-          "label": "Move unit 3 from base to right (combat)",
+          "label": "Move ogn-010-298 from base to right (combat)",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "base",
-          "to_zone": "right"
+          "to_zone": "right",
+          "instance_id": 3
         },
         "to": [
           "a69cc1d8c765350c"
@@ -4035,7 +4086,8 @@
           "card_id": "",
           "keywords": [],
           "from_zone": null,
-          "to_zone": null
+          "to_zone": null,
+          "instance_id": null
         },
         "to": [
           "544a22fb103852ad"
@@ -4052,7 +4104,8 @@
           "card_id": "",
           "keywords": [],
           "from_zone": null,
-          "to_zone": null
+          "to_zone": null,
+          "instance_id": null
         },
         "to": [
           "5582c8b89fcdc179"
@@ -4065,11 +4118,12 @@
         "action": {
           "id": "a54",
           "type": "MoveUnit",
-          "label": "Move unit 3 from base to left",
+          "label": "Move ogn-010-298 from base to left",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "base",
-          "to_zone": "left"
+          "to_zone": "left",
+          "instance_id": 3
         },
         "to": [
           "f915a7f7b31d6d53"
@@ -4080,11 +4134,12 @@
         "action": {
           "id": "a55",
           "type": "ResolveCombat",
-          "label": "Move unit 3 from base to right (combat)",
+          "label": "Move ogn-010-298 from base to right (combat)",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "base",
-          "to_zone": "right"
+          "to_zone": "right",
+          "instance_id": 3
         },
         "to": [
           "a69cc1d8c765350c"
@@ -4097,13 +4152,14 @@
         "action": {
           "id": "a56",
           "type": "MoveUnit",
-          "label": "Move unit 1 from base to left",
+          "label": "Move ogn-205-298 from base to left",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
           ],
           "from_zone": "base",
-          "to_zone": "left"
+          "to_zone": "left",
+          "instance_id": 1
         },
         "to": [
           "102efc458304e296"
@@ -4114,13 +4170,14 @@
         "action": {
           "id": "a57",
           "type": "ResolveCombat",
-          "label": "Move unit 1 from base to right (combat)",
+          "label": "Move ogn-205-298 from base to right (combat)",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
           ],
           "from_zone": "base",
-          "to_zone": "right"
+          "to_zone": "right",
+          "instance_id": 1
         },
         "to": [
           "a69cc1d8c765350c"
@@ -4133,13 +4190,14 @@
         "action": {
           "id": "a58",
           "type": "ResolveCombat",
-          "label": "Move unit 1 from left to right (combat)",
+          "label": "Move ogn-205-298 from left to right (combat)",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
           ],
           "from_zone": "left",
-          "to_zone": "right"
+          "to_zone": "right",
+          "instance_id": 1
         },
         "to": [
           "a69cc1d8c765350c"
@@ -4156,7 +4214,8 @@
           "card_id": "",
           "keywords": [],
           "from_zone": null,
-          "to_zone": null
+          "to_zone": null,
+          "instance_id": null
         },
         "to": [
           "e83f01e7cce28804"
@@ -4173,7 +4232,8 @@
           "card_id": "",
           "keywords": [],
           "from_zone": null,
-          "to_zone": null
+          "to_zone": null,
+          "instance_id": null
         },
         "to": [
           "e75d3d2cf241eb8a"
