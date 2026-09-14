@@ -83,6 +83,30 @@ class ResolveCombat:
 
 
 @dataclass(frozen=True)
+class EnterShowdown:
+    """Move into an enemy-occupied battlefield and STOP, leaving the
+    showdown open for [Action]/[Reaction] plays before damage.
+
+    Only generated when such a play is actually available; otherwise the
+    atomic ResolveCombat below is emitted instead, since a showdown whose
+    only legal action is "resolve" is not a decision and folding it away
+    keeps search depth honest.
+    """
+    instance_id: int
+    from_zone: Zone
+    to_zone: Zone
+
+
+@dataclass(frozen=True)
+class ResolveShowdown:
+    """The Combat Damage Step of an already-open showdown. Carries only
+    OUR assignment; who is attacking, and which units are even involved,
+    is read from the board at resolve time — cards played during the
+    window may have moved units in or out."""
+    our_assignment: Assignment
+
+
+@dataclass(frozen=True)
 class PlaySpell:
     card_id: str
     # Opaque, effect-specific: whatever the card's registered ability
@@ -109,7 +133,8 @@ class ActivateAbility:
     rune_payment: Optional[RunePayment]  # None for abilities with no rune cost (e.g. exhaust-only)
 
 
-Action = PlayUnit | MoveUnit | ResolveCombat | PlaySpell | PlayGear | ActivateAbility
+Action = (PlayUnit | MoveUnit | ResolveCombat | EnterShowdown | ResolveShowdown
+          | PlaySpell | PlayGear | ActivateAbility)
 
 
 # --- Rune payment -----------------------------------------------------------

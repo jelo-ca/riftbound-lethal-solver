@@ -28,7 +28,7 @@ import re
 from typing import Optional
 
 from . import battlefields
-from .state import BattlefieldState, GameState, UnitInstance, replace_player
+from .state import BattlefieldState, GameState, ShowdownState, UnitInstance, replace_player
 
 Assignment = tuple[tuple[int, int], ...]  # (instance_id, damage_amount) pairs
 
@@ -206,6 +206,92 @@ def deal_damage_to_unit(state: GameState, battlefield_id: str, target_instance_i
     controllers = {u.controller for u in remaining}
     new_controller = next(iter(controllers)) if len(controllers) == 1 else None
     return _replace_battlefield(state, dataclasses.replace(bf, units=remaining, controller=new_controller))
+
+
+def open_showdown(state: GameState, mover: UnitInstance, from_zone: str, destination_id: str,
+                   exhausted_after: bool = True) -> GameState:
+    """Moves `mover` into `destination_id`, applying Contested status and
+    opening a showdown — WITHOUT resolving damage. The two halves are
+    separate because card speeds make the gap between them observable:
+    an [Action]/[Reaction] card can be played after the move and before
+    the Combat Damage Step (Ride The Wind moving a unit in to join the
+    fight, or out of it to dodge).
+
+    Both sides stay on the battlefield with the mover among them and no
+    controller, which is what Contested means (rule 190.6). Damage is
+    resolve_showdown's job.
+    """
+    destination = next(bf for bf in state.battlefields if bf.battlefield_id == destination_id)
+    moved_mover = dataclasses.replace(mover, exhausted=exhausted_after,
+                                       moved_this_turn=mover.moved_this_turn + 1)
+    state = _remove_from_origin(state, mover, from_zone)
+    destination = next(bf for bf in state.battlefields if bf.battlefield_id == destination_id)
+    contested = dataclasses.replace(destination, units=destination.units | {moved_mover},
+                                     controller=None)
+    state = _replace_battlefield(state, contested)
+    return dataclasses.replace(
+        state, showdown=ShowdownState(battlefield_id=destination_id,
+                                       attacker_controller=mover.controller))
+
+
+def resolve_showdown(state: GameState, attacker_assignment: Assignment,
+                      defender_assignment: Assignment) -> GameState:
+    """The Combat Damage Step for the open showdown: both sides assign
+    simultaneously, the dead are removed, survivors heal, and control
+    resolves. Which units count as attackers is read from the showdown's
+    `attacker_controller` rather than passed in — by now other cards may
+    have moved units into or out of the fight, so the participants are
+    whatever is standing there at this moment.
+    """
+    assert state.showdown is not None
+    showdown = state.showdown
+    bf = next(b for b in state.battlefields if b.battlefield_id == showdown.battlefield_id)
+    attacker_units = frozenset(u for u in bf.units if u.controller == showdown.attacker_controller)
+    defender_units = frozenset(u for u in bf.units if u.controller != showdown.attacker_controller)
+
+    surviving_attackers = _heal(
+        _apply_damage(attacker_units, defender_assignment, "attacker", bf.effect_id))
+    surviving_defenders = _heal(
+        _apply_damage(defender_units, attacker_assignment, "defender", bf.effect_id))
+
+    if surviving_attackers and not surviving_defenders:
+        new_controller = showdown.attacker_controller
+    elif surviving_defenders and not surviving_attackers:
+        new_controller = next(iter(surviving_defenders)).controller
+    else:
+        # Nobody left (rule 468) or both sides still present (rule 190.6).
+        new_controller = None
+
+    resolved = dataclasses.replace(bf, units=surviving_attackers | surviving_defenders,
+                                    controller=new_controller)
+    return dataclasses.replace(_replace_battlefield(state, resolved), showdown=None)
+
+
+def showdown_assignment_options(state: GameState, for_controller: int) -> list[Assignment]:
+    """Damage-assignment choices for `for_controller`'s side of the open
+    showdown, against whatever is standing on the other side right now."""
+    assert state.showdown is not None
+    bf = next(b for b in state.battlefields if b.battlefield_id == state.showdown.battlefield_id)
+    ours = frozenset(u for u in bf.units if u.controller == for_controller)
+    theirs = frozenset(u for u in bf.units if u.controller != for_controller)
+    if not ours or not theirs:
+        return [()]
+    our_designation = "attacker" if for_controller == state.showdown.attacker_controller else "defender"
+    their_designation = "defender" if our_designation == "attacker" else "attacker"
+    pool = sum(effective_might(u, our_designation, bf.effect_id) for u in ours)
+    return enumerate_assignments(theirs, pool, their_designation, bf.effect_id)
+
+
+def _remove_from_origin(state: GameState, mover: UnitInstance, from_zone: str) -> GameState:
+    if from_zone == "base":
+        player = state.players[mover.controller]
+        return replace_player(state, mover.controller,
+                               dataclasses.replace(player, base_units=player.base_units - {mover}))
+    origin = next(bf for bf in state.battlefields if bf.battlefield_id == from_zone)
+    remaining = origin.units - {mover}
+    origin_controller = origin.controller if remaining else None
+    return _replace_battlefield(
+        state, dataclasses.replace(origin, units=remaining, controller=origin_controller))
 
 
 def apply_combat(state: GameState, mover: UnitInstance, from_zone: str, destination_id: str,

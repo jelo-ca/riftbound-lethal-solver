@@ -26,16 +26,14 @@ import json
 from pathlib import Path
 
 from .engine.abilities import BLITZCRANK_IMPASSIVE
-from .engine.cards import CardDef
+from .engine.card_pool import CARD_POOL
 from .engine.state import BattlefieldState, GameState, PlayerState, RunePool, UnitInstance
 from .export import export_puzzle
 
+BLITZCRANK_CARD = CARD_POOL[BLITZCRANK_IMPASSIVE]
+
 OUTPUT_PATH = Path(__file__).parent.parent / "puzzles" / "puzzle-006-redirection.json"
 
-BLITZCRANK_CARD = CardDef(
-    card_id=BLITZCRANK_IMPASSIVE, card_type="Unit", energy_cost=5, power_cost=0,
-    might=5, keywords=frozenset({"Tank"}),
-)
 
 
 def build_root() -> GameState:

@@ -76,12 +76,36 @@ class PlayerState:
 
 
 @dataclass(frozen=True)
+class ShowdownState:
+    """An open showdown: a unit has moved into a battlefield holding the
+    other player's units (applying Contested status), but the Combat
+    Damage Step hasn't resolved yet.
+
+    This window exists because card speeds make it observable. A Slow
+    card — which is anything without an explicit marker, including every
+    unit and most abilities — cannot be played here, while an [Action] or
+    [Reaction] one can. Standard Moves are out entirely: a unit can
+    neither join nor leave a showdown by moving, only by being moved by a
+    spell or ability (Ride The Wind doing either is the motivating case).
+
+    `attacker_controller` is whoever's unit applied Contested, which is
+    not always us — our own effects can move an ENEMY unit onto ground we
+    hold, making them the Attacker (see design/09-combat-resolution.md).
+    """
+    battlefield_id: str
+    attacker_controller: int
+
+
+@dataclass(frozen=True)
 class GameState:
     turn_player: int
     players: tuple[PlayerState, PlayerState]
     battlefields: tuple[BattlefieldState, BattlefieldState]
     scored_this_turn: frozenset[str]
     cards_played_this_turn: int
+    # None outside combat. While set, the action space narrows sharply —
+    # see ShowdownState.
+    showdown: Optional[ShowdownState] = None
 
 
 def _canonical_unit(unit: UnitInstance) -> tuple:
@@ -147,4 +171,9 @@ def canonical_key(state: GameState) -> tuple:
         tuple(_canonical_battlefield(b) for b in state.battlefields),
         tuple(sorted(state.scored_this_turn)),
         state.cards_played_this_turn,
+        # Mid-showdown is a genuinely different position from the same
+        # board after damage resolved — conflating them would let the
+        # transposition table prune real lines.
+        (state.showdown.battlefield_id, state.showdown.attacker_controller)
+        if state.showdown else None,
     )

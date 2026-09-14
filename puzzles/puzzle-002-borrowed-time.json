@@ -1,12 +1,12 @@
 {
   "schema_version": 2,
   "puzzle_id": "puzzle-002-borrowed-time",
-  "root": "c75b3618c9be376b",
+  "root": "5559996575565706",
   "solution": {
-    "c75b3618c9be376b": "a1"
+    "5559996575565706": "a1"
   },
   "nodes": {
-    "c75b3618c9be376b": {
+    "5559996575565706": {
       "turn_player": 0,
       "players": [
         {
@@ -63,7 +63,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "211037cc397563a2": {
+    "e45984f8868ff060": {
       "turn_player": 0,
       "players": [
         {
@@ -121,7 +121,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "cea7a4330237f2c2": {
+    "fbf9686e4d548439": {
       "turn_player": 0,
       "players": [
         {
@@ -177,7 +177,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "541ff6e892091ed4": {
+    "6982761f82fdc26f": {
       "turn_player": 0,
       "players": [
         {
@@ -233,7 +233,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "7f31dccafb18f181": {
+    "0b4d28ae250398b9": {
       "turn_player": 0,
       "players": [
         {
@@ -290,7 +290,7 @@
       ],
       "cards_played_this_turn": 0
     },
-    "d86e925e1e980313": {
+    "7b84f5828a822353": {
       "turn_player": 0,
       "players": [
         {
@@ -350,7 +350,7 @@
     }
   },
   "edges": {
-    "c75b3618c9be376b": [
+    "5559996575565706": [
       {
         "action": {
           "id": "a1",
@@ -360,7 +360,7 @@
           "keywords": []
         },
         "to": [
-          "211037cc397563a2"
+          "e45984f8868ff060"
         ],
         "adversarial": false
       },
@@ -373,7 +373,7 @@
           "keywords": []
         },
         "to": [
-          "cea7a4330237f2c2"
+          "fbf9686e4d548439"
         ],
         "adversarial": false
       },
@@ -386,12 +386,12 @@
           "keywords": []
         },
         "to": [
-          "541ff6e892091ed4"
+          "6982761f82fdc26f"
         ],
         "adversarial": false
       }
     ],
-    "cea7a4330237f2c2": [
+    "fbf9686e4d548439": [
       {
         "action": {
           "id": "a4",
@@ -401,12 +401,12 @@
           "keywords": []
         },
         "to": [
-          "7f31dccafb18f181"
+          "0b4d28ae250398b9"
         ],
         "adversarial": false
       }
     ],
-    "541ff6e892091ed4": [
+    "6982761f82fdc26f": [
       {
         "action": {
           "id": "a5",
@@ -416,7 +416,7 @@
           "keywords": []
         },
         "to": [
-          "d86e925e1e980313"
+          "7b84f5828a822353"
         ],
         "adversarial": false
       },
@@ -429,15 +429,15 @@
           "keywords": []
         },
         "to": [
-          "7f31dccafb18f181"
+          "0b4d28ae250398b9"
         ],
         "adversarial": false
       }
     ]
   },
   "terminal": {
-    "211037cc397563a2": "win",
-    "7f31dccafb18f181": "dead_end",
-    "d86e925e1e980313": "win"
+    "e45984f8868ff060": "win",
+    "0b4d28ae250398b9": "dead_end",
+    "7b84f5828a822353": "win"
   }
 }

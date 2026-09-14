@@ -20,10 +20,21 @@ from __future__ import annotations
 import hashlib
 
 from .engine import abilities, combat, scoring
-from .engine.actions import ActivateAbility, Action, MoveUnit, PlayGear, PlaySpell, PlayUnit, ResolveCombat, find_unit
+from .engine.actions import (
+    ActivateAbility,
+    Action,
+    EnterShowdown,
+    MoveUnit,
+    PlayGear,
+    PlaySpell,
+    PlayUnit,
+    ResolveCombat,
+    ResolveShowdown,
+    find_unit,
+)
 from .engine.cards import CardDef
 from .engine.state import BattlefieldState, GameState, PlayerState, UnitInstance, canonical_key
-from .search import apply, legal_actions, solve
+from .search import apply, legal_actions, resolve_combat_outcomes, resolve_showdown_outcomes, solve
 
 SCHEMA_VERSION = 2
 
@@ -104,6 +115,14 @@ def render_action(state: GameState, action: Action, action_id: str) -> dict:
         label = f"Move unit {action.instance_id} from {action.from_zone} to {action.to_zone} (combat)"
         mover = find_unit(state, action.instance_id, action.from_zone)
         card_id, keywords = mover.card_id, sorted(mover.keywords)
+    elif isinstance(action, EnterShowdown):
+        label = (f"Move unit {action.instance_id} from {action.from_zone} to {action.to_zone} "
+                  "(enter showdown)")
+        mover = find_unit(state, action.instance_id, action.from_zone)
+        card_id, keywords = mover.card_id, sorted(mover.keywords)
+    elif isinstance(action, ResolveShowdown):
+        label = "Resolve showdown damage"
+        card_id, keywords = "", []
     elif isinstance(action, PlaySpell):
         label = f"Play {action.card_id} ({', '.join(str(p) for p in action.params)})"
         card_id, keywords = action.card_id, []
@@ -126,10 +145,9 @@ def resolve_action_outcomes(state: GameState, action: Action, cards: dict[str, C
     opponent choice. Raises NotImplementedError the same way apply() does
     for anything neither can handle yet."""
     if isinstance(action, ResolveCombat):
-        mover = find_unit(state, action.instance_id, action.from_zone)
-        outcomes = combat.enumerate_combat_outcomes(state, mover, action.from_zone, action.to_zone, action.our_assignment)
-        outcomes = [scoring.resolve_control_change(state, o, action.to_zone) for o in outcomes]
-        return [abilities.apply_move_triggers(o, action.instance_id) for o in outcomes]
+        return resolve_combat_outcomes(state, action)
+    if isinstance(action, ResolveShowdown):
+        return resolve_showdown_outcomes(state, action)
     if isinstance(action, PlayUnit) and action.trigger_params:
         return abilities.resolve_unit_play_trigger_outcomes(state, action, cards[action.card_id])
     if isinstance(action, PlaySpell):

@@ -38,7 +38,15 @@ from .engine.abilities import (
     ZAUNITE_BOUNCER,
 )
 from .engine.battlefields import REGISTERED as BATTLEFIELD_EFFECTS
-from .engine.cards import CardDef
+from .engine.card_pool import (
+    CARD_POOL,
+    DARING_PORO,
+    FAITHFUL_MANUFACTOR,
+    LEGION_REARGUARD,
+    SNEAKY_DECKHAND,
+    STALWART_PORO,
+    VANGUARD_CAPTAIN,
+)
 from .engine.state import BattlefieldState, GameState, PlayerState, RunePool, UnitInstance, canonical_key
 from .export import export_puzzle, resolve_action_outcomes
 from .maneuvers import Signature, is_duplicate, known_signatures, maneuver_signature
@@ -47,45 +55,6 @@ from .search import Strategy, count_winning_strategies, solve
 OUTPUT_DIR = Path(__file__).parent.parent / "puzzles" / "generated"
 
 # --- Verified card pool (design/10-generation-pipeline.md) -----------------
-
-LEGION_REARGUARD = "ogn-010-298"
-FAITHFUL_MANUFACTOR = "ogn-211-298"
-VANGUARD_CAPTAIN = "ogn-218-298"
-SNEAKY_DECKHAND = "ogn-176-298"
-DARING_PORO = "ogn-210-298"
-STALWART_PORO = "ogn-052-298"
-
-CARD_POOL: dict[str, CardDef] = {
-    LEGION_REARGUARD: CardDef(card_id=LEGION_REARGUARD, card_type="Unit", energy_cost=2,
-                               power_cost=0, might=2, keywords=frozenset()),
-    FAITHFUL_MANUFACTOR: CardDef(card_id=FAITHFUL_MANUFACTOR, card_type="Unit", energy_cost=2,
-                                  power_cost=0, might=2, keywords=frozenset()),
-    VANGUARD_CAPTAIN: CardDef(card_id=VANGUARD_CAPTAIN, card_type="Unit", energy_cost=2,
-                               power_cost=1, power_domain="Order", might=3, keywords=frozenset()),
-    SNEAKY_DECKHAND: CardDef(card_id=SNEAKY_DECKHAND, card_type="Unit", energy_cost=3,
-                              power_cost=0, might=2, keywords=frozenset(),
-                              can_play_to_open_battlefield=True),
-    CAITLYN_PATROLLING: CardDef(card_id=CAITLYN_PATROLLING, card_type="Unit", energy_cost=3,
-                                 power_cost=0, might=3, keywords=frozenset()),
-    BLITZCRANK_IMPASSIVE: CardDef(card_id=BLITZCRANK_IMPASSIVE, card_type="Unit", energy_cost=5,
-                                   power_cost=0, might=5, keywords=frozenset({"Tank"})),
-    YASUO_WINDRIDER: CardDef(card_id=YASUO_WINDRIDER, card_type="Unit", energy_cost=2,
-                              power_cost=0, might=2, keywords=frozenset({"Ganking"})),
-    RIDE_THE_WIND: CardDef(card_id=RIDE_THE_WIND, card_type="Spell", energy_cost=2,
-                            power_cost=1, power_domain="Chaos", keywords=frozenset()),
-    DARING_PORO: CardDef(card_id=DARING_PORO, card_type="Unit", energy_cost=2,
-                          power_cost=0, might=2, keywords=frozenset({"Assault"})),
-    STALWART_PORO: CardDef(card_id=STALWART_PORO, card_type="Unit", energy_cost=2,
-                            power_cost=0, might=2, keywords=frozenset({"Shield"})),
-    VENGEANCE: CardDef(card_id=VENGEANCE, card_type="Spell", energy_cost=4,
-                        power_cost=2, power_domain="Order", keywords=frozenset()),
-    CHARM: CardDef(card_id=CHARM, card_type="Spell", energy_cost=1,
-                    power_cost=1, power_domain="Calm", keywords=frozenset()),
-    ZAUNITE_BOUNCER: CardDef(card_id=ZAUNITE_BOUNCER, card_type="Unit", energy_cost=4,
-                              power_cost=2, power_domain="Chaos", might=2, keywords=frozenset()),
-    PRIMAL_STRENGTH: CardDef(card_id=PRIMAL_STRENGTH, card_type="Spell", energy_cost=4,
-                              power_cost=1, power_domain="Body", keywords=frozenset()),
-}
 
 # Units that can be sampled onto the board (pre-placed) or into hand.
 OUR_UNIT_POOL = [LEGION_REARGUARD, FAITHFUL_MANUFACTOR, VANGUARD_CAPTAIN,
