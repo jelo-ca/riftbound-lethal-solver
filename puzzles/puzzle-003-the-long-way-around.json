@@ -1,14 +1,14 @@
 {
   "schema_version": 2,
   "puzzle_id": "puzzle-003-the-long-way-around",
-  "root": "1b81fd3e8386461c",
+  "root": "a8ff745776df226d",
   "solution": {
-    "a3623c9bab3ab97a": "a39",
-    "9d40f20c833868b2": "a9",
-    "1b81fd3e8386461c": "a1"
+    "97948415b782a2b9": "a39",
+    "8892e1cceb3a62af": "a9",
+    "a8ff745776df226d": "a1"
   },
   "nodes": {
-    "1b81fd3e8386461c": {
+    "a8ff745776df226d": {
       "turn_player": 0,
       "players": [
         {
@@ -41,7 +41,7 @@
               "card_id": "ogn-205-298",
               "instance_id": 1,
               "controller": 0,
-              "might": 2,
+              "might": 4,
               "keywords": [
                 "Ganking"
               ],
@@ -93,7 +93,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "9d40f20c833868b2": {
+    "8892e1cceb3a62af": {
       "turn_player": 0,
       "players": [
         {
@@ -102,7 +102,7 @@
               "card_id": "ogn-205-298",
               "instance_id": 1,
               "controller": 0,
-              "might": 2,
+              "might": 4,
               "keywords": [
                 "Ganking"
               ],
@@ -113,77 +113,6 @@
               "might_bonus": 0
             }
           ],
-          "hand": [
-            "ogn-173-298"
-          ],
-          "runes": [
-            "Chaos",
-            "Fury",
-            "Fury"
-          ],
-          "score": 7,
-          "legend": null
-        },
-        {
-          "base_units": [],
-          "hand": [],
-          "runes": [],
-          "score": 0,
-          "legend": null
-        }
-      ],
-      "battlefields": [
-        {
-          "battlefield_id": "left",
-          "controller": 0,
-          "units": [
-            {
-              "card_id": "ogn-010-298",
-              "instance_id": 2,
-              "controller": 0,
-              "might": 1,
-              "keywords": [],
-              "exhausted": true,
-              "damage": 0,
-              "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
-            }
-          ],
-          "effect_id": null
-        },
-        {
-          "battlefield_id": "right",
-          "controller": 0,
-          "units": [
-            {
-              "card_id": "ogn-211-298",
-              "instance_id": 3,
-              "controller": 0,
-              "might": 1,
-              "keywords": [],
-              "exhausted": true,
-              "damage": 0,
-              "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
-            }
-          ],
-          "effect_id": null
-        }
-      ],
-      "scored_this_turn": [
-        "left",
-        "right"
-      ],
-      "cards_played_this_turn": 0,
-      "showdown": null
-    },
-    "add57d0fd1802726": {
-      "turn_player": 0,
-      "players": [
-        {
-          "base_units": [],
           "hand": [
             "ogn-173-298"
           ],
@@ -228,10 +157,81 @@
           "controller": 0,
           "units": [
             {
+              "card_id": "ogn-211-298",
+              "instance_id": 3,
+              "controller": 0,
+              "might": 1,
+              "keywords": [],
+              "exhausted": true,
+              "damage": 0,
+              "is_token": false,
+              "moved_this_turn": 0,
+              "might_bonus": 0
+            }
+          ],
+          "effect_id": null
+        }
+      ],
+      "scored_this_turn": [
+        "left",
+        "right"
+      ],
+      "cards_played_this_turn": 0,
+      "showdown": null
+    },
+    "7e6f31bddc5eabdb": {
+      "turn_player": 0,
+      "players": [
+        {
+          "base_units": [],
+          "hand": [
+            "ogn-173-298"
+          ],
+          "runes": [
+            "Chaos",
+            "Fury",
+            "Fury"
+          ],
+          "score": 7,
+          "legend": null
+        },
+        {
+          "base_units": [],
+          "hand": [],
+          "runes": [],
+          "score": 0,
+          "legend": null
+        }
+      ],
+      "battlefields": [
+        {
+          "battlefield_id": "left",
+          "controller": 0,
+          "units": [
+            {
+              "card_id": "ogn-010-298",
+              "instance_id": 2,
+              "controller": 0,
+              "might": 1,
+              "keywords": [],
+              "exhausted": true,
+              "damage": 0,
+              "is_token": false,
+              "moved_this_turn": 0,
+              "might_bonus": 0
+            }
+          ],
+          "effect_id": null
+        },
+        {
+          "battlefield_id": "right",
+          "controller": 0,
+          "units": [
+            {
               "card_id": "ogn-205-298",
               "instance_id": 1,
               "controller": 0,
-              "might": 2,
+              "might": 4,
               "keywords": [
                 "Ganking"
               ],
@@ -264,7 +264,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "0620f51d56b5e899": {
+    "f4779f86a21d9dcd": {
       "turn_player": 0,
       "players": [
         {
@@ -273,7 +273,7 @@
               "card_id": "ogn-205-298",
               "instance_id": 1,
               "controller": 0,
-              "might": 2,
+              "might": 4,
               "keywords": [
                 "Ganking"
               ],
@@ -344,7 +344,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "cc749b3aea42ab2d": {
+    "8e813cee5bbec659": {
       "turn_player": 0,
       "players": [
         {
@@ -390,7 +390,7 @@
               "card_id": "ogn-205-298",
               "instance_id": 1,
               "controller": 0,
-              "might": 2,
+              "might": 4,
               "keywords": [
                 "Ganking"
               ],
@@ -423,7 +423,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "722f8e771a54f49d": {
+    "bcc990cdfa3671a8": {
       "turn_player": 0,
       "players": [
         {
@@ -463,7 +463,7 @@
               "card_id": "ogn-205-298",
               "instance_id": 1,
               "controller": 0,
-              "might": 2,
+              "might": 4,
               "keywords": [
                 "Ganking"
               ],
@@ -503,7 +503,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "cc5342a22e796c75": {
+    "b4724d6178f2acb0": {
       "turn_player": 0,
       "players": [
         {
@@ -530,7 +530,7 @@
               "card_id": "ogn-205-298",
               "instance_id": 1,
               "controller": 0,
-              "might": 2,
+              "might": 4,
               "keywords": [
                 "Ganking"
               ],
@@ -582,7 +582,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "411508d06dfcceca": {
+    "9f146615a48d911c": {
       "turn_player": 0,
       "players": [
         {
@@ -622,7 +622,7 @@
               "card_id": "ogn-205-298",
               "instance_id": 1,
               "controller": 0,
-              "might": 2,
+              "might": 4,
               "keywords": [
                 "Ganking"
               ],
@@ -661,7 +661,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "c49cb9f955d14eea": {
+    "40624c64f7ee0104": {
       "turn_player": 0,
       "players": [
         {
@@ -688,7 +688,7 @@
               "card_id": "ogn-205-298",
               "instance_id": 1,
               "controller": 0,
-              "might": 2,
+              "might": 4,
               "keywords": [
                 "Ganking"
               ],
@@ -698,480 +698,6 @@
               "moved_this_turn": 0,
               "might_bonus": 0
             },
-            {
-              "card_id": "ogn-010-298",
-              "instance_id": 2,
-              "controller": 0,
-              "might": 1,
-              "keywords": [],
-              "exhausted": true,
-              "damage": 0,
-              "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
-            },
-            {
-              "card_id": "ogn-211-298",
-              "instance_id": 3,
-              "controller": 0,
-              "might": 1,
-              "keywords": [],
-              "exhausted": false,
-              "damage": 0,
-              "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
-            }
-          ],
-          "effect_id": null
-        },
-        {
-          "battlefield_id": "right",
-          "controller": null,
-          "units": [],
-          "effect_id": null
-        }
-      ],
-      "scored_this_turn": [
-        "left",
-        "right"
-      ],
-      "cards_played_this_turn": 0,
-      "showdown": null
-    },
-    "a3623c9bab3ab97a": {
-      "turn_player": 0,
-      "players": [
-        {
-          "base_units": [],
-          "hand": [],
-          "runes": [],
-          "score": 7,
-          "legend": null
-        },
-        {
-          "base_units": [],
-          "hand": [],
-          "runes": [],
-          "score": 0,
-          "legend": null
-        }
-      ],
-      "battlefields": [
-        {
-          "battlefield_id": "left",
-          "controller": 0,
-          "units": [
-            {
-              "card_id": "ogn-205-298",
-              "instance_id": 1,
-              "controller": 0,
-              "might": 2,
-              "keywords": [
-                "Ganking"
-              ],
-              "exhausted": false,
-              "damage": 0,
-              "is_token": false,
-              "moved_this_turn": 2,
-              "might_bonus": 0
-            },
-            {
-              "card_id": "ogn-010-298",
-              "instance_id": 2,
-              "controller": 0,
-              "might": 1,
-              "keywords": [],
-              "exhausted": true,
-              "damage": 0,
-              "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
-            }
-          ],
-          "effect_id": null
-        },
-        {
-          "battlefield_id": "right",
-          "controller": 0,
-          "units": [
-            {
-              "card_id": "ogn-211-298",
-              "instance_id": 3,
-              "controller": 0,
-              "might": 1,
-              "keywords": [],
-              "exhausted": true,
-              "damage": 0,
-              "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
-            }
-          ],
-          "effect_id": null
-        }
-      ],
-      "scored_this_turn": [
-        "left",
-        "right"
-      ],
-      "cards_played_this_turn": 0,
-      "showdown": null
-    },
-    "15936049607cbb78": {
-      "turn_player": 0,
-      "players": [
-        {
-          "base_units": [],
-          "hand": [],
-          "runes": [],
-          "score": 7,
-          "legend": null
-        },
-        {
-          "base_units": [],
-          "hand": [],
-          "runes": [],
-          "score": 0,
-          "legend": null
-        }
-      ],
-      "battlefields": [
-        {
-          "battlefield_id": "left",
-          "controller": 0,
-          "units": [
-            {
-              "card_id": "ogn-010-298",
-              "instance_id": 2,
-              "controller": 0,
-              "might": 1,
-              "keywords": [],
-              "exhausted": true,
-              "damage": 0,
-              "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
-            }
-          ],
-          "effect_id": null
-        },
-        {
-          "battlefield_id": "right",
-          "controller": 0,
-          "units": [
-            {
-              "card_id": "ogn-205-298",
-              "instance_id": 1,
-              "controller": 0,
-              "might": 2,
-              "keywords": [
-                "Ganking"
-              ],
-              "exhausted": false,
-              "damage": 0,
-              "is_token": false,
-              "moved_this_turn": 2,
-              "might_bonus": 0
-            },
-            {
-              "card_id": "ogn-211-298",
-              "instance_id": 3,
-              "controller": 0,
-              "might": 1,
-              "keywords": [],
-              "exhausted": true,
-              "damage": 0,
-              "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
-            }
-          ],
-          "effect_id": null
-        }
-      ],
-      "scored_this_turn": [
-        "left",
-        "right"
-      ],
-      "cards_played_this_turn": 0,
-      "showdown": null
-    },
-    "e2a0592762b3fd18": {
-      "turn_player": 0,
-      "players": [
-        {
-          "base_units": [
-            {
-              "card_id": "ogn-205-298",
-              "instance_id": 1,
-              "controller": 0,
-              "might": 2,
-              "keywords": [
-                "Ganking"
-              ],
-              "exhausted": true,
-              "damage": 0,
-              "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
-            },
-            {
-              "card_id": "ogn-010-298",
-              "instance_id": 2,
-              "controller": 0,
-              "might": 1,
-              "keywords": [],
-              "exhausted": false,
-              "damage": 0,
-              "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
-            }
-          ],
-          "hand": [],
-          "runes": [],
-          "score": 7,
-          "legend": null
-        },
-        {
-          "base_units": [],
-          "hand": [],
-          "runes": [],
-          "score": 0,
-          "legend": null
-        }
-      ],
-      "battlefields": [
-        {
-          "battlefield_id": "left",
-          "controller": null,
-          "units": [],
-          "effect_id": null
-        },
-        {
-          "battlefield_id": "right",
-          "controller": 0,
-          "units": [
-            {
-              "card_id": "ogn-211-298",
-              "instance_id": 3,
-              "controller": 0,
-              "might": 1,
-              "keywords": [],
-              "exhausted": true,
-              "damage": 0,
-              "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
-            }
-          ],
-          "effect_id": null
-        }
-      ],
-      "scored_this_turn": [
-        "left",
-        "right"
-      ],
-      "cards_played_this_turn": 0,
-      "showdown": null
-    },
-    "581f6bbc9a450baa": {
-      "turn_player": 0,
-      "players": [
-        {
-          "base_units": [
-            {
-              "card_id": "ogn-205-298",
-              "instance_id": 1,
-              "controller": 0,
-              "might": 2,
-              "keywords": [
-                "Ganking"
-              ],
-              "exhausted": true,
-              "damage": 0,
-              "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
-            }
-          ],
-          "hand": [],
-          "runes": [],
-          "score": 7,
-          "legend": null
-        },
-        {
-          "base_units": [],
-          "hand": [],
-          "runes": [],
-          "score": 0,
-          "legend": null
-        }
-      ],
-      "battlefields": [
-        {
-          "battlefield_id": "left",
-          "controller": null,
-          "units": [],
-          "effect_id": null
-        },
-        {
-          "battlefield_id": "right",
-          "controller": 0,
-          "units": [
-            {
-              "card_id": "ogn-010-298",
-              "instance_id": 2,
-              "controller": 0,
-              "might": 1,
-              "keywords": [],
-              "exhausted": false,
-              "damage": 0,
-              "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
-            },
-            {
-              "card_id": "ogn-211-298",
-              "instance_id": 3,
-              "controller": 0,
-              "might": 1,
-              "keywords": [],
-              "exhausted": true,
-              "damage": 0,
-              "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
-            }
-          ],
-          "effect_id": null
-        }
-      ],
-      "scored_this_turn": [
-        "left",
-        "right"
-      ],
-      "cards_played_this_turn": 0,
-      "showdown": null
-    },
-    "7ec5963b932d9f26": {
-      "turn_player": 0,
-      "players": [
-        {
-          "base_units": [
-            {
-              "card_id": "ogn-205-298",
-              "instance_id": 1,
-              "controller": 0,
-              "might": 2,
-              "keywords": [
-                "Ganking"
-              ],
-              "exhausted": true,
-              "damage": 0,
-              "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
-            },
-            {
-              "card_id": "ogn-211-298",
-              "instance_id": 3,
-              "controller": 0,
-              "might": 1,
-              "keywords": [],
-              "exhausted": false,
-              "damage": 0,
-              "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
-            }
-          ],
-          "hand": [],
-          "runes": [],
-          "score": 7,
-          "legend": null
-        },
-        {
-          "base_units": [],
-          "hand": [],
-          "runes": [],
-          "score": 0,
-          "legend": null
-        }
-      ],
-      "battlefields": [
-        {
-          "battlefield_id": "left",
-          "controller": 0,
-          "units": [
-            {
-              "card_id": "ogn-010-298",
-              "instance_id": 2,
-              "controller": 0,
-              "might": 1,
-              "keywords": [],
-              "exhausted": true,
-              "damage": 0,
-              "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
-            }
-          ],
-          "effect_id": null
-        },
-        {
-          "battlefield_id": "right",
-          "controller": null,
-          "units": [],
-          "effect_id": null
-        }
-      ],
-      "scored_this_turn": [
-        "left",
-        "right"
-      ],
-      "cards_played_this_turn": 0,
-      "showdown": null
-    },
-    "1dc25dab993dd83f": {
-      "turn_player": 0,
-      "players": [
-        {
-          "base_units": [
-            {
-              "card_id": "ogn-205-298",
-              "instance_id": 1,
-              "controller": 0,
-              "might": 2,
-              "keywords": [
-                "Ganking"
-              ],
-              "exhausted": true,
-              "damage": 0,
-              "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
-            }
-          ],
-          "hand": [],
-          "runes": [],
-          "score": 7,
-          "legend": null
-        },
-        {
-          "base_units": [],
-          "hand": [],
-          "runes": [],
-          "score": 0,
-          "legend": null
-        }
-      ],
-      "battlefields": [
-        {
-          "battlefield_id": "left",
-          "controller": 0,
-          "units": [
             {
               "card_id": "ogn-010-298",
               "instance_id": 2,
@@ -1213,7 +739,481 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "72ac8281a7167b85": {
+    "97948415b782a2b9": {
+      "turn_player": 0,
+      "players": [
+        {
+          "base_units": [],
+          "hand": [],
+          "runes": [],
+          "score": 7,
+          "legend": null
+        },
+        {
+          "base_units": [],
+          "hand": [],
+          "runes": [],
+          "score": 0,
+          "legend": null
+        }
+      ],
+      "battlefields": [
+        {
+          "battlefield_id": "left",
+          "controller": 0,
+          "units": [
+            {
+              "card_id": "ogn-205-298",
+              "instance_id": 1,
+              "controller": 0,
+              "might": 4,
+              "keywords": [
+                "Ganking"
+              ],
+              "exhausted": false,
+              "damage": 0,
+              "is_token": false,
+              "moved_this_turn": 2,
+              "might_bonus": 0
+            },
+            {
+              "card_id": "ogn-010-298",
+              "instance_id": 2,
+              "controller": 0,
+              "might": 1,
+              "keywords": [],
+              "exhausted": true,
+              "damage": 0,
+              "is_token": false,
+              "moved_this_turn": 0,
+              "might_bonus": 0
+            }
+          ],
+          "effect_id": null
+        },
+        {
+          "battlefield_id": "right",
+          "controller": 0,
+          "units": [
+            {
+              "card_id": "ogn-211-298",
+              "instance_id": 3,
+              "controller": 0,
+              "might": 1,
+              "keywords": [],
+              "exhausted": true,
+              "damage": 0,
+              "is_token": false,
+              "moved_this_turn": 0,
+              "might_bonus": 0
+            }
+          ],
+          "effect_id": null
+        }
+      ],
+      "scored_this_turn": [
+        "left",
+        "right"
+      ],
+      "cards_played_this_turn": 0,
+      "showdown": null
+    },
+    "18a54d00d2387282": {
+      "turn_player": 0,
+      "players": [
+        {
+          "base_units": [],
+          "hand": [],
+          "runes": [],
+          "score": 7,
+          "legend": null
+        },
+        {
+          "base_units": [],
+          "hand": [],
+          "runes": [],
+          "score": 0,
+          "legend": null
+        }
+      ],
+      "battlefields": [
+        {
+          "battlefield_id": "left",
+          "controller": 0,
+          "units": [
+            {
+              "card_id": "ogn-010-298",
+              "instance_id": 2,
+              "controller": 0,
+              "might": 1,
+              "keywords": [],
+              "exhausted": true,
+              "damage": 0,
+              "is_token": false,
+              "moved_this_turn": 0,
+              "might_bonus": 0
+            }
+          ],
+          "effect_id": null
+        },
+        {
+          "battlefield_id": "right",
+          "controller": 0,
+          "units": [
+            {
+              "card_id": "ogn-205-298",
+              "instance_id": 1,
+              "controller": 0,
+              "might": 4,
+              "keywords": [
+                "Ganking"
+              ],
+              "exhausted": false,
+              "damage": 0,
+              "is_token": false,
+              "moved_this_turn": 2,
+              "might_bonus": 0
+            },
+            {
+              "card_id": "ogn-211-298",
+              "instance_id": 3,
+              "controller": 0,
+              "might": 1,
+              "keywords": [],
+              "exhausted": true,
+              "damage": 0,
+              "is_token": false,
+              "moved_this_turn": 0,
+              "might_bonus": 0
+            }
+          ],
+          "effect_id": null
+        }
+      ],
+      "scored_this_turn": [
+        "left",
+        "right"
+      ],
+      "cards_played_this_turn": 0,
+      "showdown": null
+    },
+    "bb6978f1ba3b60c2": {
+      "turn_player": 0,
+      "players": [
+        {
+          "base_units": [
+            {
+              "card_id": "ogn-205-298",
+              "instance_id": 1,
+              "controller": 0,
+              "might": 4,
+              "keywords": [
+                "Ganking"
+              ],
+              "exhausted": true,
+              "damage": 0,
+              "is_token": false,
+              "moved_this_turn": 1,
+              "might_bonus": 0
+            },
+            {
+              "card_id": "ogn-010-298",
+              "instance_id": 2,
+              "controller": 0,
+              "might": 1,
+              "keywords": [],
+              "exhausted": false,
+              "damage": 0,
+              "is_token": false,
+              "moved_this_turn": 1,
+              "might_bonus": 0
+            }
+          ],
+          "hand": [],
+          "runes": [],
+          "score": 7,
+          "legend": null
+        },
+        {
+          "base_units": [],
+          "hand": [],
+          "runes": [],
+          "score": 0,
+          "legend": null
+        }
+      ],
+      "battlefields": [
+        {
+          "battlefield_id": "left",
+          "controller": null,
+          "units": [],
+          "effect_id": null
+        },
+        {
+          "battlefield_id": "right",
+          "controller": 0,
+          "units": [
+            {
+              "card_id": "ogn-211-298",
+              "instance_id": 3,
+              "controller": 0,
+              "might": 1,
+              "keywords": [],
+              "exhausted": true,
+              "damage": 0,
+              "is_token": false,
+              "moved_this_turn": 0,
+              "might_bonus": 0
+            }
+          ],
+          "effect_id": null
+        }
+      ],
+      "scored_this_turn": [
+        "left",
+        "right"
+      ],
+      "cards_played_this_turn": 0,
+      "showdown": null
+    },
+    "ff469d4bde56ec67": {
+      "turn_player": 0,
+      "players": [
+        {
+          "base_units": [
+            {
+              "card_id": "ogn-205-298",
+              "instance_id": 1,
+              "controller": 0,
+              "might": 4,
+              "keywords": [
+                "Ganking"
+              ],
+              "exhausted": true,
+              "damage": 0,
+              "is_token": false,
+              "moved_this_turn": 1,
+              "might_bonus": 0
+            }
+          ],
+          "hand": [],
+          "runes": [],
+          "score": 7,
+          "legend": null
+        },
+        {
+          "base_units": [],
+          "hand": [],
+          "runes": [],
+          "score": 0,
+          "legend": null
+        }
+      ],
+      "battlefields": [
+        {
+          "battlefield_id": "left",
+          "controller": null,
+          "units": [],
+          "effect_id": null
+        },
+        {
+          "battlefield_id": "right",
+          "controller": 0,
+          "units": [
+            {
+              "card_id": "ogn-010-298",
+              "instance_id": 2,
+              "controller": 0,
+              "might": 1,
+              "keywords": [],
+              "exhausted": false,
+              "damage": 0,
+              "is_token": false,
+              "moved_this_turn": 1,
+              "might_bonus": 0
+            },
+            {
+              "card_id": "ogn-211-298",
+              "instance_id": 3,
+              "controller": 0,
+              "might": 1,
+              "keywords": [],
+              "exhausted": true,
+              "damage": 0,
+              "is_token": false,
+              "moved_this_turn": 0,
+              "might_bonus": 0
+            }
+          ],
+          "effect_id": null
+        }
+      ],
+      "scored_this_turn": [
+        "left",
+        "right"
+      ],
+      "cards_played_this_turn": 0,
+      "showdown": null
+    },
+    "a42b374bfead1413": {
+      "turn_player": 0,
+      "players": [
+        {
+          "base_units": [
+            {
+              "card_id": "ogn-205-298",
+              "instance_id": 1,
+              "controller": 0,
+              "might": 4,
+              "keywords": [
+                "Ganking"
+              ],
+              "exhausted": true,
+              "damage": 0,
+              "is_token": false,
+              "moved_this_turn": 1,
+              "might_bonus": 0
+            },
+            {
+              "card_id": "ogn-211-298",
+              "instance_id": 3,
+              "controller": 0,
+              "might": 1,
+              "keywords": [],
+              "exhausted": false,
+              "damage": 0,
+              "is_token": false,
+              "moved_this_turn": 1,
+              "might_bonus": 0
+            }
+          ],
+          "hand": [],
+          "runes": [],
+          "score": 7,
+          "legend": null
+        },
+        {
+          "base_units": [],
+          "hand": [],
+          "runes": [],
+          "score": 0,
+          "legend": null
+        }
+      ],
+      "battlefields": [
+        {
+          "battlefield_id": "left",
+          "controller": 0,
+          "units": [
+            {
+              "card_id": "ogn-010-298",
+              "instance_id": 2,
+              "controller": 0,
+              "might": 1,
+              "keywords": [],
+              "exhausted": true,
+              "damage": 0,
+              "is_token": false,
+              "moved_this_turn": 0,
+              "might_bonus": 0
+            }
+          ],
+          "effect_id": null
+        },
+        {
+          "battlefield_id": "right",
+          "controller": null,
+          "units": [],
+          "effect_id": null
+        }
+      ],
+      "scored_this_turn": [
+        "left",
+        "right"
+      ],
+      "cards_played_this_turn": 0,
+      "showdown": null
+    },
+    "8df3de721e025f67": {
+      "turn_player": 0,
+      "players": [
+        {
+          "base_units": [
+            {
+              "card_id": "ogn-205-298",
+              "instance_id": 1,
+              "controller": 0,
+              "might": 4,
+              "keywords": [
+                "Ganking"
+              ],
+              "exhausted": true,
+              "damage": 0,
+              "is_token": false,
+              "moved_this_turn": 1,
+              "might_bonus": 0
+            }
+          ],
+          "hand": [],
+          "runes": [],
+          "score": 7,
+          "legend": null
+        },
+        {
+          "base_units": [],
+          "hand": [],
+          "runes": [],
+          "score": 0,
+          "legend": null
+        }
+      ],
+      "battlefields": [
+        {
+          "battlefield_id": "left",
+          "controller": 0,
+          "units": [
+            {
+              "card_id": "ogn-010-298",
+              "instance_id": 2,
+              "controller": 0,
+              "might": 1,
+              "keywords": [],
+              "exhausted": true,
+              "damage": 0,
+              "is_token": false,
+              "moved_this_turn": 0,
+              "might_bonus": 0
+            },
+            {
+              "card_id": "ogn-211-298",
+              "instance_id": 3,
+              "controller": 0,
+              "might": 1,
+              "keywords": [],
+              "exhausted": false,
+              "damage": 0,
+              "is_token": false,
+              "moved_this_turn": 1,
+              "might_bonus": 0
+            }
+          ],
+          "effect_id": null
+        },
+        {
+          "battlefield_id": "right",
+          "controller": null,
+          "units": [],
+          "effect_id": null
+        }
+      ],
+      "scored_this_turn": [
+        "left",
+        "right"
+      ],
+      "cards_played_this_turn": 0,
+      "showdown": null
+    },
+    "b15aace6206b040d": {
       "turn_player": 0,
       "players": [
         {
@@ -1259,7 +1259,7 @@
               "card_id": "ogn-205-298",
               "instance_id": 1,
               "controller": 0,
-              "might": 2,
+              "might": 4,
               "keywords": [
                 "Ganking"
               ],
@@ -1292,7 +1292,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "349ca69a03313baf": {
+    "d1fbb60f9df298af": {
       "turn_player": 0,
       "players": [
         {
@@ -1325,7 +1325,7 @@
               "card_id": "ogn-205-298",
               "instance_id": 1,
               "controller": 0,
-              "might": 2,
+              "might": 4,
               "keywords": [
                 "Ganking"
               ],
@@ -1370,7 +1370,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "6b1e894cc2d8a71c": {
+    "3949a7af78d01045": {
       "turn_player": 0,
       "players": [
         {
@@ -1379,7 +1379,7 @@
               "card_id": "ogn-205-298",
               "instance_id": 1,
               "controller": 0,
-              "might": 2,
+              "might": 4,
               "keywords": [
                 "Ganking"
               ],
@@ -1450,7 +1450,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "b1d05cd371687566": {
+    "4487d86d903e44dc": {
       "turn_player": 0,
       "players": [
         {
@@ -1509,7 +1509,7 @@
               "card_id": "ogn-205-298",
               "instance_id": 1,
               "controller": 0,
-              "might": 2,
+              "might": 4,
               "keywords": [
                 "Ganking"
               ],
@@ -1530,7 +1530,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "3ed5eef52ac0789f": {
+    "90bfc38688856272": {
       "turn_player": 0,
       "players": [
         {
@@ -1588,7 +1588,7 @@
               "card_id": "ogn-205-298",
               "instance_id": 1,
               "controller": 0,
-              "might": 2,
+              "might": 4,
               "keywords": [
                 "Ganking"
               ],
@@ -1609,7 +1609,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "b83fa8b7b90e2955": {
+    "91c7027d657ec548": {
       "turn_player": 0,
       "players": [
         {
@@ -1636,7 +1636,7 @@
               "card_id": "ogn-205-298",
               "instance_id": 1,
               "controller": 0,
-              "might": 2,
+              "might": 4,
               "keywords": [
                 "Ganking"
               ],
@@ -1688,7 +1688,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "3e937dcb7e9a6fe7": {
+    "303bbea1b1105c54": {
       "turn_player": 0,
       "players": [
         {
@@ -1734,7 +1734,7 @@
               "card_id": "ogn-205-298",
               "instance_id": 1,
               "controller": 0,
-              "might": 2,
+              "might": 4,
               "keywords": [
                 "Ganking"
               ],
@@ -1767,7 +1767,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "42bc8cacaf581e67": {
+    "64dacea0cf45ccbe": {
       "turn_player": 0,
       "players": [
         {
@@ -1776,7 +1776,7 @@
               "card_id": "ogn-205-298",
               "instance_id": 1,
               "controller": 0,
-              "might": 2,
+              "might": 4,
               "keywords": [
                 "Ganking"
               ],
@@ -1847,7 +1847,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "73e7bd7b4550cbcf": {
+    "ff083b380aad6c2a": {
       "turn_player": 0,
       "players": [
         {
@@ -1874,7 +1874,7 @@
               "card_id": "ogn-205-298",
               "instance_id": 1,
               "controller": 0,
-              "might": 2,
+              "might": 4,
               "keywords": [
                 "Ganking"
               ],
@@ -1926,7 +1926,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "41e2416ebfc61722": {
+    "57b9bb9663906d4b": {
       "turn_player": 0,
       "players": [
         {
@@ -1953,7 +1953,7 @@
               "card_id": "ogn-205-298",
               "instance_id": 1,
               "controller": 0,
-              "might": 2,
+              "might": 4,
               "keywords": [
                 "Ganking"
               ],
@@ -2005,7 +2005,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "d6ab955e2fc1020c": {
+    "d84a2fad65694c98": {
       "turn_player": 0,
       "players": [
         {
@@ -2045,7 +2045,7 @@
               "card_id": "ogn-205-298",
               "instance_id": 1,
               "controller": 0,
-              "might": 2,
+              "might": 4,
               "keywords": [
                 "Ganking"
               ],
@@ -2085,7 +2085,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "0b1322dc10c15d08": {
+    "56dacf99d8825a5f": {
       "turn_player": 0,
       "players": [
         {
@@ -2112,7 +2112,7 @@
               "card_id": "ogn-205-298",
               "instance_id": 1,
               "controller": 0,
-              "might": 2,
+              "might": 4,
               "keywords": [
                 "Ganking"
               ],
@@ -2163,7 +2163,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "f848d55e16f7e19e": {
+    "dcc193c3db492d38": {
       "turn_player": 0,
       "players": [
         {
@@ -2190,7 +2190,7 @@
               "card_id": "ogn-205-298",
               "instance_id": 1,
               "controller": 0,
-              "might": 2,
+              "might": 4,
               "keywords": [
                 "Ganking"
               ],
@@ -2242,7 +2242,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "71f8481e1cfc9400": {
+    "62850b5e4445084a": {
       "turn_player": 0,
       "players": [
         {
@@ -2282,7 +2282,7 @@
               "card_id": "ogn-205-298",
               "instance_id": 1,
               "controller": 0,
-              "might": 2,
+              "might": 4,
               "keywords": [
                 "Ganking"
               ],
@@ -2321,7 +2321,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "0293cb8f57aa5cf9": {
+    "ea42f1bbe407e45f": {
       "turn_player": 0,
       "players": [
         {
@@ -2330,7 +2330,7 @@
               "card_id": "ogn-205-298",
               "instance_id": 1,
               "controller": 0,
-              "might": 2,
+              "might": 4,
               "keywords": [
                 "Ganking"
               ],
@@ -2401,7 +2401,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "5e66bb832e4a653b": {
+    "361978a158686f4e": {
       "turn_player": 0,
       "players": [
         {
@@ -2447,7 +2447,7 @@
               "card_id": "ogn-205-298",
               "instance_id": 1,
               "controller": 0,
-              "might": 2,
+              "might": 4,
               "keywords": [
                 "Ganking"
               ],
@@ -2480,7 +2480,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "a782f55a9e3ae4c1": {
+    "7c7e5ed81609a4f1": {
       "turn_player": 0,
       "players": [
         {
@@ -2507,7 +2507,7 @@
               "card_id": "ogn-205-298",
               "instance_id": 1,
               "controller": 0,
-              "might": 2,
+              "might": 4,
               "keywords": [
                 "Ganking"
               ],
@@ -2559,7 +2559,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "c9a4cc235e27a43a": {
+    "a992d432d117fe2c": {
       "turn_player": 0,
       "players": [
         {
@@ -2568,7 +2568,7 @@
               "card_id": "ogn-205-298",
               "instance_id": 1,
               "controller": 0,
-              "might": 2,
+              "might": 4,
               "keywords": [
                 "Ganking"
               ],
@@ -2639,7 +2639,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "64f60cde09bf2fd0": {
+    "3363f04f2efe66c8": {
       "turn_player": 0,
       "players": [
         {
@@ -2648,7 +2648,7 @@
               "card_id": "ogn-205-298",
               "instance_id": 1,
               "controller": 0,
-              "might": 2,
+              "might": 4,
               "keywords": [
                 "Ganking"
               ],
@@ -2718,7 +2718,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "aac2122d154b1275": {
+    "b4d0a87942febb7a": {
       "turn_player": 0,
       "players": [
         {
@@ -2727,7 +2727,7 @@
               "card_id": "ogn-205-298",
               "instance_id": 1,
               "controller": 0,
-              "might": 2,
+              "might": 4,
               "keywords": [
                 "Ganking"
               ],
@@ -2797,7 +2797,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "41f13ee216311b4e": {
+    "6b17f49f365b2a79": {
       "turn_player": 0,
       "players": [
         {
@@ -2806,7 +2806,7 @@
               "card_id": "ogn-205-298",
               "instance_id": 1,
               "controller": 0,
-              "might": 2,
+              "might": 4,
               "keywords": [
                 "Ganking"
               ],
@@ -2876,7 +2876,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "7c25a92a69e55d38": {
+    "028386bbaa8b200d": {
       "turn_player": 0,
       "players": [
         {
@@ -2885,7 +2885,7 @@
               "card_id": "ogn-205-298",
               "instance_id": 1,
               "controller": 0,
-              "might": 2,
+              "might": 4,
               "keywords": [
                 "Ganking"
               ],
@@ -2956,7 +2956,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "acc5de283b859274": {
+    "7e36514de409b3c4": {
       "turn_player": 0,
       "players": [
         {
@@ -2965,7 +2965,7 @@
               "card_id": "ogn-205-298",
               "instance_id": 1,
               "controller": 0,
-              "might": 2,
+              "might": 4,
               "keywords": [
                 "Ganking"
               ],
@@ -3035,7 +3035,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "3dfb3498aac9e0a2": {
+    "6b7e75b88e5ca228": {
       "turn_player": 0,
       "players": [
         {
@@ -3081,7 +3081,7 @@
               "card_id": "ogn-205-298",
               "instance_id": 1,
               "controller": 0,
-              "might": 2,
+              "might": 4,
               "keywords": [
                 "Ganking"
               ],
@@ -3114,7 +3114,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "82cd45b9228c3951": {
+    "c04b653aef3ad5db": {
       "turn_player": 0,
       "players": [
         {
@@ -3147,7 +3147,7 @@
               "card_id": "ogn-205-298",
               "instance_id": 1,
               "controller": 0,
-              "might": 2,
+              "might": 4,
               "keywords": [
                 "Ganking"
               ],
@@ -3192,7 +3192,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "7022bc508a529798": {
+    "e2070fb1b99e68cb": {
       "turn_player": 0,
       "players": [
         {
@@ -3238,7 +3238,7 @@
               "card_id": "ogn-205-298",
               "instance_id": 1,
               "controller": 0,
-              "might": 2,
+              "might": 4,
               "keywords": [
                 "Ganking"
               ],
@@ -3271,7 +3271,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "c03a83cb87ae917a": {
+    "a9499e3ea534a6e2": {
       "turn_player": 0,
       "players": [
         {
@@ -3329,7 +3329,7 @@
               "card_id": "ogn-205-298",
               "instance_id": 1,
               "controller": 0,
-              "might": 2,
+              "might": 4,
               "keywords": [
                 "Ganking"
               ],
@@ -3350,7 +3350,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "72a4b905941e7bb4": {
+    "74e9c35e496c3768": {
       "turn_player": 0,
       "players": [
         {
@@ -3396,7 +3396,7 @@
               "card_id": "ogn-205-298",
               "instance_id": 1,
               "controller": 0,
-              "might": 2,
+              "might": 4,
               "keywords": [
                 "Ganking"
               ],
@@ -3429,7 +3429,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "abe4250c3c5b1377": {
+    "3ea1bd0f3fca994e": {
       "turn_player": 0,
       "players": [
         {
@@ -3488,7 +3488,7 @@
               "card_id": "ogn-205-298",
               "instance_id": 1,
               "controller": 0,
-              "might": 2,
+              "might": 4,
               "keywords": [
                 "Ganking"
               ],
@@ -3511,7 +3511,7 @@
     }
   },
   "edges": {
-    "1b81fd3e8386461c": [
+    "a8ff745776df226d": [
       {
         "action": {
           "id": "a1",
@@ -3526,7 +3526,7 @@
           "instance_id": 1
         },
         "to": [
-          "9d40f20c833868b2"
+          "8892e1cceb3a62af"
         ],
         "adversarial": false
       },
@@ -3544,7 +3544,7 @@
           "instance_id": 1
         },
         "to": [
-          "add57d0fd1802726"
+          "7e6f31bddc5eabdb"
         ],
         "adversarial": false
       },
@@ -3560,7 +3560,7 @@
           "instance_id": null
         },
         "to": [
-          "0620f51d56b5e899"
+          "f4779f86a21d9dcd"
         ],
         "adversarial": false
       },
@@ -3576,7 +3576,7 @@
           "instance_id": null
         },
         "to": [
-          "cc749b3aea42ab2d"
+          "8e813cee5bbec659"
         ],
         "adversarial": false
       },
@@ -3592,7 +3592,7 @@
           "instance_id": null
         },
         "to": [
-          "722f8e771a54f49d"
+          "bcc990cdfa3671a8"
         ],
         "adversarial": false
       },
@@ -3608,7 +3608,7 @@
           "instance_id": null
         },
         "to": [
-          "cc5342a22e796c75"
+          "b4724d6178f2acb0"
         ],
         "adversarial": false
       },
@@ -3624,7 +3624,7 @@
           "instance_id": null
         },
         "to": [
-          "411508d06dfcceca"
+          "9f146615a48d911c"
         ],
         "adversarial": false
       },
@@ -3640,12 +3640,12 @@
           "instance_id": null
         },
         "to": [
-          "c49cb9f955d14eea"
+          "40624c64f7ee0104"
         ],
         "adversarial": false
       }
     ],
-    "9d40f20c833868b2": [
+    "8892e1cceb3a62af": [
       {
         "action": {
           "id": "a9",
@@ -3658,7 +3658,7 @@
           "instance_id": null
         },
         "to": [
-          "a3623c9bab3ab97a"
+          "97948415b782a2b9"
         ],
         "adversarial": false
       },
@@ -3674,7 +3674,7 @@
           "instance_id": null
         },
         "to": [
-          "15936049607cbb78"
+          "18a54d00d2387282"
         ],
         "adversarial": false
       },
@@ -3690,7 +3690,7 @@
           "instance_id": null
         },
         "to": [
-          "e2a0592762b3fd18"
+          "bb6978f1ba3b60c2"
         ],
         "adversarial": false
       },
@@ -3706,7 +3706,7 @@
           "instance_id": null
         },
         "to": [
-          "581f6bbc9a450baa"
+          "ff469d4bde56ec67"
         ],
         "adversarial": false
       },
@@ -3722,7 +3722,7 @@
           "instance_id": null
         },
         "to": [
-          "7ec5963b932d9f26"
+          "a42b374bfead1413"
         ],
         "adversarial": false
       },
@@ -3738,12 +3738,12 @@
           "instance_id": null
         },
         "to": [
-          "1dc25dab993dd83f"
+          "8df3de721e025f67"
         ],
         "adversarial": false
       }
     ],
-    "add57d0fd1802726": [
+    "7e6f31bddc5eabdb": [
       {
         "action": {
           "id": "a15",
@@ -3756,7 +3756,7 @@
           "instance_id": null
         },
         "to": [
-          "72ac8281a7167b85"
+          "b15aace6206b040d"
         ],
         "adversarial": false
       },
@@ -3772,7 +3772,7 @@
           "instance_id": null
         },
         "to": [
-          "349ca69a03313baf"
+          "d1fbb60f9df298af"
         ],
         "adversarial": false
       },
@@ -3788,7 +3788,7 @@
           "instance_id": null
         },
         "to": [
-          "6b1e894cc2d8a71c"
+          "3949a7af78d01045"
         ],
         "adversarial": false
       },
@@ -3804,7 +3804,7 @@
           "instance_id": null
         },
         "to": [
-          "a3623c9bab3ab97a"
+          "97948415b782a2b9"
         ],
         "adversarial": false
       },
@@ -3820,7 +3820,7 @@
           "instance_id": null
         },
         "to": [
-          "b1d05cd371687566"
+          "4487d86d903e44dc"
         ],
         "adversarial": false
       },
@@ -3836,12 +3836,12 @@
           "instance_id": null
         },
         "to": [
-          "3ed5eef52ac0789f"
+          "90bfc38688856272"
         ],
         "adversarial": false
       }
     ],
-    "0620f51d56b5e899": [
+    "f4779f86a21d9dcd": [
       {
         "action": {
           "id": "a21",
@@ -3856,7 +3856,7 @@
           "instance_id": 1
         },
         "to": [
-          "b83fa8b7b90e2955"
+          "91c7027d657ec548"
         ],
         "adversarial": false
       },
@@ -3874,12 +3874,12 @@
           "instance_id": 1
         },
         "to": [
-          "3e937dcb7e9a6fe7"
+          "303bbea1b1105c54"
         ],
         "adversarial": false
       }
     ],
-    "cc749b3aea42ab2d": [
+    "8e813cee5bbec659": [
       {
         "action": {
           "id": "a23",
@@ -3894,7 +3894,7 @@
           "instance_id": 1
         },
         "to": [
-          "42bc8cacaf581e67"
+          "64dacea0cf45ccbe"
         ],
         "adversarial": false
       },
@@ -3912,12 +3912,12 @@
           "instance_id": 1
         },
         "to": [
-          "b83fa8b7b90e2955"
+          "91c7027d657ec548"
         ],
         "adversarial": false
       }
     ],
-    "722f8e771a54f49d": [
+    "bcc990cdfa3671a8": [
       {
         "action": {
           "id": "a25",
@@ -3930,7 +3930,7 @@
           "instance_id": 2
         },
         "to": [
-          "73e7bd7b4550cbcf"
+          "ff083b380aad6c2a"
         ],
         "adversarial": false
       },
@@ -3946,7 +3946,7 @@
           "instance_id": 2
         },
         "to": [
-          "41e2416ebfc61722"
+          "57b9bb9663906d4b"
         ],
         "adversarial": false
       },
@@ -3964,7 +3964,7 @@
           "instance_id": 1
         },
         "to": [
-          "e2a0592762b3fd18"
+          "bb6978f1ba3b60c2"
         ],
         "adversarial": false
       },
@@ -3982,12 +3982,12 @@
           "instance_id": 1
         },
         "to": [
-          "72ac8281a7167b85"
+          "b15aace6206b040d"
         ],
         "adversarial": false
       }
     ],
-    "cc5342a22e796c75": [
+    "b4724d6178f2acb0": [
       {
         "action": {
           "id": "a29",
@@ -4002,7 +4002,7 @@
           "instance_id": 1
         },
         "to": [
-          "581f6bbc9a450baa"
+          "ff469d4bde56ec67"
         ],
         "adversarial": false
       },
@@ -4020,7 +4020,7 @@
           "instance_id": 1
         },
         "to": [
-          "349ca69a03313baf"
+          "d1fbb60f9df298af"
         ],
         "adversarial": false
       },
@@ -4036,12 +4036,12 @@
           "instance_id": 2
         },
         "to": [
-          "d6ab955e2fc1020c"
+          "d84a2fad65694c98"
         ],
         "adversarial": false
       }
     ],
-    "411508d06dfcceca": [
+    "9f146615a48d911c": [
       {
         "action": {
           "id": "a32",
@@ -4054,7 +4054,7 @@
           "instance_id": 3
         },
         "to": [
-          "0b1322dc10c15d08"
+          "56dacf99d8825a5f"
         ],
         "adversarial": false
       },
@@ -4070,7 +4070,7 @@
           "instance_id": 3
         },
         "to": [
-          "f848d55e16f7e19e"
+          "dcc193c3db492d38"
         ],
         "adversarial": false
       },
@@ -4088,7 +4088,7 @@
           "instance_id": 1
         },
         "to": [
-          "7ec5963b932d9f26"
+          "a42b374bfead1413"
         ],
         "adversarial": false
       },
@@ -4106,12 +4106,12 @@
           "instance_id": 1
         },
         "to": [
-          "b1d05cd371687566"
+          "4487d86d903e44dc"
         ],
         "adversarial": false
       }
     ],
-    "c49cb9f955d14eea": [
+    "40624c64f7ee0104": [
       {
         "action": {
           "id": "a36",
@@ -4126,7 +4126,7 @@
           "instance_id": 1
         },
         "to": [
-          "1dc25dab993dd83f"
+          "8df3de721e025f67"
         ],
         "adversarial": false
       },
@@ -4144,7 +4144,7 @@
           "instance_id": 1
         },
         "to": [
-          "3ed5eef52ac0789f"
+          "90bfc38688856272"
         ],
         "adversarial": false
       },
@@ -4160,12 +4160,12 @@
           "instance_id": 3
         },
         "to": [
-          "71f8481e1cfc9400"
+          "62850b5e4445084a"
         ],
         "adversarial": false
       }
     ],
-    "a3623c9bab3ab97a": [
+    "97948415b782a2b9": [
       {
         "action": {
           "id": "a39",
@@ -4180,7 +4180,7 @@
           "instance_id": 1
         },
         "to": [
-          "0293cb8f57aa5cf9"
+          "ea42f1bbe407e45f"
         ],
         "adversarial": false
       },
@@ -4198,12 +4198,12 @@
           "instance_id": 1
         },
         "to": [
-          "5e66bb832e4a653b"
+          "361978a158686f4e"
         ],
         "adversarial": false
       }
     ],
-    "15936049607cbb78": [
+    "18a54d00d2387282": [
       {
         "action": {
           "id": "a41",
@@ -4218,7 +4218,7 @@
           "instance_id": 1
         },
         "to": [
-          "0293cb8f57aa5cf9"
+          "ea42f1bbe407e45f"
         ],
         "adversarial": false
       },
@@ -4236,12 +4236,12 @@
           "instance_id": 1
         },
         "to": [
-          "a782f55a9e3ae4c1"
+          "7c7e5ed81609a4f1"
         ],
         "adversarial": false
       }
     ],
-    "e2a0592762b3fd18": [
+    "bb6978f1ba3b60c2": [
       {
         "action": {
           "id": "a43",
@@ -4254,7 +4254,7 @@
           "instance_id": 2
         },
         "to": [
-          "c9a4cc235e27a43a"
+          "a992d432d117fe2c"
         ],
         "adversarial": false
       },
@@ -4270,12 +4270,12 @@
           "instance_id": 2
         },
         "to": [
-          "64f60cde09bf2fd0"
+          "3363f04f2efe66c8"
         ],
         "adversarial": false
       }
     ],
-    "581f6bbc9a450baa": [
+    "ff469d4bde56ec67": [
       {
         "action": {
           "id": "a45",
@@ -4288,12 +4288,12 @@
           "instance_id": 2
         },
         "to": [
-          "aac2122d154b1275"
+          "b4d0a87942febb7a"
         ],
         "adversarial": false
       }
     ],
-    "7ec5963b932d9f26": [
+    "a42b374bfead1413": [
       {
         "action": {
           "id": "a46",
@@ -4306,7 +4306,7 @@
           "instance_id": 3
         },
         "to": [
-          "41f13ee216311b4e"
+          "6b17f49f365b2a79"
         ],
         "adversarial": false
       },
@@ -4322,12 +4322,12 @@
           "instance_id": 3
         },
         "to": [
-          "7c25a92a69e55d38"
+          "028386bbaa8b200d"
         ],
         "adversarial": false
       }
     ],
-    "1dc25dab993dd83f": [
+    "8df3de721e025f67": [
       {
         "action": {
           "id": "a48",
@@ -4340,12 +4340,12 @@
           "instance_id": 3
         },
         "to": [
-          "acc5de283b859274"
+          "7e36514de409b3c4"
         ],
         "adversarial": false
       }
     ],
-    "72ac8281a7167b85": [
+    "b15aace6206b040d": [
       {
         "action": {
           "id": "a49",
@@ -4358,7 +4358,7 @@
           "instance_id": 2
         },
         "to": [
-          "3dfb3498aac9e0a2"
+          "6b7e75b88e5ca228"
         ],
         "adversarial": false
       },
@@ -4374,12 +4374,12 @@
           "instance_id": 2
         },
         "to": [
-          "82cd45b9228c3951"
+          "c04b653aef3ad5db"
         ],
         "adversarial": false
       }
     ],
-    "349ca69a03313baf": [
+    "d1fbb60f9df298af": [
       {
         "action": {
           "id": "a51",
@@ -4392,12 +4392,12 @@
           "instance_id": 2
         },
         "to": [
-          "7022bc508a529798"
+          "e2070fb1b99e68cb"
         ],
         "adversarial": false
       }
     ],
-    "6b1e894cc2d8a71c": [
+    "3949a7af78d01045": [
       {
         "action": {
           "id": "a52",
@@ -4412,7 +4412,7 @@
           "instance_id": 1
         },
         "to": [
-          "a782f55a9e3ae4c1"
+          "7c7e5ed81609a4f1"
         ],
         "adversarial": false
       },
@@ -4430,12 +4430,12 @@
           "instance_id": 1
         },
         "to": [
-          "5e66bb832e4a653b"
+          "361978a158686f4e"
         ],
         "adversarial": false
       }
     ],
-    "b1d05cd371687566": [
+    "4487d86d903e44dc": [
       {
         "action": {
           "id": "a54",
@@ -4448,7 +4448,7 @@
           "instance_id": 3
         },
         "to": [
-          "c03a83cb87ae917a"
+          "a9499e3ea534a6e2"
         ],
         "adversarial": false
       },
@@ -4464,12 +4464,12 @@
           "instance_id": 3
         },
         "to": [
-          "72a4b905941e7bb4"
+          "74e9c35e496c3768"
         ],
         "adversarial": false
       }
     ],
-    "3ed5eef52ac0789f": [
+    "90bfc38688856272": [
       {
         "action": {
           "id": "a56",
@@ -4482,12 +4482,12 @@
           "instance_id": 3
         },
         "to": [
-          "abe4250c3c5b1377"
+          "3ea1bd0f3fca994e"
         ],
         "adversarial": false
       }
     ],
-    "73e7bd7b4550cbcf": [
+    "ff083b380aad6c2a": [
       {
         "action": {
           "id": "a57",
@@ -4502,7 +4502,7 @@
           "instance_id": 1
         },
         "to": [
-          "c9a4cc235e27a43a"
+          "a992d432d117fe2c"
         ],
         "adversarial": false
       },
@@ -4520,12 +4520,12 @@
           "instance_id": 1
         },
         "to": [
-          "3dfb3498aac9e0a2"
+          "6b7e75b88e5ca228"
         ],
         "adversarial": false
       }
     ],
-    "41e2416ebfc61722": [
+    "57b9bb9663906d4b": [
       {
         "action": {
           "id": "a59",
@@ -4540,7 +4540,7 @@
           "instance_id": 1
         },
         "to": [
-          "64f60cde09bf2fd0"
+          "3363f04f2efe66c8"
         ],
         "adversarial": false
       },
@@ -4558,12 +4558,12 @@
           "instance_id": 1
         },
         "to": [
-          "82cd45b9228c3951"
+          "c04b653aef3ad5db"
         ],
         "adversarial": false
       }
     ],
-    "d6ab955e2fc1020c": [
+    "d84a2fad65694c98": [
       {
         "action": {
           "id": "a61",
@@ -4578,7 +4578,7 @@
           "instance_id": 1
         },
         "to": [
-          "aac2122d154b1275"
+          "b4d0a87942febb7a"
         ],
         "adversarial": false
       },
@@ -4596,12 +4596,12 @@
           "instance_id": 1
         },
         "to": [
-          "7022bc508a529798"
+          "e2070fb1b99e68cb"
         ],
         "adversarial": false
       }
     ],
-    "0b1322dc10c15d08": [
+    "56dacf99d8825a5f": [
       {
         "action": {
           "id": "a63",
@@ -4616,7 +4616,7 @@
           "instance_id": 1
         },
         "to": [
-          "41f13ee216311b4e"
+          "6b17f49f365b2a79"
         ],
         "adversarial": false
       },
@@ -4634,12 +4634,12 @@
           "instance_id": 1
         },
         "to": [
-          "c03a83cb87ae917a"
+          "a9499e3ea534a6e2"
         ],
         "adversarial": false
       }
     ],
-    "f848d55e16f7e19e": [
+    "dcc193c3db492d38": [
       {
         "action": {
           "id": "a65",
@@ -4654,7 +4654,7 @@
           "instance_id": 1
         },
         "to": [
-          "7c25a92a69e55d38"
+          "028386bbaa8b200d"
         ],
         "adversarial": false
       },
@@ -4672,12 +4672,12 @@
           "instance_id": 1
         },
         "to": [
-          "72a4b905941e7bb4"
+          "74e9c35e496c3768"
         ],
         "adversarial": false
       }
     ],
-    "71f8481e1cfc9400": [
+    "62850b5e4445084a": [
       {
         "action": {
           "id": "a67",
@@ -4692,7 +4692,7 @@
           "instance_id": 1
         },
         "to": [
-          "acc5de283b859274"
+          "7e36514de409b3c4"
         ],
         "adversarial": false
       },
@@ -4710,30 +4710,30 @@
           "instance_id": 1
         },
         "to": [
-          "abe4250c3c5b1377"
+          "3ea1bd0f3fca994e"
         ],
         "adversarial": false
       }
     ]
   },
   "terminal": {
-    "b83fa8b7b90e2955": "dead_end",
-    "3e937dcb7e9a6fe7": "dead_end",
-    "42bc8cacaf581e67": "dead_end",
-    "0293cb8f57aa5cf9": "win",
-    "5e66bb832e4a653b": "win",
-    "a782f55a9e3ae4c1": "win",
-    "c9a4cc235e27a43a": "dead_end",
-    "64f60cde09bf2fd0": "dead_end",
-    "aac2122d154b1275": "dead_end",
-    "41f13ee216311b4e": "dead_end",
-    "7c25a92a69e55d38": "dead_end",
-    "acc5de283b859274": "dead_end",
-    "3dfb3498aac9e0a2": "dead_end",
-    "82cd45b9228c3951": "dead_end",
-    "7022bc508a529798": "dead_end",
-    "c03a83cb87ae917a": "dead_end",
-    "72a4b905941e7bb4": "dead_end",
-    "abe4250c3c5b1377": "dead_end"
+    "91c7027d657ec548": "dead_end",
+    "303bbea1b1105c54": "dead_end",
+    "64dacea0cf45ccbe": "dead_end",
+    "ea42f1bbe407e45f": "win",
+    "361978a158686f4e": "win",
+    "7c7e5ed81609a4f1": "win",
+    "a992d432d117fe2c": "dead_end",
+    "3363f04f2efe66c8": "dead_end",
+    "b4d0a87942febb7a": "dead_end",
+    "6b17f49f365b2a79": "dead_end",
+    "028386bbaa8b200d": "dead_end",
+    "7e36514de409b3c4": "dead_end",
+    "6b7e75b88e5ca228": "dead_end",
+    "c04b653aef3ad5db": "dead_end",
+    "e2070fb1b99e68cb": "dead_end",
+    "a9499e3ea534a6e2": "dead_end",
+    "74e9c35e496c3768": "dead_end",
+    "3ea1bd0f3fca994e": "dead_end"
   }
 }

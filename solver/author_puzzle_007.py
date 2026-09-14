@@ -13,7 +13,8 @@ scoring.unseeded_holds). Re-taking it this turn is worth zero. It also
 sits under Vilemaw's Lair ("units can't move from here to base"), and
 Yasuo - Rider of the Wind ([Ganking]; "the third time I move in a turn,
 you score 1 point") is standing on it. "right" belongs to the opponent,
-guarded by a Might-4 body that beats Yasuo's Might 2.
+guarded by a Might-5 body that beats Yasuo's Might 4 — he cannot kill
+it and it kills him.
 
 So there is no battlefield left to score. The only point available
 anywhere is Yasuo's trigger, and it needs three moves.
@@ -32,6 +33,13 @@ The line spends that suicidal attack as a move rather than as combat:
      window, pulls him out to base before damage (move 2).
   3. The showdown resolves with no attacker present. The guard takes
      nothing and keeps "right".
+
+     (The guard has to out-Might Yasuo rather than merely match him. At
+     equal Might the attack becomes a mutual kill, "right" empties, and
+     any spare body walks in to Conquer it — a duller three-step line
+     that skips the feint entirely. That is exactly what happened when
+     Yasuo's stats were corrected from a mis-transcribed Might 2 to his
+     printed Might 4.)
   4. Yasuo walks base -> "left" (move 3). The Conquer scores nothing —
      "left" was Scored this turn already — but the move is his third,
      and the trigger is a card-effect point, which rule 473 exempts from
@@ -65,11 +73,11 @@ OUTPUT_PATH = Path(__file__).parent.parent / "puzzles" / "puzzle-007-feint.json"
 
 def build_root() -> GameState:
     stranded_yasuo = UnitInstance(
-        card_id=YASUO_WINDRIDER, instance_id=1, controller=0, might=2,
+        card_id=YASUO_WINDRIDER, instance_id=1, controller=0, might=4,
         keywords=frozenset({"Ganking"}), exhausted=False, damage=0, is_token=False,
     )
     guard = UnitInstance(
-        card_id="generic-opponent", instance_id=2, controller=1, might=4,
+        card_id="generic-opponent", instance_id=2, controller=1, might=5,
         keywords=frozenset(), exhausted=False, damage=0, is_token=False,
     )
     decoy = UnitInstance(

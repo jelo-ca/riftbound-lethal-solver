@@ -1,14 +1,14 @@
 {
   "schema_version": 2,
   "puzzle_id": "puzzle-006-redirection",
-  "root": "fa3e0e3b0dad5dec",
+  "root": "bf00568f3b32858f",
   "solution": {
     "ed19fbe8ae040c61": "a24",
     "38bebec69c1a2efd": "a26",
-    "fa3e0e3b0dad5dec": "a6"
+    "bf00568f3b32858f": "a6"
   },
   "nodes": {
-    "fa3e0e3b0dad5dec": {
+    "bf00568f3b32858f": {
       "turn_player": 0,
       "players": [
         {
@@ -30,6 +30,7 @@
             "ogn-067-298"
           ],
           "runes": [
+            "Calm",
             "Fury",
             "Fury",
             "Fury",
@@ -275,7 +276,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "3046a65b39e65c65": {
+    "c482b8fc65f0d211": {
       "turn_player": 0,
       "players": [
         {
@@ -284,6 +285,7 @@
             "ogn-067-298"
           ],
           "runes": [
+            "Calm",
             "Fury",
             "Fury",
             "Fury",
@@ -359,7 +361,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "c00fa9008be2641e": {
+    "f6cdfb8ef137a7d8": {
       "turn_player": 0,
       "players": [
         {
@@ -393,6 +395,7 @@
             "ogn-067-298"
           ],
           "runes": [
+            "Calm",
             "Fury",
             "Fury",
             "Fury",
@@ -443,7 +446,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "fe4960243204eadb": {
+    "ec1c64f3a0b1e431": {
       "turn_player": 0,
       "players": [
         {
@@ -452,6 +455,7 @@
             "ogn-067-298"
           ],
           "runes": [
+            "Calm",
             "Fury",
             "Fury",
             "Fury",
@@ -1178,7 +1182,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "ec0f12f3cdf227e9": {
+    "6014cf545c9e8523": {
       "turn_player": 0,
       "players": [
         {
@@ -1200,6 +1204,7 @@
             "ogn-067-298"
           ],
           "runes": [
+            "Calm",
             "Fury",
             "Fury",
             "Fury",
@@ -1470,7 +1475,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "9fa20248ea16dca1": {
+    "52d2721065272114": {
       "turn_player": 0,
       "players": [
         {
@@ -1492,6 +1497,7 @@
             "ogn-067-298"
           ],
           "runes": [
+            "Calm",
             "Fury",
             "Fury",
             "Fury",
@@ -2384,7 +2390,7 @@
     }
   },
   "edges": {
-    "fa3e0e3b0dad5dec": [
+    "bf00568f3b32858f": [
       {
         "action": {
           "id": "a1",
@@ -2429,7 +2435,7 @@
           "instance_id": 2
         },
         "to": [
-          "3046a65b39e65c65"
+          "c482b8fc65f0d211"
         ],
         "adversarial": false
       },
@@ -2445,7 +2451,7 @@
           "instance_id": 1
         },
         "to": [
-          "c00fa9008be2641e"
+          "f6cdfb8ef137a7d8"
         ],
         "adversarial": false
       },
@@ -2461,7 +2467,7 @@
           "instance_id": 2
         },
         "to": [
-          "fe4960243204eadb"
+          "ec1c64f3a0b1e431"
         ],
         "adversarial": false
       },
@@ -2584,7 +2590,7 @@
         "adversarial": false
       }
     ],
-    "3046a65b39e65c65": [
+    "c482b8fc65f0d211": [
       {
         "action": {
           "id": "a13",
@@ -2629,7 +2635,7 @@
           "instance_id": 1
         },
         "to": [
-          "ec0f12f3cdf227e9"
+          "6014cf545c9e8523"
         ],
         "adversarial": false
       },
@@ -2656,7 +2662,7 @@
         "adversarial": true
       }
     ],
-    "c00fa9008be2641e": [
+    "f6cdfb8ef137a7d8": [
       {
         "action": {
           "id": "a17",
@@ -2685,7 +2691,7 @@
           "instance_id": 2
         },
         "to": [
-          "ec0f12f3cdf227e9"
+          "6014cf545c9e8523"
         ],
         "adversarial": false
       },
@@ -2701,12 +2707,12 @@
           "instance_id": 2
         },
         "to": [
-          "9fa20248ea16dca1"
+          "52d2721065272114"
         ],
         "adversarial": false
       }
     ],
-    "fe4960243204eadb": [
+    "ec1c64f3a0b1e431": [
       {
         "action": {
           "id": "a20",
@@ -2751,7 +2757,7 @@
           "instance_id": 1
         },
         "to": [
-          "9fa20248ea16dca1"
+          "52d2721065272114"
         ],
         "adversarial": false
       },
@@ -2998,7 +3004,7 @@
         "adversarial": false
       }
     ],
-    "ec0f12f3cdf227e9": [
+    "6014cf545c9e8523": [
       {
         "action": {
           "id": "a37",
@@ -3086,7 +3092,7 @@
         "adversarial": false
       }
     ],
-    "9fa20248ea16dca1": [
+    "52d2721065272114": [
       {
         "action": {
           "id": "a42",

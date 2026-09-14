@@ -35,7 +35,7 @@ OUTPUT_PATH = Path(__file__).parent.parent / "puzzles" / "puzzle-003-the-long-wa
 
 def build_root() -> GameState:
     yasuo = UnitInstance(
-        card_id=YASUO_WINDRIDER, instance_id=1, controller=0, might=2,
+        card_id=YASUO_WINDRIDER, instance_id=1, controller=0, might=4,
         keywords=frozenset({"Ganking"}), exhausted=False, damage=0, is_token=False,
     )
     anchor_left = UnitInstance(

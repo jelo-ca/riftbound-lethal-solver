@@ -58,7 +58,11 @@ def build_root() -> GameState:
             PlayerState(
                 base_units=frozenset({attacker}),
                 hand=(BLITZCRANK_IMPASSIVE,),
-                runes=RunePool(available=("Fury", "Fury", "Fury", "Fury", "Fury")),
+                # Blitzcrank costs 5 Energy + 1 Calm Power. Energy is
+                # domain-agnostic, the Power rune is not — five Fury runes
+                # paid for him only while his printed Power cost was
+                # mis-transcribed as 0.
+                runes=RunePool(available=("Fury", "Fury", "Fury", "Fury", "Fury", "Calm")),
                 score=7,
             ),
             PlayerState(base_units=frozenset(), hand=(), runes=RunePool(available=()), score=0),
