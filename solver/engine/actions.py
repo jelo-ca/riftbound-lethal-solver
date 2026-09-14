@@ -24,7 +24,7 @@ import dataclasses
 from dataclasses import dataclass
 from typing import Optional
 
-from . import combat
+from . import battlefields, combat
 from .cards import CardDef
 from .combat import Assignment
 from .state import (
@@ -83,6 +83,30 @@ class ResolveCombat:
 
 
 @dataclass(frozen=True)
+class EnterShowdown:
+    """Move into an enemy-occupied battlefield and STOP, leaving the
+    showdown open for [Action]/[Reaction] plays before damage.
+
+    Only generated when such a play is actually available; otherwise the
+    atomic ResolveCombat below is emitted instead, since a showdown whose
+    only legal action is "resolve" is not a decision and folding it away
+    keeps search depth honest.
+    """
+    instance_id: int
+    from_zone: Zone
+    to_zone: Zone
+
+
+@dataclass(frozen=True)
+class ResolveShowdown:
+    """The Combat Damage Step of an already-open showdown. Carries only
+    OUR assignment; who is attacking, and which units are even involved,
+    is read from the board at resolve time — cards played during the
+    window may have moved units in or out."""
+    our_assignment: Assignment
+
+
+@dataclass(frozen=True)
 class PlaySpell:
     card_id: str
     # Opaque, effect-specific: whatever the card's registered ability
@@ -109,7 +133,8 @@ class ActivateAbility:
     rune_payment: Optional[RunePayment]  # None for abilities with no rune cost (e.g. exhaust-only)
 
 
-Action = PlayUnit | MoveUnit | ResolveCombat | PlaySpell | PlayGear | ActivateAbility
+Action = (PlayUnit | MoveUnit | ResolveCombat | EnterShowdown | ResolveShowdown
+          | PlaySpell | PlayGear | ActivateAbility)
 
 
 # --- Rune payment -----------------------------------------------------------
@@ -158,7 +183,7 @@ def generate_rune_payments(pool: RunePool, energy_cost: int, power_cost: int,
     return payments
 
 
-def _consume_runes(pool: RunePool, payment: RunePayment) -> RunePool:
+def consume_runes(pool: RunePool, payment: RunePayment) -> RunePool:
     remaining = list(pool.available)
     for domain in payment.energy_runes + payment.power_runes:
         remaining.remove(domain)
@@ -183,7 +208,7 @@ def replace_battlefield(state: GameState, updated: BattlefieldState) -> GameStat
     return dataclasses.replace(state, battlefields=battlefields)
 
 
-def _next_instance_id(state: GameState) -> int:
+def next_instance_id(state: GameState) -> int:
     ids = [0]
     for player in state.players:
         ids += [u.instance_id for u in player.base_units]
@@ -215,16 +240,22 @@ def is_legal_play_unit(state: GameState, action: PlayUnit, card: CardDef) -> boo
         pool.remove(domain)
     if action.target_zone == "base":
         return True
-    # rule 355.7/355.8: a battlefield is only a valid PlayUnit target if the
-    # controller already controls it, UNLESS the card's own text grants an
+    # rule 355.7/355.8: a battlefield is only a valid PlayUnit target if you
+    # already have UNITS there, UNLESS the card's own text grants an
     # exception (e.g. Sneaky Deckhand: "You may play me to an open
     # battlefield") — rule 170.11.c: "open" means unoccupied AND
     # uncontrolled, not merely uncontrolled.
+    #
+    # Checked as "do we have a unit here", which is what the rule says,
+    # rather than "do we control here". Those coincide today only because
+    # every path that empties a battlefield also clears its controller —
+    # an invariant held elsewhere in this module and in combat.py, not
+    # something this check should be quietly depending on.
     try:
         bf = _battlefield(state, action.target_zone)
     except KeyError:
         return False
-    if bf.controller == state.turn_player:
+    if any(u.controller == state.turn_player for u in bf.units):
         return True
     return card.can_play_to_open_battlefield and bf.controller is None and not bf.units
 
@@ -235,7 +266,7 @@ def apply_play_unit(state: GameState, action: PlayUnit, card: CardDef) -> GameSt
 
     new_unit = UnitInstance(
         card_id=card.card_id,
-        instance_id=_next_instance_id(state),
+        instance_id=next_instance_id(state),
         controller=player_index,
         might=card.might if card.might is not None else 0,
         keywords=card.keywords,
@@ -246,7 +277,7 @@ def apply_play_unit(state: GameState, action: PlayUnit, card: CardDef) -> GameSt
 
     new_hand = list(player.hand)
     new_hand.remove(action.card_id)
-    new_runes = _consume_runes(player.runes, action.rune_payment)
+    new_runes = consume_runes(player.runes, action.rune_payment)
 
     if action.target_zone == "base":
         new_player = dataclasses.replace(
@@ -307,7 +338,7 @@ def apply_play_spell_cost(state: GameState, action: PlaySpell) -> GameState:
     player = state.players[player_index]
     new_hand = list(player.hand)
     new_hand.remove(action.card_id)
-    new_runes = _consume_runes(player.runes, action.rune_payment)
+    new_runes = consume_runes(player.runes, action.rune_payment)
     new_player = dataclasses.replace(player, hand=tuple(new_hand), runes=new_runes)
     return replace_player(state, player_index, new_player)
 
@@ -339,6 +370,75 @@ def find_unit_at_any_battlefield(state: GameState, instance_id: int) -> Optional
     return None
 
 
+def find_unit_anywhere(state: GameState, instance_id: int) -> Optional[tuple[UnitInstance, Zone]]:
+    """Searches every zone on the board - both players' Base plus every
+    battlefield - for effects like Vengeance ("kill a unit," unrestricted
+    to battlefield presence or a specific controller). The unit's own
+    `controller` field (not the return value) disambiguates whose Base a
+    `"base"` match came from - `Zone` alone can't."""
+    for player in state.players:
+        for u in player.base_units:
+            if u.instance_id == instance_id:
+                return u, "base"
+    return find_unit_at_any_battlefield(state, instance_id)
+
+
+def kill_unit(state: GameState, instance_id: int) -> GameState:
+    """Removes a unit outright regardless of its current damage — for
+    effects like Vengeance ("kill a unit") that aren't a damage
+    *amount*, just a removal. Reuses combat.deal_damage_to_unit for a
+    battlefield target (dealing its own Might guarantees lethal,
+    correctly recomputing the battlefield's controller); a Base target
+    has no controller to recompute, just removal from that player's
+    base_units."""
+    located = find_unit_anywhere(state, instance_id)
+    assert located is not None
+    unit, zone = located
+    if zone == "base":
+        player = state.players[unit.controller]
+        new_player = dataclasses.replace(player, base_units=player.base_units - {unit})
+        return replace_player(state, unit.controller, new_player)
+    return combat.deal_damage_to_unit(state, zone, instance_id, unit.might)
+
+
+def return_unit_to_hand(state: GameState, battlefield_id: str, instance_id: int) -> GameState:
+    """Removes a unit from a battlefield and returns its card to its
+    OWNER's hand (not necessarily the acting player's) — for effects
+    like Zaunite Bouncer ("return another unit at a battlefield to its
+    owner's hand"). Tank doesn't gate this (rule: Tank only orders
+    Combat Damage Step assignment, not other effects) — any unit at the
+    battlefield is a legal target, keyword or not."""
+    bf = _battlefield(state, battlefield_id)
+    unit = next(u for u in bf.units if u.instance_id == instance_id)
+    remaining = bf.units - {unit}
+    controllers = {u.controller for u in remaining}
+    new_controller = next(iter(controllers)) if len(controllers) == 1 else None
+    state = replace_battlefield(state, dataclasses.replace(bf, units=remaining, controller=new_controller))
+
+    owner = state.players[unit.controller]
+    new_owner = dataclasses.replace(owner, hand=owner.hand + (unit.card_id,))
+    return replace_player(state, unit.controller, new_owner)
+
+
+def battlefield_effect_id(state: GameState, zone: Zone) -> Optional[str]:
+    """The registered effect on `zone`'s battlefield, or None for Base or
+    an effect-less battlefield."""
+    if zone == "base":
+        return None
+    for bf in state.battlefields:
+        if bf.battlefield_id == zone:
+            return bf.effect_id
+    return None
+
+
+def effective_keywords(state: GameState, unit: UnitInstance, zone: Zone) -> frozenset[str]:
+    """A unit's own keywords plus any its current battlefield grants it
+    (e.g. Windswept Hillock: "Units here have [Ganking]") — always ask
+    for these rather than reading `unit.keywords` directly wherever the
+    unit's location could matter."""
+    return unit.keywords | battlefields.granted_keywords(battlefield_effect_id(state, zone))
+
+
 def is_legal_destination(state: GameState, unit: UnitInstance, from_zone: Zone, to_zone: Zone) -> bool:
     """Zone-rule legality for a unit's own Standard Move only (rule
     145.2.a Base<->Battlefield, rule 810 Ganking for Battlefield-to-
@@ -347,16 +447,20 @@ def is_legal_destination(state: GameState, unit: UnitInstance, from_zone: Zone, 
     are NOT bound by it (see is_legal_ability_move_destination) — a spell
     states explicitly if it's restricted to Base (e.g. "Move a unit from a
     battlefield to its base"), otherwise it can move a unit to any zone
-    including Battlefield-to-Battlefield with no Ganking requirement."""
+    including Battlefield-to-Battlefield with no Ganking requirement.
+
+    Ganking can also come from the battlefield the unit is standing on
+    rather than the unit's own text (Windswept Hillock), so this reads
+    effective_keywords, not unit.keywords."""
     if from_zone == to_zone:
         return False
     if from_zone == "base":
         return to_zone != "base" and any(bf.battlefield_id == to_zone for bf in state.battlefields)
     if to_zone == "base":
-        return True
+        return not battlefields.blocks_move_to_base(battlefield_effect_id(state, from_zone))
     if not any(bf.battlefield_id == to_zone for bf in state.battlefields):
         return False
-    return "Ganking" in unit.keywords
+    return "Ganking" in effective_keywords(state, unit, from_zone)
 
 
 def is_legal_ability_move_destination(state: GameState, from_zone: Zone, to_zone: Zone) -> bool:
@@ -365,10 +469,16 @@ def is_legal_ability_move_destination(state: GameState, from_zone: Zone, to_zone
     default, no Ganking requirement, since that restriction is specific to
     a unit's own Standard Move (see is_legal_destination). A spell that's
     actually restricted (e.g. "Move a unit from a battlefield to its
-    base") enforces that narrower rule itself rather than calling this."""
+    base") enforces that narrower rule itself rather than calling this.
+
+    A battlefield's own movement restriction (Vilemaw's Lair: "Units
+    can't move from here to base") DOES bind spell-granted moves — its
+    text restricts movement itself, not one particular way of moving."""
     if from_zone == to_zone:
         return False
     if to_zone != "base" and not any(bf.battlefield_id == to_zone for bf in state.battlefields):
+        return False
+    if to_zone == "base" and battlefields.blocks_move_to_base(battlefield_effect_id(state, from_zone)):
         return False
     return from_zone == "base" or any(bf.battlefield_id == from_zone for bf in state.battlefields)
 
@@ -399,8 +509,10 @@ def is_legal_resolve_combat(state: GameState, action: ResolveCombat) -> bool:
     if not combat.is_combat_triggered(state, unit, action.to_zone):
         return False
     _, _, _, defender_units = combat.determine_sides(state, unit, action.to_zone)
-    our_pool = combat.unit_combat_might(unit, "attacker")
-    return action.our_assignment in combat.enumerate_assignments(defender_units, our_pool)
+    destination_effect = battlefield_effect_id(state, action.to_zone)
+    our_pool = combat.effective_might(unit, "attacker", destination_effect)
+    return action.our_assignment in combat.enumerate_assignments(
+        defender_units, our_pool, "defender", destination_effect)
 
 
 def relocate_unit(state: GameState, instance_id: int, from_zone: Zone, to_zone: Zone,
@@ -479,7 +591,7 @@ def legal_board_actions(state: GameState, cards: dict[str, CardDef]) -> list[Act
         bf.battlefield_id for bf in state.battlefields if bf.controller == state.turn_player
     ]
 
-    for card_id in set(player.hand):
+    for card_id in sorted(set(player.hand)):
         card = cards.get(card_id)
         if card is None or card.card_type != "Unit":
             continue
@@ -500,8 +612,10 @@ def legal_board_actions(state: GameState, cards: dict[str, CardDef]) -> list[Act
     def add_move_candidates(unit: UnitInstance, from_zone: Zone, to_zone: Zone) -> None:
         if to_zone != "base" and combat.is_combat_triggered(state, unit, to_zone):
             _, _, _, defender_units = combat.determine_sides(state, unit, to_zone)
-            our_pool = combat.unit_combat_might(unit, "attacker")
-            for assignment in combat.enumerate_assignments(defender_units, our_pool):
+            destination_effect = battlefield_effect_id(state, to_zone)
+            our_pool = combat.effective_might(unit, "attacker", destination_effect)
+            for assignment in combat.enumerate_assignments(
+                    defender_units, our_pool, "defender", destination_effect):
                 action = ResolveCombat(
                     instance_id=unit.instance_id, from_zone=from_zone, to_zone=to_zone,
                     our_assignment=assignment,
@@ -513,11 +627,11 @@ def legal_board_actions(state: GameState, cards: dict[str, CardDef]) -> list[Act
         if is_legal_move_unit(state, action):
             actions.append(action)
 
-    for unit in player.base_units:
+    for unit in sorted(player.base_units, key=lambda u: u.instance_id):
         for bf_id in battlefield_ids:
             add_move_candidates(unit, "base", bf_id)
     for bf in state.battlefields:
-        for unit in bf.units:
+        for unit in sorted(bf.units, key=lambda u: u.instance_id):
             if unit.controller != state.turn_player:
                 continue
             for to_zone in ["base"] + [b for b in battlefield_ids if b != bf.battlefield_id]:

@@ -23,16 +23,14 @@ import json
 from pathlib import Path
 
 from .engine.abilities import RIDE_THE_WIND, YASUO_WINDRIDER
-from .engine.cards import CardDef
+from .engine.card_pool import CARD_POOL
 from .engine.state import BattlefieldState, GameState, PlayerState, RunePool, UnitInstance
 from .export import export_puzzle
 
+RIDE_THE_WIND_CARD = CARD_POOL[RIDE_THE_WIND]
+
 OUTPUT_PATH = Path(__file__).parent.parent / "puzzles" / "puzzle-003-the-long-way-around.json"
 
-RIDE_THE_WIND_CARD = CardDef(
-    card_id=RIDE_THE_WIND, card_type="Spell", energy_cost=2, power_cost=1,
-    power_domain="Chaos", keywords=frozenset(),
-)
 
 
 def build_root() -> GameState:

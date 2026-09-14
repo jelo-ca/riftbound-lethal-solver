@@ -1,0 +1,61 @@
+[
+  {
+    "note": "Bounce-and-double-attack: hit one lane, Ride The Wind back to base to clear exhaustion, hit the other, walk a spare unit into a cleared lane. Surfaced in every batch since the first; audited repeatedly and judged too plain to promote.",
+    "signature": [
+      [
+        "ResolveCombat",
+        "vanilla:Tank"
+      ],
+      [
+        "PlaySpell",
+        "ogn-173-298"
+      ],
+      [
+        "ResolveCombat",
+        "vanilla:Tank"
+      ],
+      [
+        "MoveUnit",
+        "vanilla:"
+      ]
+    ]
+  },
+  {
+    "note": "Bounce-and-double-attack: hit one lane, Ride The Wind back to base to clear exhaustion, hit the other, walk a spare unit into a cleared lane. Surfaced in every batch since the first; audited repeatedly and judged too plain to promote.",
+    "signature": [
+      [
+        "ResolveCombat",
+        "vanilla:"
+      ],
+      [
+        "PlaySpell",
+        "ogn-173-298"
+      ],
+      [
+        "ResolveCombat",
+        "vanilla:"
+      ],
+      [
+        "MoveUnit",
+        "vanilla:"
+      ]
+    ]
+  },
+  {
+    "note": "generated-05617: the generated-07640 Blitzcrank pull with a Tank attacker and Yasuo as the walk-in body (one move, trigger never fires)",
+    "signature": [
+      [
+        "ResolveCombat",
+        "vanilla:Tank"
+      ],
+      [
+        "PlayUnit",
+        "ogn-067-298"
+      ],
+      [
+        "MoveUnit",
+        "vanilla:"
+      ]
+    ]
+  }
+]

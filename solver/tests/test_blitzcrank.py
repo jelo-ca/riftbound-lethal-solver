@@ -13,10 +13,18 @@ def make_unit(card_id, instance_id, controller=0, might=3, keywords=frozenset(),
                          might=might, keywords=keywords, exhausted=exhausted, damage=0, is_token=False)
 
 
-def make_root(enemy_might=3, ally_might=None):
-    """"left" is ours (an existing ally there), open enough to play
-    Blitzcrank into; "right" holds one enemy unit for the redirect
-    target."""
+def make_root(enemy_might=3, ally_might=1):
+    """"left" holds an ally of ours, which is what makes it a legal
+    PlayUnit target (rule 355.7/355.8: you may only play to a battlefield
+    you have UNITS on); "right" holds one enemy unit as the redirect
+    target.
+
+    The ally is not optional set dressing. An earlier version of this
+    fixture defaulted to no ally and just set controller=0, giving a
+    battlefield controlled-but-empty — a state no real line can produce,
+    since every path that empties a battlefield also clears its
+    controller. Playing Blitzcrank there was only ever legal against that
+    impossible position."""
     units_at_left = set()
     if ally_might is not None:
         units_at_left.add(make_unit("ally", 10, controller=0, might=ally_might))
@@ -54,13 +62,18 @@ def test_redirect_candidates_appear_in_legal_actions():
 
 
 def test_redirect_causes_combat_we_are_defender_and_kill_the_weak_enemy():
-    """Enemy Might 3 vs our Blitzcrank (Might 5, alone at "left" once
-    played): we easily kill it, it can't kill Blitzcrank back (3 < 5).
-    Direct mechanics check (not a full puzzle - no win condition is set
-    up here, that's the actual puzzle's job): confirms the redirect
-    really moves the enemy unit, triggers real combat with us as
-    Defender, and resolves correctly through the genuine action-
-    generation path (not the synthetic construction test_combat.py uses).
+    """Enemy Might 3 redirected onto "left", where Blitzcrank (Might 5)
+    lands beside our ally: our combined pool kills it outright no matter
+    how it assigns its own damage, and Blitzcrank is too big for Might 3
+    to kill back. Direct mechanics check (not a full puzzle - no win
+    condition is set up here, that's the actual puzzle's job): confirms
+    the redirect really moves the enemy unit, triggers real combat with
+    us as Defender, and resolves through the genuine action-generation
+    path rather than the synthetic construction test_combat.py uses.
+
+    Asserted across EVERY outcome rather than assuming a single one: the
+    enemy still gets to choose whom to damage, so the branch count is its
+    business - what matters is that the redirect removes it regardless.
     """
     from solver.engine import abilities
 
@@ -70,19 +83,18 @@ def test_redirect_causes_combat_we_are_defender_and_kill_the_weak_enemy():
         a for a in legal_actions(root, cards)
         if isinstance(a, PlayUnit) and a.card_id == BLITZCRANK_IMPASSIVE and a.trigger_params
     ]
-    assert len(triggered) == 1  # single enemy unit, single our_assignment option (kill it, 5 > 3)
+    assert triggered
     action = triggered[0]
 
     outcomes = abilities.resolve_unit_play_trigger_outcomes(root, action, BLITZCRANK_CARD)
-    assert len(outcomes) == 1  # enemy Might 3 has only one place to put its damage (Blitzcrank alone)
-    result = outcomes[0]
-
-    left = result.battlefields[0]
-    right = result.battlefields[1]
-    assert not any(u.controller == 1 for u in left.units)  # enemy dead, no longer at "left"
-    assert any(u.controller == 0 and u.might == 5 for u in left.units)  # Blitzcrank survived
-    assert right.units == frozenset()  # "right" now empty
-    assert left.controller == 0
+    assert outcomes
+    for result in outcomes:
+        left = result.battlefields[0]
+        right = result.battlefields[1]
+        assert not any(u.controller == 1 for u in left.units)  # enemy dead, no longer at "left"
+        assert any(u.controller == 0 and u.might == 5 for u in left.units)  # Blitzcrank survived
+        assert right.units == frozenset()  # "right" now empty
+        assert left.controller == 0
 
 
 def test_redirect_produces_a_genuine_opponent_choice_via_real_generation():

@@ -15,6 +15,15 @@ from .state import Domain
 
 CardType = Literal["Unit", "Spell", "Gear"]
 
+# When a card may be played, read off its own text:
+#   "Slow"     - no marker on the card. Your turn only, and NOT during a
+#                showdown (moving into an occupied battlefield starts one,
+#                which is why you can't move in and then cast a Slow spell).
+#   "Action"   - "[Action] (Play on your turn or in showdowns.)"
+#   "Reaction" - "[Reaction] (Play any time, even before spells and
+#                abilities resolve.)"
+Speed = Literal["Slow", "Action", "Reaction"]
+
 
 @dataclass(frozen=True)
 class CardDef:
@@ -29,3 +38,7 @@ class CardDef:
     # rule (Base or an already-controlled battlefield) via their own text —
     # e.g. Sneaky Deckhand: "You may play me to an open battlefield."
     can_play_to_open_battlefield: bool = False
+    # Defaults to Slow because that's what an unmarked card is. Getting
+    # this wrong in the permissive direction would invent lines that don't
+    # exist, so the default is the restrictive one.
+    speed: Speed = "Slow"

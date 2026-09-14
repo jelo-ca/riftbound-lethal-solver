@@ -1,5 +1,5 @@
 from solver.author_puzzle_003 import RIDE_THE_WIND_CARD, build_root
-from solver.engine.abilities import RIDE_THE_WIND
+from solver.engine.abilities import RIDE_THE_WIND, resolve_spell_outcomes
 from solver.engine.actions import MoveUnit, PlaySpell, RunePayment
 from solver.engine.scoring import is_winning
 from solver.export import export_puzzle
@@ -29,7 +29,7 @@ def test_puzzle_003_two_moves_do_not_win():
     third move, not sooner — two moves alone can't win."""
     root = build_root()
     state = apply(root, MOVE_1, CARDS)
-    state = apply(state, MOVE_2, CARDS)
+    state = resolve_spell_outcomes(state, MOVE_2, RIDE_THE_WIND_CARD)[0]
     assert not is_winning(state)
     assert state.players[0].score == 7
     yasuo = next(u for u in state.battlefields[0].units if u.instance_id == 1)
@@ -39,7 +39,7 @@ def test_puzzle_003_two_moves_do_not_win():
 def test_puzzle_003_third_move_wins():
     root = build_root()
     state = apply(root, MOVE_1, CARDS)
-    state = apply(state, MOVE_2, CARDS)
+    state = resolve_spell_outcomes(state, MOVE_2, RIDE_THE_WIND_CARD)[0]
     state = apply(state, MOVE_3, CARDS)
     assert is_winning(state)
     assert state.players[0].score == 8

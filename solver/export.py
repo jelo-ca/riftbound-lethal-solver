@@ -20,10 +20,21 @@ from __future__ import annotations
 import hashlib
 
 from .engine import abilities, combat, scoring
-from .engine.actions import ActivateAbility, Action, MoveUnit, PlayGear, PlaySpell, PlayUnit, ResolveCombat, find_unit
+from .engine.actions import (
+    ActivateAbility,
+    Action,
+    EnterShowdown,
+    MoveUnit,
+    PlayGear,
+    PlaySpell,
+    PlayUnit,
+    ResolveCombat,
+    ResolveShowdown,
+    find_unit,
+)
 from .engine.cards import CardDef
 from .engine.state import BattlefieldState, GameState, PlayerState, UnitInstance, canonical_key
-from .search import apply, legal_actions, solve
+from .search import apply, legal_actions, resolve_combat_outcomes, resolve_showdown_outcomes, solve
 
 SCHEMA_VERSION = 2
 
@@ -41,6 +52,13 @@ def state_hash(state: GameState) -> str:
 
 
 def render_unit(unit: UnitInstance) -> dict:
+    """Every field canonical_key considers significant has to appear here,
+    or the export loses information the engine acts on: two states with
+    different hashes would render identically and a consumer replaying
+    the puzzle couldn't tell them apart. That was live for
+    `moved_this_turn` — puzzle 3's whole mechanic is Yasuo's move count,
+    and it wasn't in the file at all, leaving 8 pairs of
+    indistinguishable states in that one puzzle."""
     return {
         "card_id": unit.card_id,
         "instance_id": unit.instance_id,
@@ -50,6 +68,8 @@ def render_unit(unit: UnitInstance) -> dict:
         "exhausted": unit.exhausted,
         "damage": unit.damage,
         "is_token": unit.is_token,
+        "moved_this_turn": unit.moved_this_turn,
+        "might_bonus": unit.might_bonus,
     }
 
 
@@ -59,6 +79,8 @@ def render_player(player: PlayerState) -> dict:
         "hand": sorted(player.hand),
         "runes": sorted(player.runes.available),
         "score": player.score,
+        "legend": ({"card_id": player.legend.card_id, "exhausted": player.legend.exhausted}
+                   if player.legend else None),
     }
 
 
@@ -80,39 +102,85 @@ def render_state(state: GameState) -> dict:
         "battlefields": [render_battlefield(b) for b in state.battlefields],
         "scored_this_turn": sorted(state.scored_this_turn),
         "cards_played_this_turn": state.cards_played_this_turn,
+        "showdown": ({"battlefield_id": state.showdown.battlefield_id,
+                      "attacker_controller": state.showdown.attacker_controller}
+                     if state.showdown else None),
     }
 
 
-def render_action(action: Action, action_id: str) -> dict:
+def render_action(state: GameState, action: Action, action_id: str) -> dict:
+    """`card_id` is the card most responsible for this action's identity —
+    the mover's card for a MoveUnit/ResolveCombat, the played/activated
+    card otherwise — independent of lane/instance_id/exact Might, so two
+    structurally-identical actions on different boards render the same
+    card_id. `keywords` (MoveUnit/ResolveCombat only) is the mover's own
+    keyword set — maneuvers.py uses it to bucket interchangeable vanilla
+    movers (no registered mechanic, e.g. two different plain 2-Might
+    stat-sticks) by keyword-set instead of raw card_id, so a puzzle isn't
+    treated as "novel" just because it drew a different filler card.
+
+    `from_zone`/`to_zone` are the move's endpoints, null when the action
+    isn't a move (a unit played from hand has no `from_zone`). They exist
+    so consumers never have to parse `label` to recover structure:
+    maneuvers.py needs them to tell whether [Ganking] was actually doing
+    anything (it only matters Battlefield-to-Battlefield, rule 810), and
+    the web layer needs them to animate a move without re-deriving it
+    from a state diff.
+    """
+    from_zone = to_zone = None
     if isinstance(action, PlayUnit):
         label = f"Play {action.card_id} to {action.target_zone}"
+        card_id, keywords = action.card_id, []
+        to_zone = action.target_zone
     elif isinstance(action, MoveUnit):
         label = f"Move unit {action.instance_id} from {action.from_zone} to {action.to_zone}"
+        mover = find_unit(state, action.instance_id, action.from_zone)
+        card_id, keywords = mover.card_id, sorted(mover.keywords)
+        from_zone, to_zone = action.from_zone, action.to_zone
     elif isinstance(action, ResolveCombat):
         label = f"Move unit {action.instance_id} from {action.from_zone} to {action.to_zone} (combat)"
+        mover = find_unit(state, action.instance_id, action.from_zone)
+        card_id, keywords = mover.card_id, sorted(mover.keywords)
+        from_zone, to_zone = action.from_zone, action.to_zone
+    elif isinstance(action, EnterShowdown):
+        label = (f"Move unit {action.instance_id} from {action.from_zone} to {action.to_zone} "
+                  "(enter showdown)")
+        mover = find_unit(state, action.instance_id, action.from_zone)
+        card_id, keywords = mover.card_id, sorted(mover.keywords)
+        from_zone, to_zone = action.from_zone, action.to_zone
+    elif isinstance(action, ResolveShowdown):
+        label = "Resolve showdown damage"
+        card_id, keywords = "", []
     elif isinstance(action, PlaySpell):
         label = f"Play {action.card_id} ({', '.join(str(p) for p in action.params)})"
+        card_id, keywords = action.card_id, []
     elif isinstance(action, PlayGear):
         label = f"Play {action.card_id} on unit {action.target_unit}"
+        card_id, keywords = action.card_id, []
     elif isinstance(action, ActivateAbility):
         label = f"Activate unit {action.source_id} ({', '.join(str(p) for p in action.params)})"
+        card_id, keywords = action.ability_id, []
     else:
         label = type(action).__name__
-    return {"id": action_id, "type": type(action).__name__, "label": label}
+        card_id, keywords = "", []
+    return {"id": action_id, "type": type(action).__name__, "label": label,
+            "card_id": card_id, "keywords": keywords,
+            "from_zone": from_zone, "to_zone": to_zone}
 
 
-def _resolve_action_outcomes(state: GameState, action: Action, cards: dict[str, CardDef]) -> list[GameState]:
+def resolve_action_outcomes(state: GameState, action: Action, cards: dict[str, CardDef]) -> list[GameState]:
     """All possible resulting states for `action` — a single-element list
     for a deterministic action, multiple for a combat action with a real
     opponent choice. Raises NotImplementedError the same way apply() does
     for anything neither can handle yet."""
     if isinstance(action, ResolveCombat):
-        mover = find_unit(state, action.instance_id, action.from_zone)
-        outcomes = combat.enumerate_combat_outcomes(state, mover, action.from_zone, action.to_zone, action.our_assignment)
-        outcomes = [scoring.resolve_control_change(state, o, action.to_zone) for o in outcomes]
-        return [abilities.apply_move_triggers(o, action.instance_id) for o in outcomes]
+        return resolve_combat_outcomes(state, action)
+    if isinstance(action, ResolveShowdown):
+        return resolve_showdown_outcomes(state, action)
     if isinstance(action, PlayUnit) and action.trigger_params:
         return abilities.resolve_unit_play_trigger_outcomes(state, action, cards[action.card_id])
+    if isinstance(action, PlaySpell):
+        return abilities.resolve_spell_outcomes(state, action, cards[action.card_id])
     return [apply(state, action, cards)]
 
 
@@ -122,6 +190,16 @@ def export_puzzle(puzzle_id: str, root: GameState, cards: dict[str, CardDef],
     reachable-state graph up to `len(strategy) + depth_cap_margin` and
     return the JSON-serializable DAG described in design/06-export-schema.md.
     """
+    unseeded = scoring.unseeded_holds(root)
+    if unseeded:
+        raise ValueError(
+            f"puzzle {puzzle_id!r}: turn player controls {sorted(unseeded)} but "
+            f"scored_this_turn is {sorted(root.scored_this_turn)} — a controlled "
+            "battlefield has always already scored this turn (see "
+            "scoring.unseeded_holds). Seeding it is not a formality: without it "
+            "the position admits a re-Conquer of ground the player never lost."
+        )
+
     strategy = solve(root, cards, max_depth=max_solver_depth)
     if strategy is None:
         raise ValueError(
@@ -156,7 +234,7 @@ def export_puzzle(puzzle_id: str, root: GameState, cards: dict[str, CardDef],
         any_child = False
         for action in legal_actions(state, cards):
             try:
-                outcomes = _resolve_action_outcomes(state, action, cards)
+                outcomes = resolve_action_outcomes(state, action, cards)
             except NotImplementedError:
                 continue
             any_child = True
@@ -172,7 +250,7 @@ def export_puzzle(puzzle_id: str, root: GameState, cards: dict[str, CardDef],
                     nodes[child_hash] = render_state(child)
                     frontier.append((child, depth + 1))
             state_edges.append({
-                "action": render_action(action, action_id),
+                "action": render_action(state, action, action_id),
                 "to": outcome_hashes,
                 "adversarial": len(outcomes) > 1,
             })

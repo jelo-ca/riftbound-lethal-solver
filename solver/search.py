@@ -30,14 +30,16 @@ from __future__ import annotations
 import dataclasses
 from typing import Optional
 
-from .engine import abilities, combat, scoring
+from .engine import abilities, combat, legends, scoring
 from .engine.actions import (
     Action,
     ActivateAbility,
+    EnterShowdown,
     MoveUnit,
     PlaySpell,
     PlayUnit,
     ResolveCombat,
+    ResolveShowdown,
     apply_move_unit,
     apply_play_unit,
     find_unit,
@@ -51,10 +53,79 @@ StateKey = tuple
 Strategy = dict[StateKey, Action]
 
 
-def legal_actions(state: GameState, cards: dict[str, CardDef]) -> list[Action]:
-    result = list(legal_board_actions(state, cards))
+def _board_actions_with_showdown_entries(state: GameState, cards: dict[str, CardDef]) -> list[Action]:
+    """Board actions, with combat-triggering moves rewritten to
+    EnterShowdown wherever stopping mid-combat would actually offer a
+    choice.
+
+    A showdown whose only legal action is "resolve damage" is not a
+    decision, so folding it into the atomic ResolveCombat keeps solutions
+    the same length they were before showdowns existed. The window is
+    only materialised when an [Action]/[Reaction] play is genuinely
+    available inside it — which is checked by entering and looking.
+    """
+    result: list[Action] = []
+    combat_groups: dict[tuple[int, str, str], list[ResolveCombat]] = {}
+    for action in legal_board_actions(state, cards):
+        if isinstance(action, ResolveCombat):
+            combat_groups.setdefault(
+                (action.instance_id, action.from_zone, action.to_zone), []).append(action)
+        else:
+            result.append(action)
+
+    for (instance_id, from_zone, to_zone), atomic in combat_groups.items():
+        mover = find_unit(state, instance_id, from_zone)
+        entered = combat.open_showdown(state, mover, from_zone, to_zone)
+        if _playable_spells(entered, cards, ("Action", "Reaction")):
+            result.append(EnterShowdown(instance_id=instance_id, from_zone=from_zone, to_zone=to_zone))
+        else:
+            result.extend(atomic)
+    return result
+
+
+def _playable_spells(state: GameState, cards: dict[str, CardDef],
+                      speeds: tuple[str, ...]) -> list[PlaySpell]:
+    """Every legal PlaySpell whose card speed is in `speeds`."""
     player = state.players[state.turn_player]
-    for card_id in set(player.hand):
+    found: list[PlaySpell] = []
+    for card_id in sorted(set(player.hand)):
+        card = cards.get(card_id)
+        if card is None or card.speed not in speeds:
+            continue
+        entry = abilities.SPELL_EFFECTS.get(card_id)
+        if entry is None:
+            continue
+        _, _, generate_candidates = entry
+        payments = generate_rune_payments(player.runes, card.energy_cost, card.power_cost,
+                                           card.power_domain)
+        for payment in payments:
+            for params in generate_candidates(state):
+                action = PlaySpell(card_id=card_id, params=params, rune_payment=payment)
+                if abilities.is_legal_play_spell(state, action, card):
+                    found.append(action)
+    return found
+
+
+def _showdown_actions(state: GameState, cards: dict[str, CardDef]) -> list[Action]:
+    """The action space while a showdown is open. Standard Moves are gone
+    entirely — a unit can neither join nor leave a showdown by moving,
+    only by being moved by a card — and so is anything Slow, which is
+    every unit and (today) every registered ability. What's left is
+    [Action]/[Reaction] spells, plus resolving the damage step.
+    """
+    result: list[Action] = list(_playable_spells(state, cards, ("Action", "Reaction")))
+    for assignment in combat.showdown_assignment_options(state, state.turn_player):
+        result.append(ResolveShowdown(our_assignment=assignment))
+    return result
+
+
+def legal_actions(state: GameState, cards: dict[str, CardDef]) -> list[Action]:
+    if state.showdown is not None:
+        return _showdown_actions(state, cards)
+
+    result = _board_actions_with_showdown_entries(state, cards)
+    player = state.players[state.turn_player]
+    for card_id in sorted(set(player.hand)):
         card = cards.get(card_id)
         if card is None:
             continue
@@ -73,7 +144,7 @@ def legal_actions(state: GameState, cards: dict[str, CardDef]) -> list[Action]:
     # board (not hand), keyed by card_id — same registry-lookup pattern as
     # spells, but scanning units instead of cards in hand.
     all_units = list(player.base_units) + [u for bf in state.battlefields for u in bf.units if u.controller == state.turn_player]
-    for unit in all_units:
+    for unit in sorted(all_units, key=lambda u: u.instance_id):
         entry = abilities.ABILITY_EFFECTS.get(unit.card_id)
         if entry is None:
             continue
@@ -83,6 +154,23 @@ def legal_actions(state: GameState, cards: dict[str, CardDef]) -> list[Action]:
                                       params=params, rune_payment=None)
             if abilities.is_legal_activate_ability(state, action):
                 result.append(action)
+
+    # Legend ability candidates: same ActivateAbility action, but sourced
+    # from the player's Legend zone rather than a unit on the board, so
+    # source_id is the LEGEND_SOURCE_ID sentinel and the rune payment is
+    # real (unlike Caitlyn's exhaust-only ability, which pays None).
+    if player.legend is not None and legends.is_legend_ability(player.legend.card_id):
+        ability_id = player.legend.card_id
+        energy_cost, power_cost, power_domain = legends.ABILITY_COSTS[ability_id]
+        _, _, generate_candidates = legends.LEGEND_ABILITIES[ability_id]
+        payments = (generate_rune_payments(player.runes, energy_cost, power_cost, power_domain)
+                    if energy_cost or power_cost else [None])
+        for payment in payments:
+            for params in generate_candidates(state):
+                action = ActivateAbility(source_id=legends.LEGEND_SOURCE_ID, ability_id=ability_id,
+                                          params=params, rune_payment=payment)
+                if legends.is_legal_legend_ability(state, action):
+                    result.append(action)
 
     # PlayUnit "when you play me" trigger candidates: legal_board_actions
     # already generated the plain (trigger_params=()) form for every
@@ -106,12 +194,17 @@ def apply(state: GameState, action: Action, cards: dict[str, CardDef]) -> GameSt
     actions.py (board state) with scoring.py (points); see both modules'
     docstrings for why the split exists.
 
-    `ResolveCombat`, and a `PlayUnit` with non-empty `trigger_params`,
-    deliberately raise: neither can produce a single resulting state on
-    its own once a triggered effect can cause combat (the opponent's
-    damage-assignment response is still pending) — use `solve()`, or
-    `combat.apply_combat`/`abilities.resolve_unit_play_trigger_outcomes`
-    directly with a chosen opponent assignment, instead.
+    `ResolveCombat`, a `PlayUnit` with non-empty `trigger_params`, and
+    `PlaySpell` all deliberately raise: none can produce a single
+    resulting state on its own once its effect can cause combat (the
+    opponent's damage-assignment response is still pending) — use
+    `solve()`, or `combat.apply_combat`/`abilities.
+    resolve_unit_play_trigger_outcomes`/`abilities.resolve_spell_outcomes`
+    directly with a chosen opponent assignment, instead. Every spell
+    routes through the same list-returning path regardless of whether
+    IT specifically can branch, for the same reason `PlayUnit` triggers
+    do: consistency beats special-casing the (today) 2-of-3 spells that
+    happen to always return exactly one outcome.
     """
     if isinstance(action, PlayUnit):
         if action.trigger_params:
@@ -129,10 +222,32 @@ def apply(state: GameState, action: Action, cards: dict[str, CardDef]) -> GameSt
             new_state = scoring.resolve_control_change(state, new_state, action.to_zone)
         return abilities.apply_move_triggers(new_state, action.instance_id)
 
+    if isinstance(action, EnterShowdown):
+        # No damage yet, so no deaths and no control change - nothing for
+        # scoring to resolve until the showdown does.
+        mover = find_unit(state, action.instance_id, action.from_zone)
+        new_state = combat.open_showdown(state, mover, action.from_zone, action.to_zone)
+        return abilities.apply_move_triggers(new_state, action.instance_id)
+
+    if isinstance(action, ResolveShowdown):
+        raise NotImplementedError(
+            "apply: ResolveShowdown has an adversarial opponent assignment — see search.solve()"
+        )
+
     if isinstance(action, PlaySpell):
-        return abilities.apply_spell(state, action, cards[action.card_id])
+        raise NotImplementedError(
+            "apply: PlaySpell can have multiple outcomes — see search.solve() or "
+            "abilities.resolve_spell_outcomes()"
+        )
 
     if isinstance(action, ActivateAbility):
+        if legends.is_legend_ability(action.ability_id):
+            outcomes = legends.resolve_legend_ability_outcomes(state, action)
+            if len(outcomes) != 1:
+                raise NotImplementedError(
+                    "apply: this Legend ability has multiple outcomes — see search.solve()"
+                )
+            return outcomes[0]
         return abilities.apply_ability(state, action)
 
     raise NotImplementedError(
@@ -173,9 +288,23 @@ def _dfs(state: GameState, remaining: int, cards: dict[str, CardDef],
     for action in legal_actions(state, cards):
         if isinstance(action, ResolveCombat):
             result = _resolve_combat_search(state, action, remaining, cards, ttable)
+        elif isinstance(action, ResolveShowdown):
+            result = _and_or_search(state, action, resolve_showdown_outcomes(state, action),
+                                     remaining, cards, ttable)
         elif isinstance(action, PlayUnit) and action.trigger_params:
             outcomes = abilities.resolve_unit_play_trigger_outcomes(state, action, cards[action.card_id])
             result = _and_or_search(state, action, outcomes, remaining, cards, ttable)
+        elif isinstance(action, PlaySpell):
+            try:
+                outcomes = abilities.resolve_spell_outcomes(state, action, cards[action.card_id])
+            except NotImplementedError:
+                # e.g. Ride The Wind moving a friendly unit onto an enemy-
+                # occupied battlefield - that spell's effect doesn't handle
+                # combat (only Charm's does), same documented gap
+                # legal_actions()'s docstring already calls out.
+                result = None
+            else:
+                result = _and_or_search(state, action, outcomes, remaining, cards, ttable)
         else:
             try:
                 child = apply(state, action, cards)
@@ -195,11 +324,34 @@ def _resolve_combat_search(state: GameState, action: ResolveCombat, remaining: i
                             cards: dict[str, CardDef], ttable: dict[tuple, bool]) -> Optional[Strategy]:
     """Thin wrapper: computes ResolveCombat's outcomes, then defers to the
     shared _and_or_search."""
-    mover = find_unit(state, action.instance_id, action.from_zone)
-    outcomes = combat.enumerate_combat_outcomes(state, mover, action.from_zone, action.to_zone, action.our_assignment)
-    outcomes = [scoring.resolve_control_change(state, o, action.to_zone) for o in outcomes]
-    outcomes = [abilities.apply_move_triggers(o, action.instance_id) for o in outcomes]
+    outcomes = resolve_combat_outcomes(state, action)
     return _and_or_search(state, action, outcomes, remaining, cards, ttable)
+
+
+def resolve_combat_outcomes(state: GameState, action: ResolveCombat) -> list[GameState]:
+    mover = find_unit(state, action.instance_id, action.from_zone)
+    outcomes = combat.enumerate_combat_outcomes(state, mover, action.from_zone, action.to_zone,
+                                                 action.our_assignment)
+    outcomes = [scoring.resolve_control_change(state, o, action.to_zone) for o in outcomes]
+    return [abilities.apply_move_triggers(o, action.instance_id) for o in outcomes]
+
+
+def resolve_showdown_outcomes(state: GameState, action: ResolveShowdown) -> list[GameState]:
+    """Damage step for the open showdown, one outcome per opponent
+    assignment — the same AND-node shape as ResolveCombat, just reading
+    its participants off the live board instead of a remembered mover."""
+    assert state.showdown is not None
+    battlefield_id = state.showdown.battlefield_id
+    opponent = 1 - state.turn_player
+    we_attack = state.showdown.attacker_controller == state.turn_player
+
+    outcomes = []
+    for theirs in combat.showdown_assignment_options(state, opponent):
+        attacker_assignment = action.our_assignment if we_attack else theirs
+        defender_assignment = theirs if we_attack else action.our_assignment
+        resolved = combat.resolve_showdown(state, attacker_assignment, defender_assignment)
+        outcomes.append(scoring.resolve_control_change(state, resolved, battlefield_id))
+    return outcomes
 
 
 def count_winning_strategies(root: GameState, cards: dict[str, CardDef], max_depth: int = 12) -> int:
@@ -255,12 +407,16 @@ def _count_solutions(state: GameState, remaining: int, cards: dict[str, CardDef]
     total = 0
     for action in legal_actions(state, cards):
         if isinstance(action, ResolveCombat):
-            mover = find_unit(state, action.instance_id, action.from_zone)
-            outcomes = combat.enumerate_combat_outcomes(state, mover, action.from_zone, action.to_zone, action.our_assignment)
-            outcomes = [scoring.resolve_control_change(state, o, action.to_zone) for o in outcomes]
-            outcomes = [abilities.apply_move_triggers(o, action.instance_id) for o in outcomes]
+            outcomes = resolve_combat_outcomes(state, action)
+        elif isinstance(action, ResolveShowdown):
+            outcomes = resolve_showdown_outcomes(state, action)
         elif isinstance(action, PlayUnit) and action.trigger_params:
             outcomes = abilities.resolve_unit_play_trigger_outcomes(state, action, cards[action.card_id])
+        elif isinstance(action, PlaySpell):
+            try:
+                outcomes = abilities.resolve_spell_outcomes(state, action, cards[action.card_id])
+            except NotImplementedError:
+                continue
         else:
             try:
                 outcomes = [apply(state, action, cards)]

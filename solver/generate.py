@@ -1,12 +1,18 @@
 """Puzzle generation pipeline: sample -> solve -> filter. See
 design/10-generation-pipeline.md.
 
-Samples random single-turn positions from the verified card pool (the 3
-vanilla stat-sticks + Sneaky Deckhand + the 4 cards with registered
-mechanics — everything else is unregistered and simply can't be sampled),
-keeps only positions that are solvable, long enough (>=4 actions), and
-have a small number of correct first moves (1-3), then exports survivors
-through the same export.py used for the hand-authored puzzles.
+Samples random single-turn positions from the verified card pool (plain
+vanilla stat-sticks, two Assault/Shield keyword vanillas, and the cards
+with registered mechanics — everything else is unregistered and simply
+can't be sampled), keeps only positions that are solvable, long enough
+(>=4 actions), have EXACTLY one correct line, and use every rune, then
+exports survivors through the same export.py used for the hand-authored
+puzzles.
+
+Units are sampled both pre-placed on the board and — for the three whose
+text only does something when PLAYED — into hand, so PlayUnit and its
+"when you play me" triggers are reachable here and not just in
+hand-authored puzzles.
 
 Run with: python -m solver.generate --count 5
 """
@@ -15,60 +21,86 @@ from __future__ import annotations
 
 import argparse
 import json
+import multiprocessing
+import os
 import random
 from pathlib import Path
 from typing import Optional
 
-from .engine.abilities import BLITZCRANK_IMPASSIVE, CAITLYN_PATROLLING, RIDE_THE_WIND, YASUO_WINDRIDER
-from .engine.cards import CardDef
-from .engine.state import BattlefieldState, GameState, PlayerState, RunePool, UnitInstance
-from .export import export_puzzle
-from .search import count_winning_strategies, solve
+from .engine.abilities import (
+    BLITZCRANK_IMPASSIVE,
+    CAITLYN_PATROLLING,
+    CHARM,
+    PRIMAL_STRENGTH,
+    RIDE_THE_WIND,
+    VENGEANCE,
+    YASUO_WINDRIDER,
+    ZAUNITE_BOUNCER,
+)
+from .engine.battlefields import REGISTERED as BATTLEFIELD_EFFECTS
+from .engine.card_pool import (
+    CARD_POOL,
+    DARING_PORO,
+    FAITHFUL_MANUFACTOR,
+    LEGION_REARGUARD,
+    SNEAKY_DECKHAND,
+    STALWART_PORO,
+    VANGUARD_CAPTAIN,
+)
+from .engine.state import BattlefieldState, GameState, PlayerState, RunePool, UnitInstance, canonical_key
+from .export import export_puzzle, resolve_action_outcomes
+from .maneuvers import Signature, is_duplicate, known_signatures, maneuver_signature
+from .search import Strategy, count_winning_strategies, solve
 
 OUTPUT_DIR = Path(__file__).parent.parent / "puzzles" / "generated"
 
 # --- Verified card pool (design/10-generation-pipeline.md) -----------------
 
-LEGION_REARGUARD = "ogn-010-298"
-FAITHFUL_MANUFACTOR = "ogn-211-298"
-VANGUARD_CAPTAIN = "ogn-218-298"
-SNEAKY_DECKHAND = "ogn-176-298"
-
-CARD_POOL: dict[str, CardDef] = {
-    LEGION_REARGUARD: CardDef(card_id=LEGION_REARGUARD, card_type="Unit", energy_cost=2,
-                               power_cost=0, might=2, keywords=frozenset()),
-    FAITHFUL_MANUFACTOR: CardDef(card_id=FAITHFUL_MANUFACTOR, card_type="Unit", energy_cost=2,
-                                  power_cost=0, might=2, keywords=frozenset()),
-    VANGUARD_CAPTAIN: CardDef(card_id=VANGUARD_CAPTAIN, card_type="Unit", energy_cost=2,
-                               power_cost=1, power_domain="Order", might=3, keywords=frozenset()),
-    SNEAKY_DECKHAND: CardDef(card_id=SNEAKY_DECKHAND, card_type="Unit", energy_cost=3,
-                              power_cost=0, might=2, keywords=frozenset(),
-                              can_play_to_open_battlefield=True),
-    CAITLYN_PATROLLING: CardDef(card_id=CAITLYN_PATROLLING, card_type="Unit", energy_cost=3,
-                                 power_cost=0, might=3, keywords=frozenset()),
-    BLITZCRANK_IMPASSIVE: CardDef(card_id=BLITZCRANK_IMPASSIVE, card_type="Unit", energy_cost=5,
-                                   power_cost=0, might=5, keywords=frozenset({"Tank"})),
-    YASUO_WINDRIDER: CardDef(card_id=YASUO_WINDRIDER, card_type="Unit", energy_cost=2,
-                              power_cost=0, might=2, keywords=frozenset({"Ganking"})),
-    RIDE_THE_WIND: CardDef(card_id=RIDE_THE_WIND, card_type="Spell", energy_cost=2,
-                            power_cost=1, power_domain="Chaos", keywords=frozenset()),
-}
-
 # Units that can be sampled onto the board (pre-placed) or into hand.
 OUR_UNIT_POOL = [LEGION_REARGUARD, FAITHFUL_MANUFACTOR, VANGUARD_CAPTAIN,
-                  SNEAKY_DECKHAND, CAITLYN_PATROLLING, BLITZCRANK_IMPASSIVE, YASUO_WINDRIDER]
-# Only Ride The Wind is played out of hand today (design/10-generation-
-# pipeline.md's card pool table) - the mechanic units above are sampled
-# pre-placed on the board, not into hand, since PlayUnit's own candidate
-# generation already covers "play a unit this turn" for anything at Base.
-HAND_SPELL_POOL = [RIDE_THE_WIND]
+                  SNEAKY_DECKHAND, CAITLYN_PATROLLING, BLITZCRANK_IMPASSIVE, YASUO_WINDRIDER,
+                  DARING_PORO, STALWART_PORO]
+HAND_SPELL_POOL = [RIDE_THE_WIND, VENGEANCE, CHARM, PRIMAL_STRENGTH]
+# Units worth sampling into HAND rather than pre-placed on the board.
+# Deliberately only the three whose text does something *at the moment of
+# being played* - without this, PlayUnit never appeared in a generated
+# line at all and these three mechanics were invisible to generation:
+#   Blitzcrank / Zaunite Bouncer - "when you play me" triggers, so they
+#     can ONLY fire from hand;
+#   Sneaky Deckhand - can_play_to_open_battlefield, i.e. playing it IS a
+#     Conquer, the whole reason it's in the pool.
+# Plain bodies are left out on purpose: a unit enters exhausted (rule
+# 143.4.a), so in a single-turn puzzle a freshly played vanilla can't
+# move or fight afterwards, making it a dead action that would just
+# dilute sampling.
+HAND_UNIT_POOL = [BLITZCRANK_IMPASSIVE, ZAUNITE_BOUNCER, SNEAKY_DECKHAND]
+HAND_CARD_POOL = HAND_SPELL_POOL + HAND_UNIT_POOL
+
+# Battlefield effects worth sampling (engine/battlefields.py's registered
+# static ones) and how often a given battlefield carries one.
+BATTLEFIELD_EFFECT_POOL = sorted(BATTLEFIELD_EFFECTS)
+BATTLEFIELD_EFFECT_CHANCE = 0.3
 
 STARTING_SCORE = 6  # design decision: forces a two-point turn, see doc
 MIN_STRATEGY_SIZE = 4
 MAX_SOLVE_DEPTH = 6
-MAX_SOLUTION_COUNT = 3
+REQUIRED_SOLUTION_COUNT = 1  # tightened from a 1-3 range: exactly one correct line, no alternates
 MAX_EXPORT_BYTES = 2 * 1024 * 1024
 CARD_COPY_CAP = 3  # standard format: max 3 copies of the same card in a deck
+
+# Cores deliberately left free. A long run at workers=os.cpu_count() was
+# killed for exhausting system memory - though measurement afterwards put
+# a worker at only ~30MB typical (~136MB total across four), so the
+# workers themselves are cheap and the real cause was a machine already
+# near capacity from other processes. Leaving headroom is still the right
+# default for a dev box: the throughput lost is small (solving is the
+# bottleneck, not core count) and being killed mid-run costs far more.
+RESERVED_CORES = 4
+# Recycle a worker after this many attempts. Typical positions are small,
+# but export_puzzle builds a position's whole reachable-state graph BEFORE
+# the MAX_EXPORT_BYTES check can reject it, so a branchy outlier can spike
+# well above that average; recycling hands such a spike back promptly.
+WORKER_MAX_TASKS = 25
 
 
 def _sample_with_cap(rng: random.Random, pool: list[str], n: int, counts: dict[str, int]) -> list[str]:
@@ -90,8 +122,12 @@ def _sample_with_cap(rng: random.Random, pool: list[str], n: int, counts: dict[s
 
 
 def _sample_hand_and_runes(rng: random.Random, card_counts: dict[str, int]) -> tuple[tuple[str, ...], RunePool]:
+    """Draws the hand and exactly enough runes to afford it. Units and
+    spells are drawn from one combined pool — the cost arithmetic below
+    reads straight off CardDef, so it never cared which of the two a card
+    was."""
     num_hand = rng.randint(0, 2)
-    hand = tuple(_sample_with_cap(rng, HAND_SPELL_POOL, num_hand, card_counts))
+    hand = tuple(_sample_with_cap(rng, HAND_CARD_POOL, num_hand, card_counts))
 
     total_energy = 0
     power_needs: dict[str, int] = {}
@@ -113,7 +149,6 @@ def sample_position(rng: random.Random) -> tuple[GameState, dict[str, CardDef]]:
     design/10-generation-pipeline.md's "Sampling" section for the ranges
     used here and why."""
     battlefield_ids = ["left", "right"]
-    scored_this_turn = frozenset({rng.choice(battlefield_ids)}) if rng.random() < 0.5 else frozenset()
 
     next_id = [1]
 
@@ -130,6 +165,11 @@ def sample_position(rng: random.Random) -> tuple[GameState, dict[str, CardDef]]:
     battlefields = []
     for bf_id in battlefield_ids:
         roll = rng.random()
+        # A battlefield carries one of the registered static effects some of
+        # the time (engine/battlefields.py) - these change combat math or
+        # movement legality for whoever stands there, so they're a real
+        # source of forced lines that no card in hand could produce.
+        effect_id = rng.choice(BATTLEFIELD_EFFECT_POOL) if rng.random() < BATTLEFIELD_EFFECT_CHANCE else None
         if remaining_our and roll < 0.4:
             card_id = remaining_our.pop(0)
             card = CARD_POOL[card_id]
@@ -142,14 +182,31 @@ def sample_position(rng: random.Random) -> tuple[GameState, dict[str, CardDef]]:
             unit = UnitInstance(card_id=card_id, instance_id=new_id(), controller=0,
                                  might=card.might, keywords=card.keywords,
                                  exhausted=False, damage=0, is_token=False)
-            battlefields.append(BattlefieldState(bf_id, 0, frozenset({unit}), None))
+            battlefields.append(BattlefieldState(bf_id, 0, frozenset({unit}), effect_id))
         elif roll < 0.65:
             unit = UnitInstance(card_id="generic-opponent", instance_id=new_id(), controller=1,
                                  might=rng.randint(1, 5), keywords=frozenset(),
                                  exhausted=False, damage=0, is_token=False)
-            battlefields.append(BattlefieldState(bf_id, 1, frozenset({unit}), None))
+            battlefields.append(BattlefieldState(bf_id, 1, frozenset({unit}), effect_id))
         else:
-            battlefields.append(BattlefieldState(bf_id, None, frozenset(), None))
+            battlefields.append(BattlefieldState(bf_id, None, frozenset(), effect_id))
+
+    # Every battlefield we hold has already scored for us this turn, so it
+    # has to be seeded here — held since turn start (a Hold point in the
+    # Beginning Phase) or taken during it (a Conquer point), there is no
+    # third option. See scoring.unseeded_holds for the full argument and
+    # for what goes wrong without it: sampling this independently of the
+    # board (as this did) mints positions where we can walk off ground we
+    # control and walk back on for a second point on the same battlefield.
+    scored_this_turn = frozenset(bf.battlefield_id for bf in battlefields if bf.controller == 0)
+    # ...and on top of that, a battlefield we conquered earlier this turn
+    # and have since lost stays scored (rule 471.1.b). That's a real and
+    # puzzle-relevant shape (puzzle 4 is built on it), and it's the only
+    # part of scored_this_turn that is a free choice rather than a
+    # consequence of the board.
+    lost_candidates = [bf.battlefield_id for bf in battlefields if bf.controller != 0]
+    if lost_candidates and rng.random() < 0.3:
+        scored_this_turn |= {rng.choice(lost_candidates)}
 
     our_base_units = []
     for card_id in remaining_our:
@@ -176,10 +233,34 @@ def sample_position(rng: random.Random) -> tuple[GameState, dict[str, CardDef]]:
     return root, cards
 
 
-def evaluate_candidate(root: GameState, cards: dict[str, CardDef], puzzle_id: str) -> Optional[dict]:
-    """Runs one candidate through the full filter chain (design/10-
-    generation-pipeline.md's "Filters" section); returns the exported
-    puzzle dict if it survives, else None."""
+def _runes_left_over(root: GameState, cards: dict[str, CardDef], strategy: Strategy) -> bool:
+    """True if the winning line leaves any of OUR runes unspent at the
+    terminal (win) state — tightens puzzles to use every resource they're
+    given, not just the ones the line happens to need. Walks the
+    strategy's spine via the first enumerated outcome at each step (same
+    approach as maneuvers.maneuver_signature): rune spending only comes
+    from OUR OWN actions, never the opponent's combat-assignment choice,
+    so which branch gets followed doesn't affect the answer."""
+    state = root
+    visited: set[tuple] = set()
+    while True:
+        key = canonical_key(state)
+        if key in visited:
+            break
+        visited.add(key)
+        action = strategy.get(key)
+        if action is None:
+            break
+        state = resolve_action_outcomes(state, action, cards)[0]
+    return len(state.players[root.turn_player].runes.available) > 0
+
+
+def evaluate_filters(root: GameState, cards: dict[str, CardDef], puzzle_id: str) -> Optional[dict]:
+    """Every filter EXCEPT maneuver dedup — the position-only ones, which
+    depend on nothing but this candidate and so can run in a worker
+    process. Dedup is deliberately excluded: it depends on what else has
+    already been accepted, so it has to be reconciled in one place, in a
+    deterministic order (see generate())."""
     strategy = solve(root, cards, max_depth=MAX_SOLVE_DEPTH)
     if strategy is None:
         return None
@@ -187,7 +268,10 @@ def evaluate_candidate(root: GameState, cards: dict[str, CardDef], puzzle_id: st
         return None
 
     solution_count = count_winning_strategies(root, cards, max_depth=MAX_SOLVE_DEPTH)
-    if not (1 <= solution_count <= MAX_SOLUTION_COUNT):
+    if solution_count != REQUIRED_SOLUTION_COUNT:
+        return None
+
+    if _runes_left_over(root, cards, strategy):
         return None
 
     result = export_puzzle(puzzle_id, root, cards, max_solver_depth=MAX_SOLVE_DEPTH)
@@ -199,35 +283,122 @@ def evaluate_candidate(root: GameState, cards: dict[str, CardDef], puzzle_id: st
         "solution_length": len(strategy),
         "solution_count": solution_count,
         "export_bytes": export_bytes,
+        "maneuver_signature": list(maneuver_signature(result)),
     }
     return result
 
 
-def generate(count: int, seed: Optional[int] = None, attempt_multiplier: int = 200) -> tuple[list[dict], int]:
+def evaluate_candidate(root: GameState, cards: dict[str, CardDef], puzzle_id: str,
+                        seen_signatures: set[Signature]) -> Optional[dict]:
+    """Full filter chain including maneuver dedup against
+    `seen_signatures` (already-promoted puzzles plus everything accepted
+    earlier in this run), which is updated in place on acceptance."""
+    result = evaluate_filters(root, cards, puzzle_id)
+    if result is None:
+        return None
+    signature = maneuver_signature(result)
+    if is_duplicate(signature, seen_signatures):
+        return None
+    seen_signatures.add(signature)
+    return result
+
+
+def sample_for_attempt(seed: Optional[int], attempt_index: int) -> tuple[GameState, dict[str, CardDef]]:
+    """The position for a given attempt number, derived from its own RNG
+    rather than one stream advanced across attempts — so attempt N is the
+    same position no matter how the work was divided up, which is what
+    lets attempts run in parallel while staying seed-reproducible.
+
+    Seeded with a string rather than a tuple (unsupported) — and unlike
+    the frozenset-ordering bug this project already hit, str seeding is
+    NOT affected by hash randomization: random.seed() runs str input
+    through sha512 rather than hash(), so it's stable across processes."""
+    return sample_position(random.Random(f"{seed}:{attempt_index}"))
+
+
+def _evaluate_attempt(args: tuple[Optional[int], int]) -> tuple[int, Optional[dict]]:
+    """Worker entry point — module-level and taking only picklable args,
+    since Windows spawns fresh processes rather than forking."""
+    seed, attempt_index = args
+    root, cards = sample_for_attempt(seed, attempt_index)
+    return attempt_index, evaluate_filters(root, cards, f"generated-{attempt_index:05d}")
+
+
+def generate(count: int, seed: Optional[int] = None, attempt_multiplier: int = 200,
+              workers: Optional[int] = None) -> tuple[list[dict], int]:
     """Samples candidates until `count` survive the filters or the attempt
     budget (`count * attempt_multiplier`) runs out. Returns (survivors,
-    attempts_made)."""
-    rng = random.Random(seed)
-    survivors: list[dict] = []
-    attempts = 0
+    attempts_made).
+
+    Attempts are independent, so they're spread across `workers`
+    processes. Dedup still happens here in the parent, in attempt order,
+    so results don't depend on which worker happened to finish first —
+    the same seed gives the same survivors whatever the worker count.
+    `workers=1` runs everything in-process, which is what the tests use
+    to stay fast and debuggable.
+
+    The default leaves cores free rather than taking all of them — see
+    RESERVED_CORES for why (a run at full core count was killed for
+    exhausting system memory, on a machine already near capacity).
+    """
     max_attempts = count * attempt_multiplier
-    while len(survivors) < count and attempts < max_attempts:
-        attempts += 1
-        root, cards = sample_position(rng)
-        puzzle_id = f"generated-{attempts:05d}"
-        result = evaluate_candidate(root, cards, puzzle_id)
-        if result is not None:
-            survivors.append(result)
-    return survivors, attempts
+    seen_signatures: set[Signature] = known_signatures()
+    survivors: list[dict] = []
+    if workers is None:
+        workers = max(1, (os.cpu_count() or 1) - RESERVED_CORES)
+
+    if workers <= 1:
+        for attempt in range(1, max_attempts + 1):
+            root, cards = sample_for_attempt(seed, attempt)
+            result = evaluate_candidate(root, cards, f"generated-{attempt:05d}", seen_signatures)
+            if result is not None:
+                survivors.append(result)
+                if len(survivors) >= count:
+                    return survivors, attempt
+        return survivors, max_attempts
+
+    # Work in chunks so a `count` that's reached early doesn't keep the
+    # whole budget running, while still handing each worker enough
+    # attempts at a time to amortise IPC. Kept modest on purpose: a chunk
+    # holds every result it produced in memory at once, and a survivor's
+    # export dict can be megabytes.
+    chunk = max(workers * 8, 32)
+    attempted = 0
+    # maxtasksperchild recycles workers periodically so the peak memory of
+    # one unlucky position (a big search tree, a big export graph) is
+    # released instead of accumulating for the life of the pool.
+    with multiprocessing.Pool(processes=workers, maxtasksperchild=WORKER_MAX_TASKS) as pool:
+        while attempted < max_attempts and len(survivors) < count:
+            batch = range(attempted + 1, min(attempted + chunk, max_attempts) + 1)
+            results = pool.map(_evaluate_attempt, [(seed, i) for i in batch])
+            for attempt_index, result in sorted(results, key=lambda r: r[0]):
+                attempted = max(attempted, attempt_index)
+                if result is None:
+                    continue
+                signature = maneuver_signature(result)
+                if is_duplicate(signature, seen_signatures):
+                    continue
+                seen_signatures.add(signature)
+                survivors.append(result)
+                if len(survivors) >= count:
+                    return survivors, attempt_index
+            attempted = batch[-1]
+    return survivors, attempted
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Generate lethal-puzzle candidates.")
     parser.add_argument("--count", type=int, default=5, help="number of survivors to produce")
     parser.add_argument("--seed", type=int, default=None, help="RNG seed, for reproducible runs")
+    parser.add_argument("--attempt-multiplier", type=int, default=200,
+                         help="attempt budget per survivor wanted (max_attempts = count * this)")
+    parser.add_argument("--workers", type=int, default=None,
+                         help="parallel worker processes (default: every core; 1 = in-process)")
     args = parser.parse_args()
 
-    survivors, attempts = generate(args.count, seed=args.seed)
+    survivors, attempts = generate(args.count, seed=args.seed,
+                                    attempt_multiplier=args.attempt_multiplier,
+                                    workers=args.workers)
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     for result in survivors:
         path = OUTPUT_DIR / f"{result['puzzle_id']}.json"
