@@ -49,7 +49,13 @@ def test_sample_position_starts_at_six_with_two_to_four_units():
             len([u for u in bf.units if u.controller == 0]) for bf in root.battlefields
         )
         assert 2 <= total_our_units <= 4
-        assert len(root.scored_this_turn) <= 1
+        # scored_this_turn used to be sampled independently of the board
+        # and capped at one entry. It's now a consequence of the board:
+        # every battlefield we hold is seeded (see the Hold invariant in
+        # scoring.unseeded_holds), so holding both means both, which is
+        # puzzle 3's shape. Only the count changed — what it must satisfy
+        # is covered in test_hold_invariant.py.
+        assert root.scored_this_turn <= {bf.battlefield_id for bf in root.battlefields}
         for card_id in root.players[0].hand:
             assert card_id in CARD_POOL
 

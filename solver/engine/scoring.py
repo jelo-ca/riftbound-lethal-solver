@@ -22,6 +22,40 @@ VICTORY_SCORE = 8  # rule 198.1. v0 puzzles don't use battlefield effects
                      # that alter this (design/07-scope-and-cut-list.md).
 
 
+def held_battlefields(state: GameState) -> frozenset[str]:
+    """The battlefields `state.turn_player` currently controls."""
+    return frozenset(bf.battlefield_id for bf in state.battlefields
+                      if bf.controller == state.turn_player)
+
+
+def unseeded_holds(state: GameState) -> frozenset[str]:
+    """Battlefields the turn player controls that are NOT recorded as
+    scored this turn — i.e. the ways `state` violates the Hold invariant.
+    Empty for a well-formed position.
+
+    The invariant: mid-turn, every battlefield the turn player controls
+    has already scored for them this turn. Either they held it at the
+    start of the turn (a Hold point in the Beginning Phase, pre-resolved
+    into the starting position — see this module's docstring) or they
+    took it during this turn (a Conquer point). There is no third way to
+    be standing on a battlefield, and rule 471.1.b caps it at one point
+    per battlefield per player per turn, so control implies spent.
+
+    The consequence this exists to prevent: without it, a player could
+    walk their last unit off a battlefield they control (rule 468 makes
+    it Uncontrolled) and walk another unit back in for a "fresh" Conquer
+    — a revolving door minting a point per round trip. Puzzles 7 and 8
+    were both built on exactly that and had to be withdrawn.
+
+    Deliberately one-directional. `scored_this_turn` may legitimately
+    contain battlefields the turn player does NOT control: one conquered
+    earlier this turn and since lost stays scored (rule 471.1.b — puzzle
+    4 is built on that), as does one merely held at turn start and
+    subsequently taken by the opponent.
+    """
+    return held_battlefields(state) - state.scored_this_turn
+
+
 def resolve_conquer(state: GameState, battlefield_id: str) -> GameState:
     """Given a state where `state.turn_player` just established control at
     `battlefield_id` (board mechanics already applied by actions.py — this

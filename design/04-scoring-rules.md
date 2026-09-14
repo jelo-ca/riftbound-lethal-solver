@@ -43,6 +43,20 @@ Hold is drawn dashed/pre-resolved: it seeds the puzzle's starting `scored_this_t
 
 Source: [`diagrams/04-scoring-flow.mmd`](diagrams/04-scoring-flow.mmd)
 
+## The Hold invariant (constraint on every starting position)
+
+Because Hold is pre-resolved into the starting position, a well-formed position must satisfy:
+
+> **Every battlefield the turn player controls is already in `scored_this_turn`.**
+
+It follows from the rules above rather than adding to them. There are only two ways to be standing on a battlefield mid-turn — held since the start of the turn (Hold scored it in the Beginning Phase) or taken during this turn (Conquer scored it) — and rule 471.1.b caps it at one point per battlefield per player per turn. So control implies spent.
+
+The invariant is **one-directional**. `scored_this_turn` may legitimately name battlefields the turn player does *not* control: one Conquered earlier this turn and since lost stays Scored (puzzle 4 is built on that shape), as does one merely Held at turn start and subsequently taken by the opponent.
+
+**Why it's enforced rather than documented.** Without it, a position admits a *revolving door*: move your last unit off a battlefield you control (rule 468 makes it Uncontrolled), move another unit back in, and the None→you transition reads as a fresh Conquer worth a point — repeatable, on ground you never lost. `resolve_conquer` always refused this when `scored_this_turn` was seeded correctly, but nothing checked the seeding, so it was reachable from any position that forgot it. Both the generator (which sampled `scored_this_turn` as a coin flip, unconnected to the board) and two hand-authored puzzles produced it; puzzles 7 and 8 were built entirely on the door and were withdrawn.
+
+It is now checked in `scoring.unseeded_holds` and enforced at `export_puzzle`, the single gate every puzzle passes through — hand-authored or generated — rather than left to each author script's discretion.
+
 ## Test suite plan (Week 1 gate, per existing 6-week plan)
 
 Rules are now sourced from the official Core Rules PDF (rule numbers cited above), not blog paraphrase — safe to write the real test suite against these. Categories:

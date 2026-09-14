@@ -54,27 +54,5 @@
       "MoveUnit",
       "vanilla:"
     ]
-  ],
-  "puzzle-007-snipe-and-trade": [
-    [
-      "MoveUnit",
-      "vanilla:"
-    ],
-    [
-      "PlaySpell",
-      "ogn-173-298"
-    ],
-    [
-      "ActivateAbility",
-      "ogn-068-298"
-    ],
-    [
-      "ResolveCombat",
-      "vanilla:"
-    ],
-    [
-      "MoveUnit",
-      "vanilla:"
-    ]
   ]
 }

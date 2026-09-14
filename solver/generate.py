@@ -149,7 +149,6 @@ def sample_position(rng: random.Random) -> tuple[GameState, dict[str, CardDef]]:
     design/10-generation-pipeline.md's "Sampling" section for the ranges
     used here and why."""
     battlefield_ids = ["left", "right"]
-    scored_this_turn = frozenset({rng.choice(battlefield_ids)}) if rng.random() < 0.5 else frozenset()
 
     next_id = [1]
 
@@ -191,6 +190,23 @@ def sample_position(rng: random.Random) -> tuple[GameState, dict[str, CardDef]]:
             battlefields.append(BattlefieldState(bf_id, 1, frozenset({unit}), effect_id))
         else:
             battlefields.append(BattlefieldState(bf_id, None, frozenset(), effect_id))
+
+    # Every battlefield we hold has already scored for us this turn, so it
+    # has to be seeded here — held since turn start (a Hold point in the
+    # Beginning Phase) or taken during it (a Conquer point), there is no
+    # third option. See scoring.unseeded_holds for the full argument and
+    # for what goes wrong without it: sampling this independently of the
+    # board (as this did) mints positions where we can walk off ground we
+    # control and walk back on for a second point on the same battlefield.
+    scored_this_turn = frozenset(bf.battlefield_id for bf in battlefields if bf.controller == 0)
+    # ...and on top of that, a battlefield we conquered earlier this turn
+    # and have since lost stays scored (rule 471.1.b). That's a real and
+    # puzzle-relevant shape (puzzle 4 is built on it), and it's the only
+    # part of scored_this_turn that is a free choice rather than a
+    # consequence of the board.
+    lost_candidates = [bf.battlefield_id for bf in battlefields if bf.controller != 0]
+    if lost_candidates and rng.random() < 0.3:
+        scored_this_turn |= {rng.choice(lost_candidates)}
 
     our_base_units = []
     for card_id in remaining_our:

@@ -175,6 +175,16 @@ def export_puzzle(puzzle_id: str, root: GameState, cards: dict[str, CardDef],
     reachable-state graph up to `len(strategy) + depth_cap_margin` and
     return the JSON-serializable DAG described in design/06-export-schema.md.
     """
+    unseeded = scoring.unseeded_holds(root)
+    if unseeded:
+        raise ValueError(
+            f"puzzle {puzzle_id!r}: turn player controls {sorted(unseeded)} but "
+            f"scored_this_turn is {sorted(root.scored_this_turn)} — a controlled "
+            "battlefield has always already scored this turn (see "
+            "scoring.unseeded_holds). Seeding it is not a formality: without it "
+            "the position admits a re-Conquer of ground the player never lost."
+        )
+
     strategy = solve(root, cards, max_depth=max_solver_depth)
     if strategy is None:
         raise ValueError(
