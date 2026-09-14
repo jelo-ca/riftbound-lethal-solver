@@ -42,7 +42,7 @@
     ]
   },
   {
-    "note": "generated-07640 Blitzcrank pull with Yasuo as the walk-in body (one move, trigger never fires) and a Tank attacker",
+    "note": "generated-05617: the generated-07640 Blitzcrank pull with a Tank attacker and Yasuo as the walk-in body (one move, trigger never fires)",
     "signature": [
       [
         "ResolveCombat",
@@ -54,7 +54,7 @@
       ],
       [
         "MoveUnit",
-        "vanilla:Ganking"
+        "vanilla:"
       ]
     ]
   }

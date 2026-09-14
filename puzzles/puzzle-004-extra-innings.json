@@ -278,7 +278,9 @@
           "type": "PlaySpell",
           "label": "Play ogn-173-298 (1, base)",
           "card_id": "ogn-173-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": null,
+          "to_zone": null
         },
         "to": [
           "6280dc0822fb83bc"
@@ -291,7 +293,9 @@
           "type": "PlaySpell",
           "label": "Play ogn-173-298 (1, right)",
           "card_id": "ogn-173-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": null,
+          "to_zone": null
         },
         "to": [
           "f0219a6641ae00dc"
@@ -306,7 +310,9 @@
           "type": "MoveUnit",
           "label": "Move unit 1 from base to left",
           "card_id": "ogn-010-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": "base",
+          "to_zone": "left"
         },
         "to": [
           "20b11b5542dbdbe8"
@@ -319,7 +325,9 @@
           "type": "MoveUnit",
           "label": "Move unit 1 from base to right",
           "card_id": "ogn-010-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": "base",
+          "to_zone": "right"
         },
         "to": [
           "b39b0e28aa151523"

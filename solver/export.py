@@ -117,23 +117,37 @@ def render_action(state: GameState, action: Action, action_id: str) -> dict:
     keyword set — maneuvers.py uses it to bucket interchangeable vanilla
     movers (no registered mechanic, e.g. two different plain 2-Might
     stat-sticks) by keyword-set instead of raw card_id, so a puzzle isn't
-    treated as "novel" just because it drew a different filler card."""
+    treated as "novel" just because it drew a different filler card.
+
+    `from_zone`/`to_zone` are the move's endpoints, null when the action
+    isn't a move (a unit played from hand has no `from_zone`). They exist
+    so consumers never have to parse `label` to recover structure:
+    maneuvers.py needs them to tell whether [Ganking] was actually doing
+    anything (it only matters Battlefield-to-Battlefield, rule 810), and
+    the web layer needs them to animate a move without re-deriving it
+    from a state diff.
+    """
+    from_zone = to_zone = None
     if isinstance(action, PlayUnit):
         label = f"Play {action.card_id} to {action.target_zone}"
         card_id, keywords = action.card_id, []
+        to_zone = action.target_zone
     elif isinstance(action, MoveUnit):
         label = f"Move unit {action.instance_id} from {action.from_zone} to {action.to_zone}"
         mover = find_unit(state, action.instance_id, action.from_zone)
         card_id, keywords = mover.card_id, sorted(mover.keywords)
+        from_zone, to_zone = action.from_zone, action.to_zone
     elif isinstance(action, ResolveCombat):
         label = f"Move unit {action.instance_id} from {action.from_zone} to {action.to_zone} (combat)"
         mover = find_unit(state, action.instance_id, action.from_zone)
         card_id, keywords = mover.card_id, sorted(mover.keywords)
+        from_zone, to_zone = action.from_zone, action.to_zone
     elif isinstance(action, EnterShowdown):
         label = (f"Move unit {action.instance_id} from {action.from_zone} to {action.to_zone} "
                   "(enter showdown)")
         mover = find_unit(state, action.instance_id, action.from_zone)
         card_id, keywords = mover.card_id, sorted(mover.keywords)
+        from_zone, to_zone = action.from_zone, action.to_zone
     elif isinstance(action, ResolveShowdown):
         label = "Resolve showdown damage"
         card_id, keywords = "", []
@@ -150,7 +164,8 @@ def render_action(state: GameState, action: Action, action_id: str) -> dict:
         label = type(action).__name__
         card_id, keywords = "", []
     return {"id": action_id, "type": type(action).__name__, "label": label,
-            "card_id": card_id, "keywords": keywords}
+            "card_id": card_id, "keywords": keywords,
+            "from_zone": from_zone, "to_zone": to_zone}
 
 
 def resolve_action_outcomes(state: GameState, action: Action, cards: dict[str, CardDef]) -> list[GameState]:

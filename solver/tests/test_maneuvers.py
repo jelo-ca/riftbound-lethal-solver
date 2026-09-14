@@ -6,14 +6,17 @@ def make_export(root, solution, edges):
     return {"root": root, "solution": solution, "edges": edges}
 
 
-def move_action(action_id, card_id, keywords=(), to="s1"):
+def move_action(action_id, card_id, keywords=(), to="s1", from_zone="base", to_zone="left"):
     return {"action": {"id": action_id, "type": "MoveUnit", "card_id": card_id,
-                        "keywords": list(keywords)}, "to": [to]}
+                        "keywords": list(keywords),
+                        "from_zone": from_zone, "to_zone": to_zone}, "to": [to]}
 
 
-def combat_action(action_id, card_id, keywords=(), to="s1", action_type="ResolveCombat"):
+def combat_action(action_id, card_id, keywords=(), to="s1", action_type="ResolveCombat",
+                   from_zone="base", to_zone="left"):
     return {"action": {"id": action_id, "type": action_type, "card_id": card_id,
-                        "keywords": list(keywords)}, "to": [to]}
+                        "keywords": list(keywords),
+                        "from_zone": from_zone, "to_zone": to_zone}, "to": [to]}
 
 
 def chain(*actions):
@@ -64,8 +67,7 @@ def test_maneuver_signature_collapses_different_vanilla_cards_with_the_same_keyw
 
 def test_a_plain_move_keeps_only_movement_relevant_keywords():
     """A combat keyword on a step that doesn't fight is not a different
-    trick. Ganking is, because it decides where the mover may legally go
-    (rule 810, Battlefield-to-Battlefield).
+    trick.
 
     generated-07640 and generated-08685 were the same Blitzcrank line and
     survived dedup as two, purely because one walked a Shield body into
@@ -74,11 +76,29 @@ def test_a_plain_move_keeps_only_movement_relevant_keywords():
                         edges={"s0": [move_action("a1", "cardA", keywords=("Tank",))]})
     bare = make_export(root="s0", solution={"s0": "a1"},
                         edges={"s0": [move_action("a1", "cardA")]})
-    ganking = make_export(root="s0", solution={"s0": "a1"},
-                           edges={"s0": [move_action("a1", "cardB", keywords=("Ganking",))]})
     assert maneuvers.maneuver_signature(tank) == maneuvers.maneuver_signature(bare)
     assert maneuvers.maneuver_signature(tank) == (("MoveUnit", "vanilla:"),)
-    assert maneuvers.maneuver_signature(ganking) == (("MoveUnit", "vanilla:Ganking"),)
+
+
+def test_ganking_counts_only_on_the_move_it_actually_enables():
+    """[Ganking] is a real difference Battlefield-to-Battlefield (rule
+    810) and inert anywhere else, so it only belongs in the bucket label
+    on the move it enables. Keying on it regardless kept generated-05617
+    — the Blitzcrank pull with a Ganking body walking in from base —
+    distinct from generated-07640, the same line with a plain one."""
+    bf_to_bf = make_export(root="s0", solution={"s0": "a1"}, edges={"s0": [
+        move_action("a1", "cardB", keywords=("Ganking",), from_zone="left", to_zone="right")]})
+    from_base = make_export(root="s0", solution={"s0": "a1"}, edges={"s0": [
+        move_action("a1", "cardB", keywords=("Ganking",), from_zone="base", to_zone="left")]})
+    retreat = make_export(root="s0", solution={"s0": "a1"}, edges={"s0": [
+        move_action("a1", "cardB", keywords=("Ganking",), from_zone="left", to_zone="base")]})
+    plain = make_export(root="s0", solution={"s0": "a1"}, edges={"s0": [
+        move_action("a1", "cardB", from_zone="base", to_zone="left")]})
+
+    assert maneuvers.maneuver_signature(bf_to_bf) == (("MoveUnit", "vanilla:Ganking"),)
+    assert maneuvers.maneuver_signature(from_base) == (("MoveUnit", "vanilla:"),)
+    assert maneuvers.maneuver_signature(retreat) == (("MoveUnit", "vanilla:"),)
+    assert maneuvers.maneuver_signature(from_base) == maneuvers.maneuver_signature(plain)
 
 
 def test_a_fighting_step_keeps_its_combat_keywords():
@@ -122,7 +142,8 @@ def test_a_move_count_card_is_just_a_body_when_the_trigger_never_fires():
     generated-07640's Blitzcrank line with Yasuo as the walk-in body, one
     move, trigger never fired — and survived dedup on that alone."""
     never = yasuo_move_export(moves_reached=1)
-    assert maneuvers.maneuver_signature(never) == (("MoveUnit", "vanilla:Ganking"),)
+    # base -> left, so his [Ganking] is inert here too and drops out.
+    assert maneuvers.maneuver_signature(never) == (("MoveUnit", "vanilla:"),)
 
 
 def test_a_mechanic_card_that_merely_moves_buckets_as_vanilla():

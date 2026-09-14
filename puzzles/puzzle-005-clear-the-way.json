@@ -936,7 +936,9 @@
           "type": "MoveUnit",
           "label": "Move unit 2 from base to left",
           "card_id": "ogn-010-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": "base",
+          "to_zone": "left"
         },
         "to": [
           "5e214c7fdb7afab0"
@@ -949,7 +951,9 @@
           "type": "MoveUnit",
           "label": "Move unit 1 from left to base",
           "card_id": "ogn-068-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": "left",
+          "to_zone": "base"
         },
         "to": [
           "601ed151f166ee9a"
@@ -962,7 +966,9 @@
           "type": "ResolveCombat",
           "label": "Move unit 2 from base to right (combat)",
           "card_id": "ogn-010-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": "base",
+          "to_zone": "right"
         },
         "to": [
           "8c622b34e5aaf8d7"
@@ -975,7 +981,9 @@
           "type": "ActivateAbility",
           "label": "Activate unit 1 (1)",
           "card_id": "ogn-068-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": null,
+          "to_zone": null
         },
         "to": [
           "17ee14189fd1c9a6"
@@ -988,7 +996,9 @@
           "type": "ActivateAbility",
           "label": "Activate unit 1 (3)",
           "card_id": "ogn-068-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": null,
+          "to_zone": null
         },
         "to": [
           "200477f546521de6"
@@ -1003,7 +1013,9 @@
           "type": "MoveUnit",
           "label": "Move unit 1 from left to base",
           "card_id": "ogn-068-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": "left",
+          "to_zone": "base"
         },
         "to": [
           "67b9a98f52075ecd"
@@ -1016,7 +1028,9 @@
           "type": "ActivateAbility",
           "label": "Activate unit 1 (1)",
           "card_id": "ogn-068-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": null,
+          "to_zone": null
         },
         "to": [
           "9d6d8cff91f3d21b"
@@ -1029,7 +1043,9 @@
           "type": "ActivateAbility",
           "label": "Activate unit 1 (2)",
           "card_id": "ogn-068-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": null,
+          "to_zone": null
         },
         "to": [
           "da9950df3f9b8a50"
@@ -1042,7 +1058,9 @@
           "type": "ActivateAbility",
           "label": "Activate unit 1 (3)",
           "card_id": "ogn-068-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": null,
+          "to_zone": null
         },
         "to": [
           "3d0fea615a832a00"
@@ -1057,7 +1075,9 @@
           "type": "MoveUnit",
           "label": "Move unit 2 from base to left",
           "card_id": "ogn-010-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": "base",
+          "to_zone": "left"
         },
         "to": [
           "67b9a98f52075ecd"
@@ -1070,7 +1090,9 @@
           "type": "ResolveCombat",
           "label": "Move unit 2 from base to right (combat)",
           "card_id": "ogn-010-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": "base",
+          "to_zone": "right"
         },
         "to": [
           "77b32299c925c80c"
@@ -1085,7 +1107,9 @@
           "type": "MoveUnit",
           "label": "Move unit 1 from left to base",
           "card_id": "ogn-068-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": "left",
+          "to_zone": "base"
         },
         "to": [
           "77b32299c925c80c"
@@ -1098,7 +1122,9 @@
           "type": "ActivateAbility",
           "label": "Activate unit 1 (1)",
           "card_id": "ogn-068-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": null,
+          "to_zone": null
         },
         "to": [
           "d995d1641dc79bf1"
@@ -1111,7 +1137,9 @@
           "type": "ActivateAbility",
           "label": "Activate unit 1 (3)",
           "card_id": "ogn-068-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": null,
+          "to_zone": null
         },
         "to": [
           "3824c5457830379b"
@@ -1126,7 +1154,9 @@
           "type": "MoveUnit",
           "label": "Move unit 2 from base to left",
           "card_id": "ogn-010-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": "base",
+          "to_zone": "left"
         },
         "to": [
           "9d6d8cff91f3d21b"
@@ -1139,7 +1169,9 @@
           "type": "ResolveCombat",
           "label": "Move unit 2 from base to right (combat)",
           "card_id": "ogn-010-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": "base",
+          "to_zone": "right"
         },
         "to": [
           "d995d1641dc79bf1"
@@ -1154,7 +1186,9 @@
           "type": "MoveUnit",
           "label": "Move unit 2 from base to left",
           "card_id": "ogn-010-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": "base",
+          "to_zone": "left"
         },
         "to": [
           "3d0fea615a832a00"
@@ -1167,7 +1201,9 @@
           "type": "MoveUnit",
           "label": "Move unit 2 from base to right",
           "card_id": "ogn-010-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": "base",
+          "to_zone": "right"
         },
         "to": [
           "8e4bd7a0dfc29c14"

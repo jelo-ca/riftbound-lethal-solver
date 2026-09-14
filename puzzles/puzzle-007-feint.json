@@ -3188,7 +3188,9 @@
           "type": "MoveUnit",
           "label": "Move unit 3 from base to left",
           "card_id": "ogn-010-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": "base",
+          "to_zone": "left"
         },
         "to": [
           "1bdb5e1df7aa9271"
@@ -3201,7 +3203,9 @@
           "type": "EnterShowdown",
           "label": "Move unit 3 from base to right (enter showdown)",
           "card_id": "ogn-010-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": "base",
+          "to_zone": "right"
         },
         "to": [
           "695bb3430fe4ccd3"
@@ -3216,7 +3220,9 @@
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
-          ]
+          ],
+          "from_zone": "left",
+          "to_zone": "right"
         },
         "to": [
           "d4a363a1bfcc9cf7"
@@ -3229,7 +3235,9 @@
           "type": "PlaySpell",
           "label": "Play ogn-173-298 (3, left)",
           "card_id": "ogn-173-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": null,
+          "to_zone": null
         },
         "to": [
           "1f6bc36e4ccf7b68"
@@ -3246,7 +3254,9 @@
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
-          ]
+          ],
+          "from_zone": "left",
+          "to_zone": "right"
         },
         "to": [
           "fc2baac766f5afe2"
@@ -3261,7 +3271,9 @@
           "type": "PlaySpell",
           "label": "Play ogn-173-298 (3, base)",
           "card_id": "ogn-173-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": null,
+          "to_zone": null
         },
         "to": [
           "0123a675ce9b9f37"
@@ -3274,7 +3286,9 @@
           "type": "PlaySpell",
           "label": "Play ogn-173-298 (3, left)",
           "card_id": "ogn-173-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": null,
+          "to_zone": null
         },
         "to": [
           "3408bb09a5632d53"
@@ -3287,7 +3301,9 @@
           "type": "ResolveShowdown",
           "label": "Resolve showdown damage",
           "card_id": "",
-          "keywords": []
+          "keywords": [],
+          "from_zone": null,
+          "to_zone": null
         },
         "to": [
           "e9773961702a32f1"
@@ -3302,7 +3318,9 @@
           "type": "PlaySpell",
           "label": "Play ogn-173-298 (3, left)",
           "card_id": "ogn-173-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": null,
+          "to_zone": null
         },
         "to": [
           "b30628dd3b1cc887"
@@ -3315,7 +3333,9 @@
           "type": "PlaySpell",
           "label": "Play ogn-173-298 (1, base)",
           "card_id": "ogn-173-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": null,
+          "to_zone": null
         },
         "to": [
           "e83b1cb20cf90c3d"
@@ -3328,7 +3348,9 @@
           "type": "PlaySpell",
           "label": "Play ogn-173-298 (1, left)",
           "card_id": "ogn-173-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": null,
+          "to_zone": null
         },
         "to": [
           "695816a806d33d30"
@@ -3341,7 +3363,9 @@
           "type": "ResolveShowdown",
           "label": "Resolve showdown damage",
           "card_id": "",
-          "keywords": []
+          "keywords": [],
+          "from_zone": null,
+          "to_zone": null
         },
         "to": [
           "407c0b80b81ed45f"
@@ -3358,7 +3382,9 @@
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
-          ]
+          ],
+          "from_zone": "left",
+          "to_zone": "right"
         },
         "to": [
           "baa565f669db3fc4"
@@ -3373,7 +3399,9 @@
           "type": "PlaySpell",
           "label": "Play ogn-173-298 (1, base)",
           "card_id": "ogn-173-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": null,
+          "to_zone": null
         },
         "to": [
           "aa483c55a68acc70"
@@ -3386,7 +3414,9 @@
           "type": "PlaySpell",
           "label": "Play ogn-173-298 (1, left)",
           "card_id": "ogn-173-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": null,
+          "to_zone": null
         },
         "to": [
           "fbf495ded9635a7d"
@@ -3399,7 +3429,9 @@
           "type": "ResolveShowdown",
           "label": "Resolve showdown damage",
           "card_id": "",
-          "keywords": []
+          "keywords": [],
+          "from_zone": null,
+          "to_zone": null
         },
         "to": [
           "43e129ff5f5664ea"
@@ -3414,7 +3446,9 @@
           "type": "ResolveShowdown",
           "label": "Resolve showdown damage",
           "card_id": "",
-          "keywords": []
+          "keywords": [],
+          "from_zone": null,
+          "to_zone": null
         },
         "to": [
           "64d866b2c264ec66"
@@ -3429,7 +3463,9 @@
           "type": "ResolveShowdown",
           "label": "Resolve showdown damage",
           "card_id": "",
-          "keywords": []
+          "keywords": [],
+          "from_zone": null,
+          "to_zone": null
         },
         "to": [
           "ade22126e81a2e33"
@@ -3446,7 +3482,9 @@
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
-          ]
+          ],
+          "from_zone": "left",
+          "to_zone": "right"
         },
         "to": [
           "f463c713b34e0db1"
@@ -3461,7 +3499,9 @@
           "type": "ResolveShowdown",
           "label": "Resolve showdown damage",
           "card_id": "",
-          "keywords": []
+          "keywords": [],
+          "from_zone": null,
+          "to_zone": null
         },
         "to": [
           "baa565f669db3fc4"
@@ -3476,7 +3516,9 @@
           "type": "ResolveShowdown",
           "label": "Resolve showdown damage",
           "card_id": "",
-          "keywords": []
+          "keywords": [],
+          "from_zone": null,
+          "to_zone": null
         },
         "to": [
           "b5378a7d99f7bc88"
@@ -3491,7 +3533,9 @@
           "type": "ResolveShowdown",
           "label": "Resolve showdown damage",
           "card_id": "",
-          "keywords": []
+          "keywords": [],
+          "from_zone": null,
+          "to_zone": null
         },
         "to": [
           "8ea3ee3a1a746cd5"
@@ -3506,7 +3550,9 @@
           "type": "MoveUnit",
           "label": "Move unit 3 from base to left",
           "card_id": "ogn-010-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": "base",
+          "to_zone": "left"
         },
         "to": [
           "43e129ff5f5664ea"
@@ -3519,7 +3565,9 @@
           "type": "EnterShowdown",
           "label": "Move unit 3 from base to right (enter showdown)",
           "card_id": "ogn-010-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": "base",
+          "to_zone": "right"
         },
         "to": [
           "09df9c02910d6a76"
@@ -3532,7 +3580,9 @@
           "type": "PlaySpell",
           "label": "Play ogn-173-298 (3, left)",
           "card_id": "ogn-173-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": null,
+          "to_zone": null
         },
         "to": [
           "baa565f669db3fc4"
@@ -3547,7 +3597,9 @@
           "type": "ResolveShowdown",
           "label": "Resolve showdown damage",
           "card_id": "",
-          "keywords": []
+          "keywords": [],
+          "from_zone": null,
+          "to_zone": null
         },
         "to": [
           "4953a587f0b076b1"
@@ -3562,7 +3614,9 @@
           "type": "ResolveShowdown",
           "label": "Resolve showdown damage",
           "card_id": "",
-          "keywords": []
+          "keywords": [],
+          "from_zone": null,
+          "to_zone": null
         },
         "to": [
           "9ac16119aea6b687"
@@ -3577,7 +3631,9 @@
           "type": "MoveUnit",
           "label": "Move unit 3 from base to left",
           "card_id": "ogn-010-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": "base",
+          "to_zone": "left"
         },
         "to": [
           "6237dbbc8c954e58"
@@ -3590,7 +3646,9 @@
           "type": "ResolveCombat",
           "label": "Move unit 3 from base to right (combat)",
           "card_id": "ogn-010-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": "base",
+          "to_zone": "right"
         },
         "to": [
           "0f884ab8bbfc86fe"
@@ -3605,7 +3663,9 @@
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
-          ]
+          ],
+          "from_zone": "left",
+          "to_zone": "right"
         },
         "to": [
           "e83f01e7cce28804"
@@ -3622,7 +3682,9 @@
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
-          ]
+          ],
+          "from_zone": "left",
+          "to_zone": "right"
         },
         "to": [
           "e75d3d2cf241eb8a"
@@ -3637,7 +3699,9 @@
           "type": "PlaySpell",
           "label": "Play ogn-173-298 (1, base)",
           "card_id": "ogn-173-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": null,
+          "to_zone": null
         },
         "to": [
           "906991ddec6be419"
@@ -3650,7 +3714,9 @@
           "type": "PlaySpell",
           "label": "Play ogn-173-298 (1, left)",
           "card_id": "ogn-173-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": null,
+          "to_zone": null
         },
         "to": [
           "3e5ac9422df5c789"
@@ -3663,7 +3729,9 @@
           "type": "ResolveShowdown",
           "label": "Resolve showdown damage",
           "card_id": "",
-          "keywords": []
+          "keywords": [],
+          "from_zone": null,
+          "to_zone": null
         },
         "to": [
           "cde0db0b574193ff"
@@ -3680,7 +3748,9 @@
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
-          ]
+          ],
+          "from_zone": "base",
+          "to_zone": "left"
         },
         "to": [
           "81549aa5dbb1af56"
@@ -3693,7 +3763,9 @@
           "type": "MoveUnit",
           "label": "Move unit 3 from base to left",
           "card_id": "ogn-010-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": "base",
+          "to_zone": "left"
         },
         "to": [
           "4953a587f0b076b1"
@@ -3708,7 +3780,9 @@
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
-          ]
+          ],
+          "from_zone": "base",
+          "to_zone": "right"
         },
         "to": [
           "8fd2c20b0ae1c8f2"
@@ -3721,7 +3795,9 @@
           "type": "ResolveCombat",
           "label": "Move unit 3 from base to right (combat)",
           "card_id": "ogn-010-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": "base",
+          "to_zone": "right"
         },
         "to": [
           "544a22fb103852ad"
@@ -3736,7 +3812,9 @@
           "type": "MoveUnit",
           "label": "Move unit 3 from base to left",
           "card_id": "ogn-010-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": "base",
+          "to_zone": "left"
         },
         "to": [
           "9ac16119aea6b687"
@@ -3749,7 +3827,9 @@
           "type": "ResolveCombat",
           "label": "Move unit 3 from base to right (combat)",
           "card_id": "ogn-010-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": "base",
+          "to_zone": "right"
         },
         "to": [
           "5582c8b89fcdc179"
@@ -3764,7 +3844,9 @@
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
-          ]
+          ],
+          "from_zone": "left",
+          "to_zone": "right"
         },
         "to": [
           "8fd2c20b0ae1c8f2"
@@ -3779,7 +3861,9 @@
           "type": "PlaySpell",
           "label": "Play ogn-173-298 (3, base)",
           "card_id": "ogn-173-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": null,
+          "to_zone": null
         },
         "to": [
           "d6eb1d4f529c9499"
@@ -3792,7 +3876,9 @@
           "type": "PlaySpell",
           "label": "Play ogn-173-298 (3, left)",
           "card_id": "ogn-173-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": null,
+          "to_zone": null
         },
         "to": [
           "6c595b96c7d349fc"
@@ -3805,7 +3891,9 @@
           "type": "ResolveShowdown",
           "label": "Resolve showdown damage",
           "card_id": "",
-          "keywords": []
+          "keywords": [],
+          "from_zone": null,
+          "to_zone": null
         },
         "to": [
           "cde0db0b574193ff"
@@ -3822,7 +3910,9 @@
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
-          ]
+          ],
+          "from_zone": "base",
+          "to_zone": "left"
         },
         "to": [
           "6ba2e89879bff247"
@@ -3837,7 +3927,9 @@
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
-          ]
+          ],
+          "from_zone": "base",
+          "to_zone": "right"
         },
         "to": [
           "f915a7f7b31d6d53"
@@ -3854,7 +3946,9 @@
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
-          ]
+          ],
+          "from_zone": "left",
+          "to_zone": "right"
         },
         "to": [
           "f915a7f7b31d6d53"
@@ -3871,7 +3965,9 @@
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
-          ]
+          ],
+          "from_zone": "left",
+          "to_zone": "right"
         },
         "to": [
           "439d9868722957b8"
@@ -3888,7 +3984,9 @@
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
-          ]
+          ],
+          "from_zone": "left",
+          "to_zone": "right"
         },
         "to": [
           "a69cc1d8c765350c"
@@ -3903,7 +4001,9 @@
           "type": "MoveUnit",
           "label": "Move unit 3 from base to left",
           "card_id": "ogn-010-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": "base",
+          "to_zone": "left"
         },
         "to": [
           "439d9868722957b8"
@@ -3916,7 +4016,9 @@
           "type": "ResolveCombat",
           "label": "Move unit 3 from base to right (combat)",
           "card_id": "ogn-010-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": "base",
+          "to_zone": "right"
         },
         "to": [
           "a69cc1d8c765350c"
@@ -3931,7 +4033,9 @@
           "type": "ResolveShowdown",
           "label": "Resolve showdown damage",
           "card_id": "",
-          "keywords": []
+          "keywords": [],
+          "from_zone": null,
+          "to_zone": null
         },
         "to": [
           "544a22fb103852ad"
@@ -3946,7 +4050,9 @@
           "type": "ResolveShowdown",
           "label": "Resolve showdown damage",
           "card_id": "",
-          "keywords": []
+          "keywords": [],
+          "from_zone": null,
+          "to_zone": null
         },
         "to": [
           "5582c8b89fcdc179"
@@ -3961,7 +4067,9 @@
           "type": "MoveUnit",
           "label": "Move unit 3 from base to left",
           "card_id": "ogn-010-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": "base",
+          "to_zone": "left"
         },
         "to": [
           "f915a7f7b31d6d53"
@@ -3974,7 +4082,9 @@
           "type": "ResolveCombat",
           "label": "Move unit 3 from base to right (combat)",
           "card_id": "ogn-010-298",
-          "keywords": []
+          "keywords": [],
+          "from_zone": "base",
+          "to_zone": "right"
         },
         "to": [
           "a69cc1d8c765350c"
@@ -3991,7 +4101,9 @@
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
-          ]
+          ],
+          "from_zone": "base",
+          "to_zone": "left"
         },
         "to": [
           "102efc458304e296"
@@ -4006,7 +4118,9 @@
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
-          ]
+          ],
+          "from_zone": "base",
+          "to_zone": "right"
         },
         "to": [
           "a69cc1d8c765350c"
@@ -4023,7 +4137,9 @@
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
-          ]
+          ],
+          "from_zone": "left",
+          "to_zone": "right"
         },
         "to": [
           "a69cc1d8c765350c"
@@ -4038,7 +4154,9 @@
           "type": "ResolveShowdown",
           "label": "Resolve showdown damage",
           "card_id": "",
-          "keywords": []
+          "keywords": [],
+          "from_zone": null,
+          "to_zone": null
         },
         "to": [
           "e83f01e7cce28804"
@@ -4053,7 +4171,9 @@
           "type": "ResolveShowdown",
           "label": "Resolve showdown damage",
           "card_id": "",
-          "keywords": []
+          "keywords": [],
+          "from_zone": null,
+          "to_zone": null
         },
         "to": [
           "e75d3d2cf241eb8a"

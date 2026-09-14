@@ -114,6 +114,21 @@ def _live_move_relevant_card_ids(states: list[dict]) -> set[str]:
 _MOVEMENT_KEYWORDS = frozenset({"Ganking"})
 
 
+def _is_battlefield_to_battlefield(action: dict) -> bool:
+    """Whether this move is the kind [Ganking] actually enables. Moves to
+    or from base are legal without it, so on those it is as inert as a
+    combat keyword on a step that never fights — and including it there
+    splits the vanilla bucket on nothing.
+
+    An action with no recorded zones is treated as "not
+    Battlefield-to-Battlefield", which drops the keyword. Zones have been
+    exported since the same change that introduced this check, so that
+    only affects a stale file, and dropping is the conservative side:
+    it merges two lines rather than inventing a distinction."""
+    from_zone, to_zone = action.get("from_zone"), action.get("to_zone")
+    return bool(from_zone) and bool(to_zone) and from_zone != "base" and to_zone != "base"
+
+
 def _mover_token(action: dict, live_move_relevant: set[str]) -> str:
     """Combat keywords (Assault/Shield/Tank) only matter on a step that
     actually fights. On a plain MoveUnit — walking into an empty or
@@ -125,13 +140,21 @@ def _mover_token(action: dict, live_move_relevant: set[str]) -> str:
     one happened to walk a Shield unit into the cleared lane and the
     other a bare one. Bucketing by the full keyword set defeats the point
     of bucketing at all, which is to make interchangeable filler bodies
-    interchangeable."""
+    interchangeable.
+
+    A movement keyword has to be earning its place too: [Ganking] is only
+    a real difference on the Battlefield-to-Battlefield move it enables.
+    On a base walk-in it is as inert as Tank, and keying on it kept
+    generated-05617 (the Blitzcrank pull with a Ganking body walking in
+    from base) distinct from generated-07640, the same line with a plain
+    one."""
     card_id = action["card_id"]
     if card_id in live_move_relevant:
         return card_id
     keywords = action["keywords"]
     if action["type"] == "MoveUnit":
-        keywords = [k for k in keywords if k in _MOVEMENT_KEYWORDS]
+        keywords = [k for k in keywords
+                    if k in _MOVEMENT_KEYWORDS and _is_battlefield_to_battlefield(action)]
     return "vanilla:" + ",".join(keywords)
 
 
