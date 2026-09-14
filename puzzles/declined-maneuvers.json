@@ -42,23 +42,19 @@
     ]
   },
   {
-    "note": "puzzle 3 (Yasuo move counter via Ride The Wind) with a combat spliced in to clear the destination; Vilemaw effect and the left-holding Captain both ablate away as decoration",
+    "note": "generated-07640 Blitzcrank pull with Yasuo as the walk-in body (one move, trigger never fires) and a Tank attacker",
     "signature": [
       [
-        "MoveUnit",
-        "ogn-205-298"
-      ],
-      [
-        "PlaySpell",
-        "ogn-173-298"
-      ],
-      [
         "ResolveCombat",
-        "vanilla:"
+        "vanilla:Tank"
+      ],
+      [
+        "PlayUnit",
+        "ogn-067-298"
       ],
       [
         "MoveUnit",
-        "ogn-205-298"
+        "vanilla:Ganking"
       ]
     ]
   }

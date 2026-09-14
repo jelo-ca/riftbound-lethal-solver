@@ -70,18 +70,41 @@ DECLINED_PATH = Path(__file__).parent.parent / "puzzles" / "declined-maneuvers.j
 _MOVE_ACTION_TYPES = {"MoveUnit", "ResolveCombat", "EnterShowdown"}
 
 
-def _move_relevant_card_ids() -> set[str]:
-    """Cards whose registered mechanic changes what a MOVE itself means —
-    only move-count triggers (Yasuo - Windrider) qualify today.
+def _all_units(node: dict):
+    for player in node["players"]:
+        yield from player["base_units"]
+    for bf in node["battlefields"]:
+        yield from bf["units"]
 
-    A card whose mechanic is a play-trigger (Blitzcrank) or an activated
-    ability (Caitlyn) is just a body when all it does is move, so it must
-    bucket as vanilla like any other body. Keying moves on raw card_id
-    instead let one trick read as three different ones purely because a
-    different mechanic card happened to fill the walk-in slot — seen in a
-    live batch where 50,000 attempts produced three "distinct" survivors
-    that were all the same bounce-and-double-attack line."""
-    return set(abilities.MOVE_COUNT_TRIGGERS)
+
+def _live_move_relevant_card_ids(states: list[dict]) -> set[str]:
+    """Cards whose registered mechanic changes what a MOVE itself means,
+    restricted to the ones that actually did so somewhere in THIS line.
+
+    Only move-count triggers (Yasuo - Windrider) qualify at all — a card
+    whose mechanic is a play-trigger (Blitzcrank) or an activated ability
+    (Caitlyn) is just a body when all it does is move, so it buckets as
+    vanilla like any other body. Keying moves on raw card_id instead let
+    one trick read as three different ones purely because a different
+    mechanic card happened to fill the walk-in slot: a live batch of
+    50,000 attempts produced three "distinct" survivors that were all the
+    same bounce-and-double-attack line.
+
+    Even a move-count card is only a body when its counter never reaches
+    the threshold. Yasuo walking once is a stat-stick; his card_id in the
+    signature is noise that splits the vanilla bucket exactly as a
+    play-trigger card used to. generated-05617 was generated-07640's
+    Blitzcrank line with Yasuo as the walk-in — one move, trigger never
+    fired — and survived dedup on that alone.
+    """
+    live = set()
+    for card_id, threshold in abilities.MOVE_COUNT_TRIGGERS.items():
+        for node in states:
+            if any(unit["card_id"] == card_id and unit.get("moved_this_turn", 0) >= threshold
+                   for unit in _all_units(node)):
+                live.add(card_id)
+                break
+    return live
 
 
 # Keywords that change what a *move* means rather than what a fight
@@ -91,7 +114,7 @@ def _move_relevant_card_ids() -> set[str]:
 _MOVEMENT_KEYWORDS = frozenset({"Ganking"})
 
 
-def _mover_token(action: dict) -> str:
+def _mover_token(action: dict, live_move_relevant: set[str]) -> str:
     """Combat keywords (Assault/Shield/Tank) only matter on a step that
     actually fights. On a plain MoveUnit — walking into an empty or
     friendly zone — they do nothing, so including them splits the vanilla
@@ -104,7 +127,7 @@ def _mover_token(action: dict) -> str:
     of bucketing at all, which is to make interchangeable filler bodies
     interchangeable."""
     card_id = action["card_id"]
-    if card_id in _move_relevant_card_ids():
+    if card_id in live_move_relevant:
         return card_id
     keywords = action["keywords"]
     if action["type"] == "MoveUnit":
@@ -143,17 +166,29 @@ def maneuver_signature(result: dict) -> Signature:
     needs `root`, `solution`, `edges`."""
     solution = result["solution"]
     edges = result["edges"]
+    nodes = result.get("nodes", {})
     cur = result["root"]
     seen: set[str] = set()
-    steps: list[tuple[str, str]] = []
+    actions: list[dict] = []
+    states: list[dict] = []
     while cur in solution and cur not in seen:
         seen.add(cur)
+        if cur in nodes:
+            states.append(nodes[cur])
         action_id = solution[cur]
         edge = next(e for e in edges[cur] if e["action"]["id"] == action_id)
-        action = edge["action"]
-        token = _mover_token(action) if action["type"] in _MOVE_ACTION_TYPES else action["card_id"]
-        steps.append((action["type"], token))
+        actions.append(edge["action"])
         cur = edge["to"][0]
+    if cur in nodes:
+        states.append(nodes[cur])  # the final state is where a trigger lands
+
+    live_move_relevant = _live_move_relevant_card_ids(states)
+    steps = [
+        (action["type"],
+         _mover_token(action, live_move_relevant) if action["type"] in _MOVE_ACTION_TYPES
+         else action["card_id"])
+        for action in actions
+    ]
     return tuple(_collapse_empty_showdowns(steps))
 
 
@@ -205,9 +240,19 @@ def is_duplicate(signature: Signature, known: Iterable[Signature]) -> bool:
     for other in known:
         if signature == other:
             return True
+        # The known trick padded out with extra steps...
         if (len(other) >= MIN_CONTAINMENT_LENGTH
                 and len(other) / len(signature) >= CONTAINMENT_COVERAGE
                 and _contains_run(signature, other)):
+            return True
+        # ...and the known trick with its tail cut off. Containment used to
+        # be tested one way only, so a candidate SHORTER than the trick it
+        # came from never matched. generated-19300 was the declined
+        # bounce-and-double-attack stopping one step early — scoring on the
+        # second combat instead of walking in afterwards — and read as new.
+        if (len(signature) >= MIN_CONTAINMENT_LENGTH
+                and len(signature) / len(other) >= CONTAINMENT_COVERAGE
+                and _contains_run(other, signature)):
             return True
     return False
 
@@ -233,12 +278,25 @@ def load_declined() -> list[Signature]:
 
 def decline_signature(signature: Signature, note: str = "") -> bool:
     """Records a signature as seen-and-rejected so later batches skip it.
-    Returns False if it was already known. `note` is for the human
-    reading the file later — why this trick wasn't worth keeping."""
+    Returns False if it was already known — either recorded verbatim, or
+    already a duplicate of something known. `note` is for the human
+    reading the file later — why this trick wasn't worth keeping.
+
+    Refusing an already-duplicate signature is what keeps containment
+    from feeding on itself. A candidate rejected FOR being a known trick
+    plus padding adds nothing to the declined list, and recording it
+    makes the padded form "known" in its own right — so the original,
+    shorter trick then matches it by reverse containment and a promoted
+    puzzle reads as a duplicate of a rejection derived from itself.
+    That is exactly what happened when generated-05347 (puzzle 3 with a
+    combat spliced in) was declined: puzzle 3 started reading as a dupe.
+    """
     if not signature:
         return False
     existing = load_declined()
     if signature in existing:
+        return False
+    if is_duplicate(signature, known_signatures()):
         return False
     raw = json.loads(DECLINED_PATH.read_text()) if DECLINED_PATH.exists() else []
     raw.append({"note": note, "signature": [list(step) for step in signature]})

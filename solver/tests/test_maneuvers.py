@@ -92,12 +92,37 @@ def test_a_fighting_step_keeps_its_combat_keywords():
     assert maneuvers.maneuver_signature(tank) == (("ResolveCombat", "vanilla:Tank"),)
 
 
-def test_move_step_keeps_raw_card_id_only_for_a_move_relevant_mechanic():
-    """Yasuo - Windrider's move-count trigger changes what a move MEANS,
-    so a move by him stays keyed to his card_id."""
-    result = make_export(root="s0", solution={"s0": "a1"},
-                          edges={"s0": [move_action("a1", YASUO_WINDRIDER, keywords=("Ganking",))]})
-    assert maneuvers.maneuver_signature(result) == (("MoveUnit", YASUO_WINDRIDER),)
+def node_with(card_id, moved_this_turn):
+    unit = {"card_id": card_id, "instance_id": 1, "controller": 0, "might": 2,
+            "keywords": [], "exhausted": False, "damage": 0, "is_token": False,
+            "moved_this_turn": moved_this_turn, "might_bonus": 0}
+    return {"players": [{"base_units": [unit]}, {"base_units": []}],
+            "battlefields": [{"battlefield_id": "left", "units": []}]}
+
+
+def yasuo_move_export(moves_reached):
+    """One Yasuo move, in a line where his counter ends at
+    `moves_reached`."""
+    return {"root": "s0", "solution": {"s0": "a1"},
+            "edges": {"s0": [move_action("a1", YASUO_WINDRIDER, keywords=("Ganking",))]},
+            "nodes": {"s0": node_with(YASUO_WINDRIDER, 0),
+                      "s1": node_with(YASUO_WINDRIDER, moves_reached)}}
+
+
+def test_a_move_count_card_keeps_its_card_id_when_the_trigger_actually_fires():
+    """Yasuo - Windrider's move-count trigger changes what a move MEANS —
+    but only in a line that reaches the threshold."""
+    fired = yasuo_move_export(moves_reached=3)
+    assert maneuvers.maneuver_signature(fired) == (("MoveUnit", YASUO_WINDRIDER),)
+
+
+def test_a_move_count_card_is_just_a_body_when_the_trigger_never_fires():
+    """Yasuo walking once is a stat-stick. Keying him by card_id anyway
+    splits the vanilla bucket on nothing: generated-05617 was
+    generated-07640's Blitzcrank line with Yasuo as the walk-in body, one
+    move, trigger never fired — and survived dedup on that alone."""
+    never = yasuo_move_export(moves_reached=1)
+    assert maneuvers.maneuver_signature(never) == (("MoveUnit", "vanilla:Ganking"),)
 
 
 def test_a_mechanic_card_that_merely_moves_buckets_as_vanilla():
@@ -316,3 +341,46 @@ def test_subsequence_matching_still_respects_order():
     reordered = (("PlaySpell", "ogn-173-298"), ("MoveUnit", YASUO_WINDRIDER),
                  ("ResolveCombat", "vanilla:"))
     assert not maneuvers.is_duplicate(reordered, {trick})
+
+
+def test_a_truncated_known_trick_is_still_a_duplicate():
+    """Containment used to be tested one way only, so a candidate SHORTER
+    than the trick it came from never matched. generated-19300 was the
+    declined bounce-and-double-attack stopping one step early — scoring
+    on the second combat rather than walking in afterwards."""
+    declined = (("ResolveCombat", "vanilla:Tank"), ("PlaySpell", "ogn-173-298"),
+                ("ResolveCombat", "vanilla:Tank"), ("MoveUnit", "vanilla:"))
+    truncated = declined[:3]
+    assert maneuvers.is_duplicate(truncated, {declined})
+
+
+def test_a_much_shorter_line_is_not_swallowed_by_a_long_known_trick():
+    """Reverse containment is still gated on coverage: a short line that
+    merely starts like a long trick is not that trick."""
+    long_trick = (("ResolveCombat", "vanilla:"), ("PlaySpell", "ogn-173-298"),
+                  ("ResolveCombat", "vanilla:"), ("MoveUnit", "vanilla:"),
+                  ("PlayUnit", BLITZCRANK_IMPASSIVE), ("MoveUnit", "vanilla:"))
+    short = long_trick[:3]
+    assert not maneuvers.is_duplicate(short, {long_trick})
+
+
+def test_declining_an_already_duplicate_signature_is_refused(tmp_path, monkeypatch):
+    """Recording a rejection that is merely a known trick plus padding
+    makes the padded form known in its own right, and the original then
+    matches IT by reverse containment — a promoted puzzle reading as a
+    duplicate of a rejection derived from itself. Observed live: puzzle 3
+    started reading as a dupe once generated-05347 (puzzle 3 with a
+    combat spliced in) was declined."""
+    monkeypatch.setattr(maneuvers, "DECLINED_PATH", tmp_path / "declined.json")
+    monkeypatch.setattr(maneuvers, "REGISTRY_PATH", tmp_path / "maneuvers.json")
+    puzzle_3 = (("MoveUnit", YASUO_WINDRIDER), ("PlaySpell", "ogn-173-298"),
+                ("MoveUnit", YASUO_WINDRIDER))
+    maneuvers.save_registry({"puzzle-003": puzzle_3})
+
+    padded = (("MoveUnit", YASUO_WINDRIDER), ("PlaySpell", "ogn-173-298"),
+              ("ResolveCombat", "vanilla:"), ("MoveUnit", YASUO_WINDRIDER))
+    assert maneuvers.is_duplicate(padded, maneuvers.known_signatures())
+    assert maneuvers.decline_signature(padded, note="puzzle 3 plus a splice") is False
+    assert maneuvers.load_declined() == []
+    # ...and the promoted puzzle it came from stays non-duplicate.
+    assert not maneuvers.is_duplicate(puzzle_3, set(maneuvers.load_declined()))

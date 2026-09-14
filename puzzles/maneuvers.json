@@ -54,5 +54,23 @@
       "MoveUnit",
       "vanilla:"
     ]
+  ],
+  "puzzle-007-feint": [
+    [
+      "EnterShowdown",
+      "ogn-205-298"
+    ],
+    [
+      "PlaySpell",
+      "ogn-173-298"
+    ],
+    [
+      "ResolveShowdown",
+      ""
+    ],
+    [
+      "MoveUnit",
+      "ogn-205-298"
+    ]
   ]
 }
