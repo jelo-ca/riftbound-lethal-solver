@@ -2395,7 +2395,7 @@
         "action": {
           "id": "a1",
           "type": "PlayUnit",
-          "label": "Play ogn-067-298 to base",
+          "label": "Play Blitzcrank, Impassive to base",
           "card_id": "ogn-067-298",
           "keywords": [],
           "from_zone": null,
@@ -2411,7 +2411,7 @@
         "action": {
           "id": "a2",
           "type": "PlayUnit",
-          "label": "Play ogn-067-298 to right",
+          "label": "Play Blitzcrank, Impassive to right",
           "card_id": "ogn-067-298",
           "keywords": [],
           "from_zone": null,
@@ -2427,7 +2427,7 @@
         "action": {
           "id": "a3",
           "type": "MoveUnit",
-          "label": "Move ogn-211-298 from base to right",
+          "label": "Move Faithful Manufactor from base to right",
           "card_id": "ogn-211-298",
           "keywords": [],
           "from_zone": "base",
@@ -2443,7 +2443,7 @@
         "action": {
           "id": "a4",
           "type": "MoveUnit",
-          "label": "Move ogn-010-298 from right to base",
+          "label": "Move Legion Rearguard from right to base",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "right",
@@ -2459,7 +2459,7 @@
         "action": {
           "id": "a5",
           "type": "ResolveCombat",
-          "label": "Move ogn-211-298 from base to left (combat)",
+          "label": "Move Faithful Manufactor from base to left (combat)",
           "card_id": "ogn-211-298",
           "keywords": [],
           "from_zone": "base",
@@ -2475,7 +2475,7 @@
         "action": {
           "id": "a6",
           "type": "PlayUnit",
-          "label": "Play ogn-067-298 to right",
+          "label": "Play Blitzcrank, Impassive to right",
           "card_id": "ogn-067-298",
           "keywords": [],
           "from_zone": null,
@@ -2495,7 +2495,7 @@
         "action": {
           "id": "a7",
           "type": "MoveUnit",
-          "label": "Move ogn-211-298 from base to right",
+          "label": "Move Faithful Manufactor from base to right",
           "card_id": "ogn-211-298",
           "keywords": [],
           "from_zone": "base",
@@ -2511,7 +2511,7 @@
         "action": {
           "id": "a8",
           "type": "MoveUnit",
-          "label": "Move ogn-010-298 from right to base",
+          "label": "Move Legion Rearguard from right to base",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "right",
@@ -2527,7 +2527,7 @@
         "action": {
           "id": "a9",
           "type": "ResolveCombat",
-          "label": "Move ogn-211-298 from base to left (combat)",
+          "label": "Move Faithful Manufactor from base to left (combat)",
           "card_id": "ogn-211-298",
           "keywords": [],
           "from_zone": "base",
@@ -2545,7 +2545,7 @@
         "action": {
           "id": "a10",
           "type": "MoveUnit",
-          "label": "Move ogn-211-298 from base to right",
+          "label": "Move Faithful Manufactor from base to right",
           "card_id": "ogn-211-298",
           "keywords": [],
           "from_zone": "base",
@@ -2561,7 +2561,7 @@
         "action": {
           "id": "a11",
           "type": "MoveUnit",
-          "label": "Move ogn-010-298 from right to base",
+          "label": "Move Legion Rearguard from right to base",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "right",
@@ -2577,7 +2577,7 @@
         "action": {
           "id": "a12",
           "type": "ResolveCombat",
-          "label": "Move ogn-211-298 from base to left (combat)",
+          "label": "Move Faithful Manufactor from base to left (combat)",
           "card_id": "ogn-211-298",
           "keywords": [],
           "from_zone": "base",
@@ -2595,7 +2595,7 @@
         "action": {
           "id": "a13",
           "type": "PlayUnit",
-          "label": "Play ogn-067-298 to base",
+          "label": "Play Blitzcrank, Impassive to base",
           "card_id": "ogn-067-298",
           "keywords": [],
           "from_zone": null,
@@ -2611,7 +2611,7 @@
         "action": {
           "id": "a14",
           "type": "PlayUnit",
-          "label": "Play ogn-067-298 to right",
+          "label": "Play Blitzcrank, Impassive to right",
           "card_id": "ogn-067-298",
           "keywords": [],
           "from_zone": null,
@@ -2627,7 +2627,7 @@
         "action": {
           "id": "a15",
           "type": "MoveUnit",
-          "label": "Move ogn-010-298 from right to base",
+          "label": "Move Legion Rearguard from right to base",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "right",
@@ -2643,7 +2643,7 @@
         "action": {
           "id": "a16",
           "type": "PlayUnit",
-          "label": "Play ogn-067-298 to right",
+          "label": "Play Blitzcrank, Impassive to right",
           "card_id": "ogn-067-298",
           "keywords": [],
           "from_zone": null,
@@ -2667,7 +2667,7 @@
         "action": {
           "id": "a17",
           "type": "PlayUnit",
-          "label": "Play ogn-067-298 to base",
+          "label": "Play Blitzcrank, Impassive to base",
           "card_id": "ogn-067-298",
           "keywords": [],
           "from_zone": null,
@@ -2683,7 +2683,7 @@
         "action": {
           "id": "a18",
           "type": "MoveUnit",
-          "label": "Move ogn-211-298 from base to right",
+          "label": "Move Faithful Manufactor from base to right",
           "card_id": "ogn-211-298",
           "keywords": [],
           "from_zone": "base",
@@ -2699,7 +2699,7 @@
         "action": {
           "id": "a19",
           "type": "ResolveCombat",
-          "label": "Move ogn-211-298 from base to left (combat)",
+          "label": "Move Faithful Manufactor from base to left (combat)",
           "card_id": "ogn-211-298",
           "keywords": [],
           "from_zone": "base",
@@ -2717,7 +2717,7 @@
         "action": {
           "id": "a20",
           "type": "PlayUnit",
-          "label": "Play ogn-067-298 to base",
+          "label": "Play Blitzcrank, Impassive to base",
           "card_id": "ogn-067-298",
           "keywords": [],
           "from_zone": null,
@@ -2733,7 +2733,7 @@
         "action": {
           "id": "a21",
           "type": "PlayUnit",
-          "label": "Play ogn-067-298 to right",
+          "label": "Play Blitzcrank, Impassive to right",
           "card_id": "ogn-067-298",
           "keywords": [],
           "from_zone": null,
@@ -2749,7 +2749,7 @@
         "action": {
           "id": "a22",
           "type": "MoveUnit",
-          "label": "Move ogn-010-298 from right to base",
+          "label": "Move Legion Rearguard from right to base",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "right",
@@ -2765,7 +2765,7 @@
         "action": {
           "id": "a23",
           "type": "PlayUnit",
-          "label": "Play ogn-067-298 to right",
+          "label": "Play Blitzcrank, Impassive to right",
           "card_id": "ogn-067-298",
           "keywords": [],
           "from_zone": null,
@@ -2785,7 +2785,7 @@
         "action": {
           "id": "a24",
           "type": "MoveUnit",
-          "label": "Move ogn-211-298 from base to left",
+          "label": "Move Faithful Manufactor from base to left",
           "card_id": "ogn-211-298",
           "keywords": [],
           "from_zone": "base",
@@ -2801,7 +2801,7 @@
         "action": {
           "id": "a25",
           "type": "MoveUnit",
-          "label": "Move ogn-211-298 from base to right",
+          "label": "Move Faithful Manufactor from base to right",
           "card_id": "ogn-211-298",
           "keywords": [],
           "from_zone": "base",
@@ -2819,7 +2819,7 @@
         "action": {
           "id": "a26",
           "type": "MoveUnit",
-          "label": "Move ogn-211-298 from base to left",
+          "label": "Move Faithful Manufactor from base to left",
           "card_id": "ogn-211-298",
           "keywords": [],
           "from_zone": "base",
@@ -2835,7 +2835,7 @@
         "action": {
           "id": "a27",
           "type": "MoveUnit",
-          "label": "Move ogn-211-298 from base to right",
+          "label": "Move Faithful Manufactor from base to right",
           "card_id": "ogn-211-298",
           "keywords": [],
           "from_zone": "base",
@@ -2851,7 +2851,7 @@
         "action": {
           "id": "a28",
           "type": "MoveUnit",
-          "label": "Move ogn-010-298 from right to base",
+          "label": "Move Legion Rearguard from right to base",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "right",
@@ -2869,7 +2869,7 @@
         "action": {
           "id": "a29",
           "type": "MoveUnit",
-          "label": "Move ogn-010-298 from right to base",
+          "label": "Move Legion Rearguard from right to base",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "right",
@@ -2887,7 +2887,7 @@
         "action": {
           "id": "a30",
           "type": "MoveUnit",
-          "label": "Move ogn-211-298 from base to right",
+          "label": "Move Faithful Manufactor from base to right",
           "card_id": "ogn-211-298",
           "keywords": [],
           "from_zone": "base",
@@ -2903,7 +2903,7 @@
         "action": {
           "id": "a31",
           "type": "ResolveCombat",
-          "label": "Move ogn-211-298 from base to left (combat)",
+          "label": "Move Faithful Manufactor from base to left (combat)",
           "card_id": "ogn-211-298",
           "keywords": [],
           "from_zone": "base",
@@ -2921,7 +2921,7 @@
         "action": {
           "id": "a32",
           "type": "MoveUnit",
-          "label": "Move ogn-010-298 from right to base",
+          "label": "Move Legion Rearguard from right to base",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "right",
@@ -2939,7 +2939,7 @@
         "action": {
           "id": "a33",
           "type": "MoveUnit",
-          "label": "Move ogn-010-298 from right to base",
+          "label": "Move Legion Rearguard from right to base",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "right",
@@ -2957,7 +2957,7 @@
         "action": {
           "id": "a34",
           "type": "MoveUnit",
-          "label": "Move ogn-211-298 from base to right",
+          "label": "Move Faithful Manufactor from base to right",
           "card_id": "ogn-211-298",
           "keywords": [],
           "from_zone": "base",
@@ -2973,7 +2973,7 @@
         "action": {
           "id": "a35",
           "type": "ResolveCombat",
-          "label": "Move ogn-211-298 from base to left (combat)",
+          "label": "Move Faithful Manufactor from base to left (combat)",
           "card_id": "ogn-211-298",
           "keywords": [],
           "from_zone": "base",
@@ -2991,7 +2991,7 @@
         "action": {
           "id": "a36",
           "type": "MoveUnit",
-          "label": "Move ogn-010-298 from right to base",
+          "label": "Move Legion Rearguard from right to base",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "right",
@@ -3009,7 +3009,7 @@
         "action": {
           "id": "a37",
           "type": "PlayUnit",
-          "label": "Play ogn-067-298 to base",
+          "label": "Play Blitzcrank, Impassive to base",
           "card_id": "ogn-067-298",
           "keywords": [],
           "from_zone": null,
@@ -3025,7 +3025,7 @@
         "action": {
           "id": "a38",
           "type": "PlayUnit",
-          "label": "Play ogn-067-298 to right",
+          "label": "Play Blitzcrank, Impassive to right",
           "card_id": "ogn-067-298",
           "keywords": [],
           "from_zone": null,
@@ -3041,7 +3041,7 @@
         "action": {
           "id": "a39",
           "type": "PlayUnit",
-          "label": "Play ogn-067-298 to right",
+          "label": "Play Blitzcrank, Impassive to right",
           "card_id": "ogn-067-298",
           "keywords": [],
           "from_zone": null,
@@ -3061,7 +3061,7 @@
         "action": {
           "id": "a40",
           "type": "MoveUnit",
-          "label": "Move ogn-010-298 from right to base",
+          "label": "Move Legion Rearguard from right to base",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "right",
@@ -3079,7 +3079,7 @@
         "action": {
           "id": "a41",
           "type": "MoveUnit",
-          "label": "Move ogn-010-298 from right to base",
+          "label": "Move Legion Rearguard from right to base",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "right",
@@ -3097,7 +3097,7 @@
         "action": {
           "id": "a42",
           "type": "PlayUnit",
-          "label": "Play ogn-067-298 to base",
+          "label": "Play Blitzcrank, Impassive to base",
           "card_id": "ogn-067-298",
           "keywords": [],
           "from_zone": null,
@@ -3115,7 +3115,7 @@
         "action": {
           "id": "a43",
           "type": "MoveUnit",
-          "label": "Move ogn-211-298 from base to left",
+          "label": "Move Faithful Manufactor from base to left",
           "card_id": "ogn-211-298",
           "keywords": [],
           "from_zone": "base",
@@ -3131,7 +3131,7 @@
         "action": {
           "id": "a44",
           "type": "MoveUnit",
-          "label": "Move ogn-211-298 from base to right",
+          "label": "Move Faithful Manufactor from base to right",
           "card_id": "ogn-211-298",
           "keywords": [],
           "from_zone": "base",

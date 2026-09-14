@@ -3516,7 +3516,7 @@
         "action": {
           "id": "a1",
           "type": "MoveUnit",
-          "label": "Move ogn-205-298 from left to base",
+          "label": "Move Yasuo, Windrider from left to base",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
@@ -3534,7 +3534,7 @@
         "action": {
           "id": "a2",
           "type": "MoveUnit",
-          "label": "Move ogn-205-298 from left to right",
+          "label": "Move Yasuo, Windrider from left to right",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
@@ -3552,7 +3552,7 @@
         "action": {
           "id": "a3",
           "type": "PlaySpell",
-          "label": "Play ogn-173-298 (1, base)",
+          "label": "Play Ride the Wind (1, base)",
           "card_id": "ogn-173-298",
           "keywords": [],
           "from_zone": null,
@@ -3568,7 +3568,7 @@
         "action": {
           "id": "a4",
           "type": "PlaySpell",
-          "label": "Play ogn-173-298 (1, right)",
+          "label": "Play Ride the Wind (1, right)",
           "card_id": "ogn-173-298",
           "keywords": [],
           "from_zone": null,
@@ -3584,7 +3584,7 @@
         "action": {
           "id": "a5",
           "type": "PlaySpell",
-          "label": "Play ogn-173-298 (2, base)",
+          "label": "Play Ride the Wind (2, base)",
           "card_id": "ogn-173-298",
           "keywords": [],
           "from_zone": null,
@@ -3600,7 +3600,7 @@
         "action": {
           "id": "a6",
           "type": "PlaySpell",
-          "label": "Play ogn-173-298 (2, right)",
+          "label": "Play Ride the Wind (2, right)",
           "card_id": "ogn-173-298",
           "keywords": [],
           "from_zone": null,
@@ -3616,7 +3616,7 @@
         "action": {
           "id": "a7",
           "type": "PlaySpell",
-          "label": "Play ogn-173-298 (3, base)",
+          "label": "Play Ride the Wind (3, base)",
           "card_id": "ogn-173-298",
           "keywords": [],
           "from_zone": null,
@@ -3632,7 +3632,7 @@
         "action": {
           "id": "a8",
           "type": "PlaySpell",
-          "label": "Play ogn-173-298 (3, left)",
+          "label": "Play Ride the Wind (3, left)",
           "card_id": "ogn-173-298",
           "keywords": [],
           "from_zone": null,
@@ -3650,7 +3650,7 @@
         "action": {
           "id": "a9",
           "type": "PlaySpell",
-          "label": "Play ogn-173-298 (1, left)",
+          "label": "Play Ride the Wind (1, left)",
           "card_id": "ogn-173-298",
           "keywords": [],
           "from_zone": null,
@@ -3666,7 +3666,7 @@
         "action": {
           "id": "a10",
           "type": "PlaySpell",
-          "label": "Play ogn-173-298 (1, right)",
+          "label": "Play Ride the Wind (1, right)",
           "card_id": "ogn-173-298",
           "keywords": [],
           "from_zone": null,
@@ -3682,7 +3682,7 @@
         "action": {
           "id": "a11",
           "type": "PlaySpell",
-          "label": "Play ogn-173-298 (2, base)",
+          "label": "Play Ride the Wind (2, base)",
           "card_id": "ogn-173-298",
           "keywords": [],
           "from_zone": null,
@@ -3698,7 +3698,7 @@
         "action": {
           "id": "a12",
           "type": "PlaySpell",
-          "label": "Play ogn-173-298 (2, right)",
+          "label": "Play Ride the Wind (2, right)",
           "card_id": "ogn-173-298",
           "keywords": [],
           "from_zone": null,
@@ -3714,7 +3714,7 @@
         "action": {
           "id": "a13",
           "type": "PlaySpell",
-          "label": "Play ogn-173-298 (3, base)",
+          "label": "Play Ride the Wind (3, base)",
           "card_id": "ogn-173-298",
           "keywords": [],
           "from_zone": null,
@@ -3730,7 +3730,7 @@
         "action": {
           "id": "a14",
           "type": "PlaySpell",
-          "label": "Play ogn-173-298 (3, left)",
+          "label": "Play Ride the Wind (3, left)",
           "card_id": "ogn-173-298",
           "keywords": [],
           "from_zone": null,
@@ -3748,7 +3748,7 @@
         "action": {
           "id": "a15",
           "type": "PlaySpell",
-          "label": "Play ogn-173-298 (2, base)",
+          "label": "Play Ride the Wind (2, base)",
           "card_id": "ogn-173-298",
           "keywords": [],
           "from_zone": null,
@@ -3764,7 +3764,7 @@
         "action": {
           "id": "a16",
           "type": "PlaySpell",
-          "label": "Play ogn-173-298 (2, right)",
+          "label": "Play Ride the Wind (2, right)",
           "card_id": "ogn-173-298",
           "keywords": [],
           "from_zone": null,
@@ -3780,7 +3780,7 @@
         "action": {
           "id": "a17",
           "type": "PlaySpell",
-          "label": "Play ogn-173-298 (1, base)",
+          "label": "Play Ride the Wind (1, base)",
           "card_id": "ogn-173-298",
           "keywords": [],
           "from_zone": null,
@@ -3796,7 +3796,7 @@
         "action": {
           "id": "a18",
           "type": "PlaySpell",
-          "label": "Play ogn-173-298 (1, left)",
+          "label": "Play Ride the Wind (1, left)",
           "card_id": "ogn-173-298",
           "keywords": [],
           "from_zone": null,
@@ -3812,7 +3812,7 @@
         "action": {
           "id": "a19",
           "type": "PlaySpell",
-          "label": "Play ogn-173-298 (3, base)",
+          "label": "Play Ride the Wind (3, base)",
           "card_id": "ogn-173-298",
           "keywords": [],
           "from_zone": null,
@@ -3828,7 +3828,7 @@
         "action": {
           "id": "a20",
           "type": "PlaySpell",
-          "label": "Play ogn-173-298 (3, left)",
+          "label": "Play Ride the Wind (3, left)",
           "card_id": "ogn-173-298",
           "keywords": [],
           "from_zone": null,
@@ -3846,7 +3846,7 @@
         "action": {
           "id": "a21",
           "type": "MoveUnit",
-          "label": "Move ogn-205-298 from base to left",
+          "label": "Move Yasuo, Windrider from base to left",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
@@ -3864,7 +3864,7 @@
         "action": {
           "id": "a22",
           "type": "MoveUnit",
-          "label": "Move ogn-205-298 from base to right",
+          "label": "Move Yasuo, Windrider from base to right",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
@@ -3884,7 +3884,7 @@
         "action": {
           "id": "a23",
           "type": "MoveUnit",
-          "label": "Move ogn-205-298 from right to base",
+          "label": "Move Yasuo, Windrider from right to base",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
@@ -3902,7 +3902,7 @@
         "action": {
           "id": "a24",
           "type": "MoveUnit",
-          "label": "Move ogn-205-298 from right to left",
+          "label": "Move Yasuo, Windrider from right to left",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
@@ -3922,7 +3922,7 @@
         "action": {
           "id": "a25",
           "type": "MoveUnit",
-          "label": "Move ogn-010-298 from base to left",
+          "label": "Move Legion Rearguard from base to left",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "base",
@@ -3938,7 +3938,7 @@
         "action": {
           "id": "a26",
           "type": "MoveUnit",
-          "label": "Move ogn-010-298 from base to right",
+          "label": "Move Legion Rearguard from base to right",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "base",
@@ -3954,7 +3954,7 @@
         "action": {
           "id": "a27",
           "type": "MoveUnit",
-          "label": "Move ogn-205-298 from left to base",
+          "label": "Move Yasuo, Windrider from left to base",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
@@ -3972,7 +3972,7 @@
         "action": {
           "id": "a28",
           "type": "MoveUnit",
-          "label": "Move ogn-205-298 from left to right",
+          "label": "Move Yasuo, Windrider from left to right",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
@@ -3992,7 +3992,7 @@
         "action": {
           "id": "a29",
           "type": "MoveUnit",
-          "label": "Move ogn-205-298 from left to base",
+          "label": "Move Yasuo, Windrider from left to base",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
@@ -4010,7 +4010,7 @@
         "action": {
           "id": "a30",
           "type": "MoveUnit",
-          "label": "Move ogn-205-298 from left to right",
+          "label": "Move Yasuo, Windrider from left to right",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
@@ -4028,7 +4028,7 @@
         "action": {
           "id": "a31",
           "type": "MoveUnit",
-          "label": "Move ogn-010-298 from right to base",
+          "label": "Move Legion Rearguard from right to base",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "right",
@@ -4046,7 +4046,7 @@
         "action": {
           "id": "a32",
           "type": "MoveUnit",
-          "label": "Move ogn-211-298 from base to left",
+          "label": "Move Faithful Manufactor from base to left",
           "card_id": "ogn-211-298",
           "keywords": [],
           "from_zone": "base",
@@ -4062,7 +4062,7 @@
         "action": {
           "id": "a33",
           "type": "MoveUnit",
-          "label": "Move ogn-211-298 from base to right",
+          "label": "Move Faithful Manufactor from base to right",
           "card_id": "ogn-211-298",
           "keywords": [],
           "from_zone": "base",
@@ -4078,7 +4078,7 @@
         "action": {
           "id": "a34",
           "type": "MoveUnit",
-          "label": "Move ogn-205-298 from left to base",
+          "label": "Move Yasuo, Windrider from left to base",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
@@ -4096,7 +4096,7 @@
         "action": {
           "id": "a35",
           "type": "MoveUnit",
-          "label": "Move ogn-205-298 from left to right",
+          "label": "Move Yasuo, Windrider from left to right",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
@@ -4116,7 +4116,7 @@
         "action": {
           "id": "a36",
           "type": "MoveUnit",
-          "label": "Move ogn-205-298 from left to base",
+          "label": "Move Yasuo, Windrider from left to base",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
@@ -4134,7 +4134,7 @@
         "action": {
           "id": "a37",
           "type": "MoveUnit",
-          "label": "Move ogn-205-298 from left to right",
+          "label": "Move Yasuo, Windrider from left to right",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
@@ -4152,7 +4152,7 @@
         "action": {
           "id": "a38",
           "type": "MoveUnit",
-          "label": "Move ogn-211-298 from left to base",
+          "label": "Move Faithful Manufactor from left to base",
           "card_id": "ogn-211-298",
           "keywords": [],
           "from_zone": "left",
@@ -4170,7 +4170,7 @@
         "action": {
           "id": "a39",
           "type": "MoveUnit",
-          "label": "Move ogn-205-298 from left to base",
+          "label": "Move Yasuo, Windrider from left to base",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
@@ -4188,7 +4188,7 @@
         "action": {
           "id": "a40",
           "type": "MoveUnit",
-          "label": "Move ogn-205-298 from left to right",
+          "label": "Move Yasuo, Windrider from left to right",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
@@ -4208,7 +4208,7 @@
         "action": {
           "id": "a41",
           "type": "MoveUnit",
-          "label": "Move ogn-205-298 from right to base",
+          "label": "Move Yasuo, Windrider from right to base",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
@@ -4226,7 +4226,7 @@
         "action": {
           "id": "a42",
           "type": "MoveUnit",
-          "label": "Move ogn-205-298 from right to left",
+          "label": "Move Yasuo, Windrider from right to left",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
@@ -4246,7 +4246,7 @@
         "action": {
           "id": "a43",
           "type": "MoveUnit",
-          "label": "Move ogn-010-298 from base to left",
+          "label": "Move Legion Rearguard from base to left",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "base",
@@ -4262,7 +4262,7 @@
         "action": {
           "id": "a44",
           "type": "MoveUnit",
-          "label": "Move ogn-010-298 from base to right",
+          "label": "Move Legion Rearguard from base to right",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "base",
@@ -4280,7 +4280,7 @@
         "action": {
           "id": "a45",
           "type": "MoveUnit",
-          "label": "Move ogn-010-298 from right to base",
+          "label": "Move Legion Rearguard from right to base",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "right",
@@ -4298,7 +4298,7 @@
         "action": {
           "id": "a46",
           "type": "MoveUnit",
-          "label": "Move ogn-211-298 from base to left",
+          "label": "Move Faithful Manufactor from base to left",
           "card_id": "ogn-211-298",
           "keywords": [],
           "from_zone": "base",
@@ -4314,7 +4314,7 @@
         "action": {
           "id": "a47",
           "type": "MoveUnit",
-          "label": "Move ogn-211-298 from base to right",
+          "label": "Move Faithful Manufactor from base to right",
           "card_id": "ogn-211-298",
           "keywords": [],
           "from_zone": "base",
@@ -4332,7 +4332,7 @@
         "action": {
           "id": "a48",
           "type": "MoveUnit",
-          "label": "Move ogn-211-298 from left to base",
+          "label": "Move Faithful Manufactor from left to base",
           "card_id": "ogn-211-298",
           "keywords": [],
           "from_zone": "left",
@@ -4350,7 +4350,7 @@
         "action": {
           "id": "a49",
           "type": "MoveUnit",
-          "label": "Move ogn-010-298 from base to left",
+          "label": "Move Legion Rearguard from base to left",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "base",
@@ -4366,7 +4366,7 @@
         "action": {
           "id": "a50",
           "type": "MoveUnit",
-          "label": "Move ogn-010-298 from base to right",
+          "label": "Move Legion Rearguard from base to right",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "base",
@@ -4384,7 +4384,7 @@
         "action": {
           "id": "a51",
           "type": "MoveUnit",
-          "label": "Move ogn-010-298 from right to base",
+          "label": "Move Legion Rearguard from right to base",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "right",
@@ -4402,7 +4402,7 @@
         "action": {
           "id": "a52",
           "type": "MoveUnit",
-          "label": "Move ogn-205-298 from base to left",
+          "label": "Move Yasuo, Windrider from base to left",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
@@ -4420,7 +4420,7 @@
         "action": {
           "id": "a53",
           "type": "MoveUnit",
-          "label": "Move ogn-205-298 from base to right",
+          "label": "Move Yasuo, Windrider from base to right",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
@@ -4440,7 +4440,7 @@
         "action": {
           "id": "a54",
           "type": "MoveUnit",
-          "label": "Move ogn-211-298 from base to left",
+          "label": "Move Faithful Manufactor from base to left",
           "card_id": "ogn-211-298",
           "keywords": [],
           "from_zone": "base",
@@ -4456,7 +4456,7 @@
         "action": {
           "id": "a55",
           "type": "MoveUnit",
-          "label": "Move ogn-211-298 from base to right",
+          "label": "Move Faithful Manufactor from base to right",
           "card_id": "ogn-211-298",
           "keywords": [],
           "from_zone": "base",
@@ -4474,7 +4474,7 @@
         "action": {
           "id": "a56",
           "type": "MoveUnit",
-          "label": "Move ogn-211-298 from left to base",
+          "label": "Move Faithful Manufactor from left to base",
           "card_id": "ogn-211-298",
           "keywords": [],
           "from_zone": "left",
@@ -4492,7 +4492,7 @@
         "action": {
           "id": "a57",
           "type": "MoveUnit",
-          "label": "Move ogn-205-298 from left to base",
+          "label": "Move Yasuo, Windrider from left to base",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
@@ -4510,7 +4510,7 @@
         "action": {
           "id": "a58",
           "type": "MoveUnit",
-          "label": "Move ogn-205-298 from left to right",
+          "label": "Move Yasuo, Windrider from left to right",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
@@ -4530,7 +4530,7 @@
         "action": {
           "id": "a59",
           "type": "MoveUnit",
-          "label": "Move ogn-205-298 from left to base",
+          "label": "Move Yasuo, Windrider from left to base",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
@@ -4548,7 +4548,7 @@
         "action": {
           "id": "a60",
           "type": "MoveUnit",
-          "label": "Move ogn-205-298 from left to right",
+          "label": "Move Yasuo, Windrider from left to right",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
@@ -4568,7 +4568,7 @@
         "action": {
           "id": "a61",
           "type": "MoveUnit",
-          "label": "Move ogn-205-298 from left to base",
+          "label": "Move Yasuo, Windrider from left to base",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
@@ -4586,7 +4586,7 @@
         "action": {
           "id": "a62",
           "type": "MoveUnit",
-          "label": "Move ogn-205-298 from left to right",
+          "label": "Move Yasuo, Windrider from left to right",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
@@ -4606,7 +4606,7 @@
         "action": {
           "id": "a63",
           "type": "MoveUnit",
-          "label": "Move ogn-205-298 from left to base",
+          "label": "Move Yasuo, Windrider from left to base",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
@@ -4624,7 +4624,7 @@
         "action": {
           "id": "a64",
           "type": "MoveUnit",
-          "label": "Move ogn-205-298 from left to right",
+          "label": "Move Yasuo, Windrider from left to right",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
@@ -4644,7 +4644,7 @@
         "action": {
           "id": "a65",
           "type": "MoveUnit",
-          "label": "Move ogn-205-298 from left to base",
+          "label": "Move Yasuo, Windrider from left to base",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
@@ -4662,7 +4662,7 @@
         "action": {
           "id": "a66",
           "type": "MoveUnit",
-          "label": "Move ogn-205-298 from left to right",
+          "label": "Move Yasuo, Windrider from left to right",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
@@ -4682,7 +4682,7 @@
         "action": {
           "id": "a67",
           "type": "MoveUnit",
-          "label": "Move ogn-205-298 from left to base",
+          "label": "Move Yasuo, Windrider from left to base",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"
@@ -4700,7 +4700,7 @@
         "action": {
           "id": "a68",
           "type": "MoveUnit",
-          "label": "Move ogn-205-298 from left to right",
+          "label": "Move Yasuo, Windrider from left to right",
           "card_id": "ogn-205-298",
           "keywords": [
             "Ganking"

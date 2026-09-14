@@ -934,7 +934,7 @@
         "action": {
           "id": "a1",
           "type": "MoveUnit",
-          "label": "Move ogn-010-298 from base to left",
+          "label": "Move Legion Rearguard from base to left",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "base",
@@ -950,7 +950,7 @@
         "action": {
           "id": "a2",
           "type": "MoveUnit",
-          "label": "Move ogn-068-298 from left to base",
+          "label": "Move Caitlyn, Patrolling from left to base",
           "card_id": "ogn-068-298",
           "keywords": [],
           "from_zone": "left",
@@ -966,7 +966,7 @@
         "action": {
           "id": "a3",
           "type": "ResolveCombat",
-          "label": "Move ogn-010-298 from base to right (combat)",
+          "label": "Move Legion Rearguard from base to right (combat)",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "base",
@@ -982,7 +982,7 @@
         "action": {
           "id": "a4",
           "type": "ActivateAbility",
-          "label": "Activate ogn-068-298 (1)",
+          "label": "Activate Caitlyn, Patrolling (1)",
           "card_id": "ogn-068-298",
           "keywords": [],
           "from_zone": null,
@@ -998,7 +998,7 @@
         "action": {
           "id": "a5",
           "type": "ActivateAbility",
-          "label": "Activate ogn-068-298 (3)",
+          "label": "Activate Caitlyn, Patrolling (3)",
           "card_id": "ogn-068-298",
           "keywords": [],
           "from_zone": null,
@@ -1016,7 +1016,7 @@
         "action": {
           "id": "a6",
           "type": "MoveUnit",
-          "label": "Move ogn-068-298 from left to base",
+          "label": "Move Caitlyn, Patrolling from left to base",
           "card_id": "ogn-068-298",
           "keywords": [],
           "from_zone": "left",
@@ -1032,7 +1032,7 @@
         "action": {
           "id": "a7",
           "type": "ActivateAbility",
-          "label": "Activate ogn-068-298 (1)",
+          "label": "Activate Caitlyn, Patrolling (1)",
           "card_id": "ogn-068-298",
           "keywords": [],
           "from_zone": null,
@@ -1048,7 +1048,7 @@
         "action": {
           "id": "a8",
           "type": "ActivateAbility",
-          "label": "Activate ogn-068-298 (2)",
+          "label": "Activate Caitlyn, Patrolling (2)",
           "card_id": "ogn-068-298",
           "keywords": [],
           "from_zone": null,
@@ -1064,7 +1064,7 @@
         "action": {
           "id": "a9",
           "type": "ActivateAbility",
-          "label": "Activate ogn-068-298 (3)",
+          "label": "Activate Caitlyn, Patrolling (3)",
           "card_id": "ogn-068-298",
           "keywords": [],
           "from_zone": null,
@@ -1082,7 +1082,7 @@
         "action": {
           "id": "a10",
           "type": "MoveUnit",
-          "label": "Move ogn-010-298 from base to left",
+          "label": "Move Legion Rearguard from base to left",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "base",
@@ -1098,7 +1098,7 @@
         "action": {
           "id": "a11",
           "type": "ResolveCombat",
-          "label": "Move ogn-010-298 from base to right (combat)",
+          "label": "Move Legion Rearguard from base to right (combat)",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "base",
@@ -1116,7 +1116,7 @@
         "action": {
           "id": "a12",
           "type": "MoveUnit",
-          "label": "Move ogn-068-298 from left to base",
+          "label": "Move Caitlyn, Patrolling from left to base",
           "card_id": "ogn-068-298",
           "keywords": [],
           "from_zone": "left",
@@ -1132,7 +1132,7 @@
         "action": {
           "id": "a13",
           "type": "ActivateAbility",
-          "label": "Activate ogn-068-298 (1)",
+          "label": "Activate Caitlyn, Patrolling (1)",
           "card_id": "ogn-068-298",
           "keywords": [],
           "from_zone": null,
@@ -1148,7 +1148,7 @@
         "action": {
           "id": "a14",
           "type": "ActivateAbility",
-          "label": "Activate ogn-068-298 (3)",
+          "label": "Activate Caitlyn, Patrolling (3)",
           "card_id": "ogn-068-298",
           "keywords": [],
           "from_zone": null,
@@ -1166,7 +1166,7 @@
         "action": {
           "id": "a15",
           "type": "MoveUnit",
-          "label": "Move ogn-010-298 from base to left",
+          "label": "Move Legion Rearguard from base to left",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "base",
@@ -1182,7 +1182,7 @@
         "action": {
           "id": "a16",
           "type": "ResolveCombat",
-          "label": "Move ogn-010-298 from base to right (combat)",
+          "label": "Move Legion Rearguard from base to right (combat)",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "base",
@@ -1200,7 +1200,7 @@
         "action": {
           "id": "a17",
           "type": "MoveUnit",
-          "label": "Move ogn-010-298 from base to left",
+          "label": "Move Legion Rearguard from base to left",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "base",
@@ -1216,7 +1216,7 @@
         "action": {
           "id": "a18",
           "type": "MoveUnit",
-          "label": "Move ogn-010-298 from base to right",
+          "label": "Move Legion Rearguard from base to right",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "base",

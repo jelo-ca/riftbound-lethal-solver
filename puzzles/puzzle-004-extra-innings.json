@@ -276,7 +276,7 @@
         "action": {
           "id": "a1",
           "type": "PlaySpell",
-          "label": "Play ogn-173-298 (1, base)",
+          "label": "Play Ride the Wind (1, base)",
           "card_id": "ogn-173-298",
           "keywords": [],
           "from_zone": null,
@@ -292,7 +292,7 @@
         "action": {
           "id": "a2",
           "type": "PlaySpell",
-          "label": "Play ogn-173-298 (1, right)",
+          "label": "Play Ride the Wind (1, right)",
           "card_id": "ogn-173-298",
           "keywords": [],
           "from_zone": null,
@@ -310,7 +310,7 @@
         "action": {
           "id": "a3",
           "type": "MoveUnit",
-          "label": "Move ogn-010-298 from base to left",
+          "label": "Move Legion Rearguard from base to left",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "base",
@@ -326,7 +326,7 @@
         "action": {
           "id": "a4",
           "type": "MoveUnit",
-          "label": "Move ogn-010-298 from base to right",
+          "label": "Move Legion Rearguard from base to right",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "base",

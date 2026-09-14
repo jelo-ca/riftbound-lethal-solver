@@ -397,7 +397,7 @@
         "action": {
           "id": "a1",
           "type": "MoveUnit",
-          "label": "Move ogn-211-298 from base to left",
+          "label": "Move Faithful Manufactor from base to left",
           "card_id": "ogn-211-298",
           "keywords": [],
           "from_zone": "base",
@@ -413,7 +413,7 @@
         "action": {
           "id": "a2",
           "type": "MoveUnit",
-          "label": "Move ogn-211-298 from base to right",
+          "label": "Move Faithful Manufactor from base to right",
           "card_id": "ogn-211-298",
           "keywords": [],
           "from_zone": "base",
@@ -429,7 +429,7 @@
         "action": {
           "id": "a3",
           "type": "MoveUnit",
-          "label": "Move ogn-010-298 from right to base",
+          "label": "Move Legion Rearguard from right to base",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "right",
@@ -447,7 +447,7 @@
         "action": {
           "id": "a4",
           "type": "MoveUnit",
-          "label": "Move ogn-010-298 from right to base",
+          "label": "Move Legion Rearguard from right to base",
           "card_id": "ogn-010-298",
           "keywords": [],
           "from_zone": "right",
@@ -465,7 +465,7 @@
         "action": {
           "id": "a5",
           "type": "MoveUnit",
-          "label": "Move ogn-211-298 from base to left",
+          "label": "Move Faithful Manufactor from base to left",
           "card_id": "ogn-211-298",
           "keywords": [],
           "from_zone": "base",
@@ -481,7 +481,7 @@
         "action": {
           "id": "a6",
           "type": "MoveUnit",
-          "label": "Move ogn-211-298 from base to right",
+          "label": "Move Faithful Manufactor from base to right",
           "card_id": "ogn-211-298",
           "keywords": [],
           "from_zone": "base",
