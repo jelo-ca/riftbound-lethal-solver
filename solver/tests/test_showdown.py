@@ -105,6 +105,39 @@ def test_an_unaffordable_action_card_does_not_materialise_the_window():
     assert not any(isinstance(a, EnterShowdown) for a in actions)
 
 
+def _battlefield_to_battlefield_state(attacker_keywords):
+    """Our unit standing on "right", an enemy holding "left" — so the only
+    way to start a fight is a Battlefield-to-Battlefield move."""
+    attacker = make_unit(1, keywords=attacker_keywords)
+    enemy = make_unit(2, controller=1)
+    state = make_state(hand=(RIDE_THE_WIND,), runes=("Fury", "Fury", "Chaos"),
+                        left_units=frozenset({enemy}), left_ctrl=1)
+    return dataclasses.replace(state, battlefields=(
+        state.battlefields[0],
+        dataclasses.replace(state.battlefields[1], controller=0, units=frozenset({attacker})),
+    ))
+
+
+def test_entering_a_showdown_battlefield_to_battlefield_still_needs_ganking():
+    """EnterShowdown is derived from the ResolveCombat candidates rather
+    than generated independently, so it inherits every Standard Move zone
+    rule — including rule 810: Battlefield-to-Battlefield needs [Ganking].
+    Without it the attack isn't a legal move, so there is nothing to open
+    a window on (and no atomic ResolveCombat either)."""
+    state = _battlefield_to_battlefield_state(frozenset())
+    actions = legal_actions(state, {RIDE_THE_WIND: RIDE_THE_WIND_CARD})
+    assert not any(isinstance(a, (EnterShowdown, ResolveCombat)) for a in actions)
+
+
+def test_ganking_lets_a_battlefield_to_battlefield_attack_open_a_showdown():
+    """The same board with [Ganking] — this is puzzle 8's opening move,
+    where it is the stranded unit's only legal exit."""
+    state = _battlefield_to_battlefield_state(frozenset({"Ganking"}))
+    actions = legal_actions(state, {RIDE_THE_WIND: RIDE_THE_WIND_CARD})
+    entries = [a for a in actions if isinstance(a, EnterShowdown)]
+    assert [(a.from_zone, a.to_zone) for a in entries] == [("right", "left")]
+
+
 # --- the action space inside an open showdown ---
 
 
