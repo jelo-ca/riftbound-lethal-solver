@@ -71,13 +71,16 @@ HAND_SPELL_POOL = [RIDE_THE_WIND, VENGEANCE, CHARM, PRIMAL_STRENGTH]
 #     Conquer, the whole reason it's in the pool;
 #   Faithful Manufactor / Vanguard Captain - mandatory "when you play me"
 #     token-mint triggers (abilities.MANDATORY_PLAY_TRIGGERS) - same
-#     "only fires from hand" reasoning as Blitzcrank/Zaunite Bouncer.
+#     "only fires from hand" reasoning as Blitzcrank/Zaunite Bouncer;
+#   Legion Rearguard - [Accelerate], the one way a freshly played body is
+#     NOT a dead action: paying the extra 1 Energy + Fury rune has it
+#     enter ready, so it can still move or fight the turn it lands.
 # Plain bodies are left out on purpose: a unit enters exhausted (rule
 # 143.4.a), so in a single-turn puzzle a freshly played vanilla can't
 # move or fight afterwards, making it a dead action that would just
 # dilute sampling.
 HAND_UNIT_POOL = [BLITZCRANK_IMPASSIVE, ZAUNITE_BOUNCER, SNEAKY_DECKHAND,
-                   FAITHFUL_MANUFACTOR, VANGUARD_CAPTAIN]
+                   FAITHFUL_MANUFACTOR, VANGUARD_CAPTAIN, LEGION_REARGUARD]
 HAND_CARD_POOL = HAND_SPELL_POOL + HAND_UNIT_POOL
 
 # Battlefield effects worth sampling (engine/battlefields.py's registered

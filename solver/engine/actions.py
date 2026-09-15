@@ -55,6 +55,12 @@ class PlayUnit:
     # trigger (abilities.UNIT_PLAY_TRIGGERS). Empty tuple = no trigger
     # registered, or the player declined an optional one ("you may...").
     trigger_params: tuple = ()
+    # [Accelerate]'s optional additional cost was paid, so this unit enters
+    # READY instead of exhausted (rule 143.4.a's default). Genuinely
+    # optional — both the plain and accelerated forms are generated as
+    # separate legal actions whenever the card has Accelerate and the
+    # bigger payment is affordable.
+    accelerated: bool = False
 
 
 @dataclass(frozen=True)
@@ -220,17 +226,39 @@ def next_instance_id(state: GameState) -> int:
 # --- PlayUnit -------------------------------------------------------------
 
 
+def has_accelerate(card: CardDef) -> bool:
+    """Read off the CARD, not a UnitInstance's resolved traits: Accelerate
+    is paid at play time, when the unit isn't on the board yet and has no
+    zone to resolve positional/aura grants against. Nothing in the set
+    grants Accelerate to something that didn't print it."""
+    return "Accelerate" in card.keywords and card.accelerate_domain is not None
+
+
+def play_unit_cost(card: CardDef, accelerated: bool) -> tuple[int, int, Optional[Domain]]:
+    """The (Energy, Power, power domain) a PlayUnit must pay. Accelerate
+    adds 1 Energy + one rune of the card's own domain on top of the
+    printed cost — and since that domain always matches the card's Power
+    domain where it has one (see CardDef.accelerate_domain), the whole
+    accelerated cost still resolves to a single domain."""
+    if not accelerated:
+        return card.energy_cost, card.power_cost, card.power_domain
+    return card.energy_cost + 1, card.power_cost + 1, card.accelerate_domain
+
+
 def is_legal_play_unit(state: GameState, action: PlayUnit, card: CardDef) -> bool:
     if card.card_type != "Unit":
         return False
     player = state.players[state.turn_player]
     if action.card_id not in player.hand:
         return False
-    if len(action.rune_payment.energy_runes) != card.energy_cost:
+    if action.accelerated and not has_accelerate(card):
         return False
-    if len(action.rune_payment.power_runes) != card.power_cost:
+    energy_cost, power_cost, power_domain = play_unit_cost(card, action.accelerated)
+    if len(action.rune_payment.energy_runes) != energy_cost:
         return False
-    if card.power_cost and any(d != card.power_domain for d in action.rune_payment.power_runes):
+    if len(action.rune_payment.power_runes) != power_cost:
+        return False
+    if power_cost and any(d != power_domain for d in action.rune_payment.power_runes):
         return False
     spent = list(action.rune_payment.energy_runes + action.rune_payment.power_runes)
     pool = list(player.runes.available)
@@ -270,7 +298,9 @@ def apply_play_unit(state: GameState, action: PlayUnit, card: CardDef) -> GameSt
         controller=player_index,
         might=card.might if card.might is not None else 0,
         keywords=card.keywords,
-        exhausted=True,  # rule 143.4.a: units enter the board exhausted
+        # rule 143.4.a: units enter the board exhausted — unless [Accelerate]'s
+        # additional cost was paid, which is the entire point of the keyword.
+        exhausted=not action.accelerated,
         damage=0,
         is_token=False,
     )
@@ -633,13 +663,19 @@ def legal_board_actions(state: GameState, cards: dict[str, CardDef]) -> list[Act
                 bf.battlefield_id for bf in state.battlefields
                 if bf.controller is None and not bf.units
             ]
-        for payment in generate_rune_payments(
-            player.runes, card.energy_cost, card.power_cost, card.power_domain
-        ):
-            for zone in candidate_zones:
-                action = PlayUnit(card_id=card_id, target_zone=zone, rune_payment=payment)
-                if is_legal_play_unit(state, action, card):
-                    actions.append(action)
+        # Both cost modes where the card has [Accelerate] — paying the extra
+        # to enter ready is a real choice, not an upgrade, since the runes
+        # it eats may be needed elsewhere in the turn.
+        for accelerated in ([False, True] if has_accelerate(card) else [False]):
+            energy_cost, power_cost, power_domain = play_unit_cost(card, accelerated)
+            for payment in generate_rune_payments(
+                player.runes, energy_cost, power_cost, power_domain
+            ):
+                for zone in candidate_zones:
+                    action = PlayUnit(card_id=card_id, target_zone=zone, rune_payment=payment,
+                                       accelerated=accelerated)
+                    if is_legal_play_unit(state, action, card):
+                        actions.append(action)
 
     def add_move_candidates(unit: UnitInstance, from_zone: Zone, to_zone: Zone) -> None:
         if to_zone != "base" and combat.is_combat_triggered(state, unit, to_zone):

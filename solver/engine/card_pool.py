@@ -34,8 +34,12 @@ DARING_PORO = "ogn-210-298"
 STALWART_PORO = "ogn-052-298"
 
 CARD_POOL: dict[str, CardDef] = {
+    # Recorded as a vanilla body until now; it actually prints [Accelerate]
+    # (1 Energy + a Fury rune to enter ready). No Power cost of its own, so
+    # the Fury requirement lives in accelerate_domain rather than power_domain.
     LEGION_REARGUARD: CardDef(card_id=LEGION_REARGUARD, card_type="Unit", energy_cost=2,
-                               power_cost=0, might=2, keywords=frozenset()),
+                               power_cost=0, might=2, keywords=frozenset({"Accelerate"}),
+                               accelerate_domain="Fury"),
     FAITHFUL_MANUFACTOR: CardDef(card_id=FAITHFUL_MANUFACTOR, card_type="Unit", energy_cost=3,
                                   power_cost=0, might=2, keywords=frozenset()),
     VANGUARD_CAPTAIN: CardDef(card_id=VANGUARD_CAPTAIN, card_type="Unit", energy_cost=3,

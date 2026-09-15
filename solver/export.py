@@ -130,6 +130,11 @@ def render_action(state: GameState, action: Action, action_id: str) -> dict:
     instance_id = None
     if isinstance(action, PlayUnit):
         label = f"Play {card_names.display_name(action.card_id)} to {action.target_zone}"
+        if action.accelerated:
+            # Without this, an accelerated play and a plain one of the same
+            # card to the same zone render identically despite leading to
+            # genuinely different states (ready vs exhausted).
+            label += " (accelerated)"
         card_id, keywords = action.card_id, []
         to_zone = action.target_zone
     elif isinstance(action, MoveUnit):

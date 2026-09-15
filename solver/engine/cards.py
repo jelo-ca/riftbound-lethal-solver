@@ -42,3 +42,13 @@ class CardDef:
     # this wrong in the permissive direction would invent lines that don't
     # exist, so the default is the restrictive one.
     speed: Speed = "Slow"
+    # Set iff the card has [Accelerate] ("You may pay 1 Energy + one rune
+    # as an additional cost to have me enter ready"): the domain of that
+    # extra rune. Carried separately from power_domain because a card can
+    # have Accelerate with no Power cost at all (Legion Rearguard is 2
+    # Energy, no Power, Accelerate for a Fury rune) — in which case
+    # power_domain is None and can't supply it. Across all 14 printed
+    # Accelerate cards this is always the card's own domain, and where the
+    # card ALSO has a Power cost that domain is the same one, so a single
+    # domain covers both halves of an accelerated payment.
+    accelerate_domain: Optional[Domain] = None

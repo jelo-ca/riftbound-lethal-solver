@@ -44,6 +44,11 @@ TRAIT_REGISTRY: dict[str, TraitDef] = {
     "Assault": TraitDef(might_delta=1, applies_when="attacker"),
     "Tank": TraitDef(might_delta=0, applies_when=None),
     "Ganking": TraitDef(might_delta=0, applies_when=None),
+    # Zero Might, like Tank and Ganking — it does its work elsewhere
+    # (actions.play_unit_cost / apply_play_unit's exhaustion), at play
+    # time rather than on the board. Registered so it parses as a trait
+    # rather than falling through as unknown.
+    "Accelerate": TraitDef(might_delta=0, applies_when=None),
 }
 
 TARIC_PROTECTOR = "ogn-074-298"  # "Other friendly units here have [Shield]."
