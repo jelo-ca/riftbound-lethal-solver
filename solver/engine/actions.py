@@ -70,6 +70,12 @@ class PlayUnit:
     # separate legal actions whenever the card has Accelerate and the
     # bigger payment is affordable.
     accelerated: bool = False
+    # Runes for the [Deflect] tax owed by this card's "when you play me"
+    # trigger, when that trigger chooses an enemy unit that has Deflect.
+    # Separate from `rune_payment` because it pays for the TRIGGER's
+    # targeting, not the card's own cost, and is spent from what's left
+    # after the card itself is paid for. None when no tax is owed.
+    trigger_payment: Optional[RunePayment] = None
 
 
 @dataclass(frozen=True)
@@ -286,6 +292,11 @@ def is_legal_play_unit(state: GameState, action: PlayUnit, card: CardDef) -> boo
         return False
     if power_cost and any(d != power_domain for d in action.rune_payment.power_runes):
         return False
+    # Playing a unit doesn't CHOOSE one, so a card's own cost never carries
+    # a [Deflect] tax — that rides on trigger_payment, checked by the
+    # trigger's own legality in abilities.py.
+    if action.rune_payment.rainbow_runes:
+        return False
     spent = list(action.rune_payment.energy_runes + action.rune_payment.power_runes)
     pool = list(player.runes.available)
     for domain in spent:
@@ -407,7 +418,12 @@ def is_legal_play_spell_cost(state: GameState, action: PlaySpell, card: CardDef)
         return False
     if card.power_cost and any(d != card.power_domain for d in action.rune_payment.power_runes):
         return False
-    spent = list(action.rune_payment.energy_runes + action.rune_payment.power_runes)
+    # rainbow_runes are the [Deflect] tax on whatever this spell chooses.
+    # Affordability is checked here; that the AMOUNT matches what the
+    # chosen targets actually charge is abilities.is_legal_play_spell's
+    # job, since only the per-card registry knows what a spell targets.
+    spent = list(action.rune_payment.energy_runes + action.rune_payment.power_runes
+                 + action.rune_payment.rainbow_runes)
     pool = list(player.runes.available)
     for domain in spent:
         if domain not in pool:

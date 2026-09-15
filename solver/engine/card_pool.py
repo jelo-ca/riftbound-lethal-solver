@@ -32,6 +32,7 @@ LEGION_REARGUARD = "ogn-010-298"
 SNEAKY_DECKHAND = "ogn-176-298"
 DARING_PORO = "ogn-210-298"
 STALWART_PORO = "ogn-052-298"
+POUTY_PORO = "ogn-013-298"
 
 CARD_POOL: dict[str, CardDef] = {
     # Recorded as a vanilla body until now; it actually prints [Accelerate]
@@ -60,6 +61,12 @@ CARD_POOL: dict[str, CardDef] = {
                           power_cost=0, might=2, keywords=frozenset({"Assault"})),
     STALWART_PORO: CardDef(card_id=STALWART_PORO, card_type="Unit", energy_cost=2,
                             power_cost=0, might=2, keywords=frozenset({"Shield"})),
+    # The only clean [Deflect] card in the set — same 2 Energy / 2 Might
+    # one-keyword shape as the other two Poros. The rest carry extra
+    # unimplemented text (attack and conquer triggers, a sacrifice cost,
+    # "play me to an occupied enemy battlefield").
+    POUTY_PORO: CardDef(card_id=POUTY_PORO, card_type="Unit", energy_cost=2,
+                         power_cost=0, might=2, keywords=frozenset({"Deflect"})),
     ZAUNITE_BOUNCER: CardDef(card_id=ZAUNITE_BOUNCER, card_type="Unit", energy_cost=4,
                               power_cost=2, power_domain="Chaos", might=2, keywords=frozenset()),
     TARIC_PROTECTOR: CardDef(card_id=TARIC_PROTECTOR, card_type="Unit", energy_cost=4,

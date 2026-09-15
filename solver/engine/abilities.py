@@ -11,7 +11,7 @@ from __future__ import annotations
 import dataclasses
 from typing import Callable, Optional
 
-from . import combat, scoring
+from . import combat, scoring, traits
 from .actions import (
     ActivateAbility,
     PlaySpell,
@@ -24,6 +24,7 @@ from .actions import (
     is_legal_ability_move_destination,
     is_legal_play_spell_cost,
     is_legal_play_unit,
+    consume_runes,
     kill_unit,
     mint_token_unit,
     next_instance_id,
@@ -315,10 +316,31 @@ def _caitlyn_is_legal(state: GameState, action: ActivateAbility) -> bool:
     if source.controller != state.turn_player or source.exhausted:
         return False
     target_located = find_unit_at_any_battlefield(state, action.params[0])
-    return target_located is not None
+    if target_located is None:
+        return False
+    # She prints no rune cost, but [Deflect] taxes any ability that
+    # CHOOSES a unit — so against a Deflect target her payment goes from
+    # None to exactly the owed runes, and an empty pool makes the ability
+    # unusable on that target.
+    tax = deflect_tax_for(state, CAITLYN_PATROLLING, action.params, state.turn_player)
+    if _paid_rainbow(action.rune_payment) != tax:
+        return False
+    if action.rune_payment is not None:
+        if action.rune_payment.energy_runes or action.rune_payment.power_runes:
+            return False  # nothing but the tax is ever owed here
+        pool = list(state.players[state.turn_player].runes.available)
+        for domain in action.rune_payment.rainbow_runes:
+            if domain not in pool:
+                return False
+            pool.remove(domain)
+    return True
 
 
 def _caitlyn_effect(state: GameState, action: ActivateAbility) -> GameState:
+    if action.rune_payment is not None:
+        player = state.players[state.turn_player]
+        state = replace_player(state, state.turn_player, dataclasses.replace(
+            player, runes=consume_runes(player.runes, action.rune_payment)))
     source, source_bf_id = find_unit_at_any_battlefield(state, action.source_id)
     exhausted_source = dataclasses.replace(source, exhausted=True)
     bf = next(b for b in state.battlefields if b.battlefield_id == source_bf_id)
@@ -361,6 +383,12 @@ def apply_ability(state: GameState, action: ActivateAbility) -> GameState:
 
 def is_legal_play_spell(state: GameState, action: PlaySpell, card: CardDef) -> bool:
     if not is_legal_play_spell_cost(state, action, card):
+        return False
+    # The [Deflect] tax for whatever this spell chooses must be paid
+    # exactly — is_legal_play_spell_cost already confirmed the runes are
+    # affordable, but only the per-card registry knows what's targeted.
+    if _paid_rainbow(action.rune_payment) != deflect_tax_for(
+            state, action.card_id, action.params, state.turn_player):
         return False
     entry = SPELL_EFFECTS.get(action.card_id)
     if entry is None:
@@ -484,6 +512,36 @@ RECRUIT_TOKEN_CARD = CardDef(card_id=RECRUIT_TOKEN, card_type="Unit", energy_cos
 MANDATORY_PLAY_TRIGGERS = frozenset({FAITHFUL_MANUFACTOR, VANGUARD_CAPTAIN})
 
 
+def _charm_deflect_targets(state: GameState, params: tuple) -> list[tuple]:
+    located = find_unit_at_any_battlefield(state, params[0]) if params else None
+    return [located] if located else []
+
+
+def _single_target_anywhere(state: GameState, params: tuple) -> list[tuple]:
+    located = find_unit_anywhere(state, params[0]) if params else None
+    return [located] if located else []
+
+
+def _single_target_at_battlefield(state: GameState, params: tuple) -> list[tuple]:
+    located = find_unit_at_any_battlefield(state, params[0]) if params else None
+    return [located] if located else []
+
+
+def deflect_tax_for(state: GameState, card_id: str, params: tuple, chooser: int) -> int:
+    """Total [Deflect] tax `chooser` owes to take the action described by
+    `card_id`/`params` against the board in `state`. Zero for anything
+    with no registered targets, and for targets the chooser controls."""
+    finder = DEFLECT_TARGETS.get(card_id)
+    if finder is None:
+        return 0
+    return sum(traits.deflect_tax(state, unit, zone, chooser)
+               for unit, zone in finder(state, params))
+
+
+def _paid_rainbow(payment) -> int:
+    return len(payment.rainbow_runes) if payment is not None else 0
+
+
 def legion_condition_met(state_after_play: GameState) -> bool:
     """[Legion] — "Get the effect if you've played another card this turn."
     Shared by every Legion card; only the gate is shared, since the
@@ -596,18 +654,73 @@ UNIT_PLAY_TRIGGERS: dict[str, tuple[
 }
 
 
+# card_id -> chosen_targets(state, params) -> [(UnitInstance, zone), ...]
+#
+# "Choose" in [Deflect]'s sense: the units an effect singles out by
+# instance_id, which is what the tax is charged on. Read with a spell's
+# `params` or a unit trigger's `trigger_params` — both put the chosen
+# unit's instance_id first.
+#
+# Only cards that can choose an ENEMY unit need an entry. Ride The Wind
+# moves a FRIENDLY unit and deflect_tax is 0 against your own, so
+# registering it would be dead weight; the mandatory token-mint triggers
+# (Faithful Manufactor, Vanguard Captain) choose nothing at all.
+#
+# Kept as its own registry rather than a fourth element on
+# SPELL_EFFECTS/ABILITY_EFFECTS/UNIT_PLAY_TRIGGERS because it cuts across
+# all three and most cards in each don't need it.
+DEFLECT_TARGETS: dict[str, Callable[[GameState, tuple], list[tuple]]] = {
+    CHARM: _charm_deflect_targets,
+    VENGEANCE: _single_target_anywhere,
+    PRIMAL_STRENGTH: _single_target_anywhere,
+    CAITLYN_PATROLLING: _single_target_at_battlefield,
+    BLITZCRANK_IMPASSIVE: _single_target_at_battlefield,
+    ZAUNITE_BOUNCER: _single_target_at_battlefield,
+}
+
+
+def trigger_deflect_tax(state: GameState, action: PlayUnit, card: CardDef) -> int:
+    """[Deflect] owed by a "when you play me" trigger for the unit it
+    chooses. Evaluated against the board AFTER the card itself is played,
+    since that's when the trigger resolves — and the tax comes out of
+    what's left once the card's own cost is paid."""
+    if not action.trigger_params:
+        return 0
+    state_after_play = apply_play_unit(state, dataclasses.replace(
+        action, trigger_params=(), trigger_payment=None), card)
+    return deflect_tax_for(state_after_play, action.card_id, action.trigger_params,
+                           state.turn_player)
+
+
 def is_legal_unit_play_trigger(state: GameState, action: PlayUnit, card: CardDef) -> bool:
     if not is_legal_play_unit(state, action, card):
         return False
     entry = UNIT_PLAY_TRIGGERS.get(action.card_id)
     if entry is None:
-        return action.trigger_params == ()
+        return action.trigger_params == () and action.trigger_payment is None
+    if _paid_rainbow(action.trigger_payment) != trigger_deflect_tax(state, action, card):
+        return False
+    if action.trigger_payment is not None:
+        if action.trigger_payment.energy_runes or action.trigger_payment.power_runes:
+            return False  # only the tax is ever owed by a trigger
+        # Spendable out of what the card's OWN cost leaves behind.
+        pool = list(consume_runes(state.players[state.turn_player].runes,
+                                  action.rune_payment).available)
+        for domain in action.trigger_payment.rainbow_runes:
+            if domain not in pool:
+                return False
+            pool.remove(domain)
     is_legal_trigger, _, _ = entry
     return is_legal_trigger(state, action, card)
 
 
 def resolve_unit_play_trigger_outcomes(state: GameState, action: PlayUnit, card: CardDef) -> list[GameState]:
     state_after_play = apply_play_unit(state, action, card)
+    if action.trigger_payment is not None:
+        player = state_after_play.players[state_after_play.turn_player]
+        state_after_play = replace_player(state_after_play, state_after_play.turn_player,
+                                           dataclasses.replace(player, runes=consume_runes(
+                                               player.runes, action.trigger_payment)))
     if action.target_zone != "base":
         state_after_play = scoring.resolve_control_change(state, state_after_play, action.target_zone)
     _, effect, _ = UNIT_PLAY_TRIGGERS[action.card_id]

@@ -42,6 +42,7 @@ from .engine.actions import (
     ResolveShowdown,
     apply_move_unit,
     apply_play_unit,
+    consume_runes,
     find_unit,
     generate_rune_payments,
     legal_board_actions,
@@ -96,10 +97,13 @@ def _playable_spells(state: GameState, cards: dict[str, CardDef],
         if entry is None:
             continue
         _, _, generate_candidates = entry
-        payments = generate_rune_payments(player.runes, card.energy_cost, card.power_cost,
-                                           card.power_domain)
-        for payment in payments:
-            for params in generate_candidates(state):
+        for params in generate_candidates(state):
+            # Payments are generated per-params, not once per card: the
+            # [Deflect] tax depends on what this particular casting chooses.
+            tax = abilities.deflect_tax_for(state, card_id, params, state.turn_player)
+            for payment in generate_rune_payments(player.runes, card.energy_cost,
+                                                   card.power_cost, card.power_domain,
+                                                   rainbow_cost=tax):
                 action = PlaySpell(card_id=card_id, params=params, rune_payment=payment)
                 if abilities.is_legal_play_spell(state, action, card):
                     found.append(action)
@@ -133,9 +137,11 @@ def legal_actions(state: GameState, cards: dict[str, CardDef]) -> list[Action]:
         if entry is None:
             continue
         _, _, generate_candidates = entry
-        payments = generate_rune_payments(player.runes, card.energy_cost, card.power_cost, card.power_domain)
-        for payment in payments:
-            for params in generate_candidates(state):
+        for params in generate_candidates(state):
+            tax = abilities.deflect_tax_for(state, card_id, params, state.turn_player)
+            for payment in generate_rune_payments(player.runes, card.energy_cost,
+                                                   card.power_cost, card.power_domain,
+                                                   rainbow_cost=tax):
                 action = PlaySpell(card_id=card_id, params=params, rune_payment=payment)
                 if abilities.is_legal_play_spell(state, action, card):
                     result.append(action)
@@ -150,10 +156,16 @@ def legal_actions(state: GameState, cards: dict[str, CardDef]) -> list[Action]:
             continue
         _, _, generate_candidates = entry
         for params in generate_candidates(state):
-            action = ActivateAbility(source_id=unit.instance_id, ability_id=unit.card_id,
-                                      params=params, rune_payment=None)
-            if abilities.is_legal_activate_ability(state, action):
-                result.append(action)
+            # A unit ability prints no rune cost today, but [Deflect] can
+            # still charge one for choosing its target — so the payment is
+            # None only when nothing is owed.
+            tax = abilities.deflect_tax_for(state, unit.card_id, params, state.turn_player)
+            payments = generate_rune_payments(player.runes, 0, 0, None, rainbow_cost=tax) if tax else [None]
+            for payment in payments:
+                action = ActivateAbility(source_id=unit.instance_id, ability_id=unit.card_id,
+                                          params=params, rune_payment=payment)
+                if abilities.is_legal_activate_ability(state, action):
+                    result.append(action)
 
     # Legend ability candidates: same ActivateAbility action, but sourced
     # from the player's Legend zone rather than a unit on the board, so
@@ -190,6 +202,16 @@ def legal_actions(state: GameState, cards: dict[str, CardDef]) -> list[Action]:
             result.remove(base_action)
         for trigger_params in generate_trigger_candidates(state, base_action, card):
             triggered = dataclasses.replace(base_action, trigger_params=trigger_params)
+            # A trigger that CHOOSES an enemy unit owes [Deflect]'s tax,
+            # paid out of what's left after the card's own cost.
+            tax = abilities.trigger_deflect_tax(state, triggered, card)
+            if tax:
+                left = consume_runes(state.players[state.turn_player].runes,
+                                      triggered.rune_payment)
+                payments = generate_rune_payments(left, 0, 0, None, rainbow_cost=tax)
+                if not payments:
+                    continue  # tax unaffordable — this target is out of reach
+                triggered = dataclasses.replace(triggered, trigger_payment=payments[0])
             if abilities.is_legal_unit_play_trigger(state, triggered, card):
                 result.append(triggered)
     return result
