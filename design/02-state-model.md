@@ -28,13 +28,17 @@ class UnitInstance:
 
 @dataclass(frozen=True)
 class RunePool:
-    # single-turn puzzle: no next-turn recovery to model, so this is just "what's left to spend."
-    # rule 164.2.b: a rune produces EITHER Energy (Exhaust) OR Power of its own domain (Recycle) —
-    # never both from the same rune. Paying a combined Energy+Power cost draws from separate runes.
-    available: tuple[Domain, ...]   # one entry per untapped rune still on the board this turn
-    # spending a rune for Energy or Power both just remove it from `available` for the rest of
-    # this puzzle's single turn — the distinction only matters for which runes can satisfy a
-    # Power cost (domain-matched) vs an Energy cost (any domain).
+    # CORRECTED 2026-09-14. A rune gives up to TWO things per turn, independently:
+    # 1 Energy by Exhausting it, AND 1 Power of its own domain by Recycling it. Order
+    # doesn't matter — Recycling a ready rune leaves a "floating rune" still able to be
+    # Exhausted. The earlier reading of rule 164.2.b ("never both from the same rune")
+    # was wrong and roughly halved the modelled resources; the card text settles it
+    # ("ready 4 friendly runes", "Recycle me to ready your runes", and a dozen cards
+    # specifying "channel 1 rune exhausted" — meaningless if Exhausting destroyed a rune).
+    available: tuple[Domain, ...]   # the runes held this turn; never shrinks mid-turn
+    energy_spent: int = 0           # how many have been Exhausted (Energy ignores domain)
+    power_spent: tuple[Domain, ...] = ()  # domains already Recycled (Power is domain-matched)
+    # The two capacities never compete: paying Energy costs nothing on the Power side.
     #
     # a card effect that generates a rune mid-turn (e.g. "when you play me, add a rune") just
     # appends to `available` on the child state like any other field mutation — no separate
