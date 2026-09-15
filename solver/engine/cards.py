@@ -52,3 +52,7 @@ class CardDef:
     # card ALSO has a Power cost that domain is the same one, so a single
     # domain covers both halves of an accelerated payment.
     accelerate_domain: Optional[Domain] = None
+    # Gear only. Gear enters READY by default — the opposite of units
+    # (rule 143.4.a) — which is why Iron Ballista has to print "This
+    # enters exhausted" explicitly. Set for the few that do.
+    gear_enters_exhausted: bool = False
