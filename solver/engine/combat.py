@@ -28,7 +28,7 @@ from typing import Optional
 
 from . import deaths
 from .state import BattlefieldState, GameState, ShowdownState, UnitInstance, replace_player
-from .traits import effective_might
+from .traits import effective_might, resolved_traits
 
 Assignment = tuple[tuple[int, int], ...]  # (instance_id, damage_amount) pairs
 
@@ -84,6 +84,40 @@ def our_assignment_options(state: GameState, mover: UnitInstance, destination_id
     return enumerate_assignments(state, destination_id, target_units, our_pool, target_designation)
 
 
+CAITLYN_PATROLLING = "ogn-068-298"  # "I must be assigned combat damage last."
+
+# card_ids whose text puts them at the BACK of the assignment order. Keyed
+# by card_id rather than by trait because the set prints this as plain card
+# text, not as a keyword — there is no [Last] to resolve.
+DAMAGE_LAST_CARD_IDS = frozenset({CAITLYN_PATROLLING})
+
+
+def assignable_targets(state: GameState, zone: str,
+                        remaining: list[UnitInstance]) -> list[UnitInstance]:
+    """Which of `remaining` may legally be assigned damage NEXT, per the
+    two ordering constraints the set prints:
+
+      [Tank]   "I must be assigned combat damage first" — while any Tank
+               is still un-assigned, ONLY Tanks are eligible.
+      Caitlyn  "I must be assigned combat damage last" — eligible only
+               once nothing else is left to assign.
+
+    Tank is read through resolved_traits, not unit.keywords, so a Tank
+    granted by an aura or a spell (Block gives a unit [Shield 3] and
+    [Tank]) orders damage exactly like a printed one.
+
+    Several Tanks among the targets cannot all literally be first; the
+    constraint is read as "you may not leave a Tank to assign elsewhere",
+    so the assigning player picks the order among them. Several
+    damage-last units work the same way at the other end.
+    """
+    tanks = [u for u in remaining if "Tank" in resolved_traits(state, u, zone)]
+    eligible = tanks if tanks else list(remaining)
+    if any(u.card_id not in DAMAGE_LAST_CARD_IDS for u in remaining):
+        eligible = [u for u in eligible if u.card_id not in DAMAGE_LAST_CARD_IDS]
+    return eligible
+
+
 def enumerate_assignments(state: GameState, zone: str, targets: frozenset[UnitInstance], pool: int,
                            designation: Optional[str] = None) -> list[Assignment]:
     """All distinct valid ways to assign `pool` damage among `targets`,
@@ -92,6 +126,12 @@ def enumerate_assignments(state: GameState, zone: str, targets: frozenset[UnitIn
     the assigning player isn't required to touch every unit. Overkill
     beyond lethal isn't tracked separately (doesn't change which units
     die — see design/09-combat-resolution.md).
+
+    Ordering constraints ([Tank] first, Caitlyn last) further restrict
+    which target may be picked at each step — see assignable_targets.
+    They compose with lethal-first rather than replacing it: a Tank must
+    still be taken to its full lethal amount before anything else is
+    touched, which is what makes Tank actually soak a small pool.
 
     `zone`/`designation` describe the TARGETS (the side receiving this
     damage), since what counts as lethal against them depends on their
@@ -107,17 +147,27 @@ def enumerate_assignments(state: GameState, zone: str, targets: frozenset[UnitIn
         if pool_left <= 0 or not remaining:
             results.append(dict(assigned))
             return
-        for i, unit in enumerate(remaining):
+        for unit in assignable_targets(state, zone, remaining):
             lethal_needed = max(1, effective_might(state, unit, zone, designation) - unit.damage)
             hit = min(lethal_needed, pool_left)
             next_assigned = dict(assigned)
             next_assigned[unit.instance_id] = next_assigned.get(unit.instance_id, 0) + hit
-            rest = remaining[:i] + remaining[i + 1:]
+            rest = [u for u in remaining if u.instance_id != unit.instance_id]
             recurse(rest, pool_left - hit, next_assigned)
         if assigned:  # "stop here" is only a valid choice once something is committed
             results.append(dict(assigned))
 
     recurse(target_list, pool, {})
+
+    if not results:
+        # Only reachable if a unit is required to be both first and last —
+        # i.e. something granted [Tank] to a damage-last unit while other
+        # targets remained. Contradictory, so no ordering satisfies it.
+        # Nothing in the pool can produce this today (it needs Block, which
+        # isn't implemented); "assign nothing" keeps combat resolvable
+        # instead of returning an empty option list that would silently
+        # delete the combat's outcomes entirely.
+        return [()]
 
     seen: set[Assignment] = set()
     unique: list[Assignment] = []
