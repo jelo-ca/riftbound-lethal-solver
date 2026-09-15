@@ -96,20 +96,27 @@ def test_blocking_is_the_default_for_an_unlisted_card():
     assert coverage.classify(VOLIBEAR) == "blocking"
 
 
-def test_being_in_card_pool_does_not_clear_a_card():
+def test_being_in_card_pool_does_not_clear_a_card(monkeypatch):
     """Faithful Manufactor sat in CARD_POOL with a trigger that did
     nothing. Membership means "the engine has stats for it", not "the
     engine understands it", so the ledger must not be derived from it.
 
-    These three are the live proof: all are in CARD_POOL, none are fully
-    implemented. Caitlyn's "I must be assigned combat damage last" is
-    unimplemented, and Blitzcrank and Taric both print [Tank] — which is
-    registered as a known trait but enforces nothing, since combat.py
-    contains no reference to it at all.
+    Caitlyn, Blitzcrank and Taric were the live proof of this until
+    [Tank] and "assigned combat damage last" were implemented — the
+    ledger flagged all three as blocking while they sat in CARD_POOL
+    looking done, and that is exactly what it exists to do. They are now
+    cleared on their merits.
+
+    The principle still has to hold, so it is exercised directly: drop a
+    card out of HANDLED and it must go straight back to blocking even
+    though CARD_POOL is untouched. If classify() ever started consulting
+    CARD_POOL, this would wrongly report handled.
     """
-    for card_id in ("ogn-068-298", "ogn-067-298", "ogn-074-298"):
-        assert card_id in CARD_POOL
-        assert coverage.classify(card_id) == "blocking"
+    victim = "ogn-052-298"  # Stalwart Poro, in both CARD_POOL and HANDLED
+    assert victim in CARD_POOL and coverage.classify(victim) == "handled"
+    monkeypatch.delitem(coverage.HANDLED, victim)
+    assert victim in CARD_POOL
+    assert coverage.classify(victim) == "blocking"
 
 
 def test_handled_cards_really_are_in_the_pool():

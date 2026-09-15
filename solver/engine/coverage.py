@@ -60,6 +60,15 @@ HANDLED: dict[str, str] = {
     "ogn-210-298": "Daring Poro — [Assault] via traits.TRAIT_REGISTRY",
     "ogn-211-298": "Faithful Manufactor — abilities.UNIT_PLAY_TRIGGERS",
     "ogn-218-298": "Vanguard Captain — [Legion] gate + UNIT_PLAY_TRIGGERS",
+    "ogn-067-298": "Blitzcrank, Impassive — [Tank] via combat.assignable_targets, "
+                   "play trigger via UNIT_PLAY_TRIGGERS. Its third clause, \"when I "
+                   "hold, return me to my owner's hand\", is unreachable rather than "
+                   "implemented: Hold is seeded into the starting position and never "
+                   "scored live, so no Hold occurs during the turn being searched.",
+    "ogn-068-298": "Caitlyn, Patrolling — \"assigned combat damage last\" via "
+                   "combat.DAMAGE_LAST_CARD_IDS, activated ability via ABILITY_EFFECTS",
+    "ogn-074-298": "Taric, Protector — [Shield] and [Tank] via traits/combat, "
+                   "\"other friendly units here have [Shield]\" via traits.AURA_SOURCES",
     "ogn-229-298": "Vengeance — abilities.SPELL_EFFECTS",
     "ogn-239-298": "Machine Evangel — [Deathknell] via deaths.DEATH_TRIGGERS",
     "ogn-271-298": "Recruit token — vanilla, no text to model",

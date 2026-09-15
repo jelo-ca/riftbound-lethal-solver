@@ -49,13 +49,29 @@ def test_puzzle_006_direct_attack_on_the_blocker_is_not_the_solution():
     assert not any(isinstance(a, ResolveCombat) and a.to_zone == "left" for a in actions)
 
 
-def test_puzzle_006_exports_cleanly_with_adversarial_edge():
+def test_puzzle_006_lost_its_adversarial_edge_when_tank_was_implemented():
+    """DESIGN INVALIDATED — this puzzle needs re-authoring or withdrawing.
+
+    Puzzle 6 "Redirection" was built around one thing: redirecting an
+    enemy onto ground we hold creates a genuine adversarial fork, because
+    the enemy chooses whether to kill our fragile ally or our Blitzcrank.
+    This test asserted that fork existed, and passed for as long as the
+    engine ignored [Tank].
+
+    Blitzcrank prints [Tank] — "I must be assigned combat damage first" —
+    so the enemy never actually had that choice. The fork was an artifact
+    of the missing rule, and implementing Tank correctly deletes it. The
+    puzzle still solves, but it no longer demonstrates what its own design
+    docstring says it demonstrates.
+
+    Asserting the collapse rather than deleting the test, so the loss
+    can't be mistaken for a puzzle that was always this way. Precedent:
+    puzzles 7 and 8 were withdrawn when the Hold invariant was enforced.
+    """
     root = build_root()
     result = export_puzzle("puzzle-006-redirection", root, CARDS)
-    assert "win" in result["terminal"].values()
-    # the redirect's edge must be marked adversarial with 2+ outcomes
+    assert "win" in result["terminal"].values()  # still solvable
     adversarial_edges = [
         e for edge_list in result["edges"].values() for e in edge_list if e["adversarial"]
     ]
-    assert adversarial_edges
-    assert any(len(e["to"]) >= 2 for e in adversarial_edges)
+    assert adversarial_edges == []

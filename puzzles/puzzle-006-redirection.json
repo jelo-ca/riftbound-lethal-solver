@@ -3,8 +3,7 @@
   "puzzle_id": "puzzle-006-redirection",
   "root": "0c1faedfe4e25458",
   "solution": {
-    "76d5b84fef5491e3": "a24",
-    "ec639e41bd31b239": "a26",
+    "ec639e41bd31b239": "a24",
     "0c1faedfe4e25458": "a6"
   },
   "nodes": {
@@ -540,83 +539,6 @@
         "right"
       ],
       "cards_played_this_turn": 0,
-      "showdown": null
-    },
-    "76d5b84fef5491e3": {
-      "turn_player": 0,
-      "players": [
-        {
-          "base_units": [
-            {
-              "card_id": "ogn-211-298",
-              "instance_id": 2,
-              "controller": 0,
-              "might": 2,
-              "keywords": [],
-              "exhausted": false,
-              "damage": 0,
-              "is_token": false,
-              "moved_this_turn": 0
-            }
-          ],
-          "hand": [],
-          "runes": [
-            "Calm",
-            "Fury",
-            "Fury",
-            "Fury",
-            "Fury",
-            "Fury"
-          ],
-          "runes_energy_spent": 5,
-          "runes_power_spent": [
-            "Calm"
-          ],
-          "score": 7,
-          "legend": null
-        },
-        {
-          "base_units": [],
-          "hand": [],
-          "runes": [],
-          "runes_energy_spent": 0,
-          "runes_power_spent": [],
-          "score": 0,
-          "legend": null
-        }
-      ],
-      "battlefields": [
-        {
-          "battlefield_id": "left",
-          "controller": null,
-          "units": [],
-          "effect_id": null
-        },
-        {
-          "battlefield_id": "right",
-          "controller": 0,
-          "units": [
-            {
-              "card_id": "ogn-067-298",
-              "instance_id": 4,
-              "controller": 0,
-              "might": 5,
-              "keywords": [
-                "Tank"
-              ],
-              "exhausted": true,
-              "damage": 0,
-              "is_token": false,
-              "moved_this_turn": 0
-            }
-          ],
-          "effect_id": null
-        }
-      ],
-      "scored_this_turn": [
-        "right"
-      ],
-      "cards_played_this_turn": 1,
       "showdown": null
     },
     "ec639e41bd31b239": {
@@ -1369,158 +1291,6 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "8381f2e6f0ebf68b": {
-      "turn_player": 0,
-      "players": [
-        {
-          "base_units": [],
-          "hand": [],
-          "runes": [
-            "Calm",
-            "Fury",
-            "Fury",
-            "Fury",
-            "Fury",
-            "Fury"
-          ],
-          "runes_energy_spent": 5,
-          "runes_power_spent": [
-            "Calm"
-          ],
-          "score": 7,
-          "legend": null
-        },
-        {
-          "base_units": [],
-          "hand": [],
-          "runes": [],
-          "runes_energy_spent": 0,
-          "runes_power_spent": [],
-          "score": 0,
-          "legend": null
-        }
-      ],
-      "battlefields": [
-        {
-          "battlefield_id": "left",
-          "controller": null,
-          "units": [],
-          "effect_id": null
-        },
-        {
-          "battlefield_id": "right",
-          "controller": 0,
-          "units": [
-            {
-              "card_id": "ogn-211-298",
-              "instance_id": 2,
-              "controller": 0,
-              "might": 2,
-              "keywords": [],
-              "exhausted": true,
-              "damage": 0,
-              "is_token": false,
-              "moved_this_turn": 1
-            },
-            {
-              "card_id": "ogn-067-298",
-              "instance_id": 4,
-              "controller": 0,
-              "might": 5,
-              "keywords": [
-                "Tank"
-              ],
-              "exhausted": true,
-              "damage": 0,
-              "is_token": false,
-              "moved_this_turn": 0
-            }
-          ],
-          "effect_id": null
-        }
-      ],
-      "scored_this_turn": [
-        "right"
-      ],
-      "cards_played_this_turn": 1,
-      "showdown": null
-    },
-    "c42781c9950780b5": {
-      "turn_player": 0,
-      "players": [
-        {
-          "base_units": [],
-          "hand": [],
-          "runes": [
-            "Calm",
-            "Fury",
-            "Fury",
-            "Fury",
-            "Fury",
-            "Fury"
-          ],
-          "runes_energy_spent": 5,
-          "runes_power_spent": [
-            "Calm"
-          ],
-          "score": 7,
-          "legend": null
-        },
-        {
-          "base_units": [],
-          "hand": [],
-          "runes": [],
-          "runes_energy_spent": 0,
-          "runes_power_spent": [],
-          "score": 0,
-          "legend": null
-        }
-      ],
-      "battlefields": [
-        {
-          "battlefield_id": "left",
-          "controller": null,
-          "units": [],
-          "effect_id": null
-        },
-        {
-          "battlefield_id": "right",
-          "controller": 0,
-          "units": [
-            {
-              "card_id": "ogn-010-298",
-              "instance_id": 1,
-              "controller": 0,
-              "might": 2,
-              "keywords": [],
-              "exhausted": false,
-              "damage": 0,
-              "is_token": false,
-              "moved_this_turn": 0
-            },
-            {
-              "card_id": "ogn-067-298",
-              "instance_id": 4,
-              "controller": 0,
-              "might": 5,
-              "keywords": [
-                "Tank"
-              ],
-              "exhausted": true,
-              "damage": 0,
-              "is_token": false,
-              "moved_this_turn": 0
-            }
-          ],
-          "effect_id": null
-        }
-      ],
-      "scored_this_turn": [
-        "right"
-      ],
-      "cards_played_this_turn": 1,
-      "showdown": null
-    },
     "14e5f6f5a0def580": {
       "turn_player": 0,
       "players": [
@@ -1683,7 +1453,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "2d1a5942d29edb69": {
+    "c42781c9950780b5": {
       "turn_player": 0,
       "players": [
         {
@@ -1726,82 +1496,16 @@
           "controller": 0,
           "units": [
             {
-              "card_id": "ogn-067-298",
-              "instance_id": 4,
-              "controller": 0,
-              "might": 5,
-              "keywords": [
-                "Tank"
-              ],
-              "exhausted": true,
-              "damage": 0,
-              "is_token": false,
-              "moved_this_turn": 0
-            }
-          ],
-          "effect_id": null
-        }
-      ],
-      "scored_this_turn": [
-        "right"
-      ],
-      "cards_played_this_turn": 1,
-      "showdown": null
-    },
-    "f07a9b21d09b7a26": {
-      "turn_player": 0,
-      "players": [
-        {
-          "base_units": [],
-          "hand": [],
-          "runes": [
-            "Calm",
-            "Fury",
-            "Fury",
-            "Fury",
-            "Fury",
-            "Fury"
-          ],
-          "runes_energy_spent": 5,
-          "runes_power_spent": [
-            "Calm"
-          ],
-          "score": 8,
-          "legend": null
-        },
-        {
-          "base_units": [],
-          "hand": [],
-          "runes": [],
-          "runes_energy_spent": 0,
-          "runes_power_spent": [],
-          "score": 0,
-          "legend": null
-        }
-      ],
-      "battlefields": [
-        {
-          "battlefield_id": "left",
-          "controller": 0,
-          "units": [
-            {
-              "card_id": "ogn-211-298",
-              "instance_id": 2,
+              "card_id": "ogn-010-298",
+              "instance_id": 1,
               "controller": 0,
               "might": 2,
               "keywords": [],
-              "exhausted": true,
+              "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1
-            }
-          ],
-          "effect_id": null
-        },
-        {
-          "battlefield_id": "right",
-          "controller": 0,
-          "units": [
+              "moved_this_turn": 0
+            },
             {
               "card_id": "ogn-067-298",
               "instance_id": 4,
@@ -1820,7 +1524,6 @@
         }
       ],
       "scored_this_turn": [
-        "left",
         "right"
       ],
       "cards_played_this_turn": 1,
@@ -2380,83 +2083,6 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "5d426c3ec50adb95": {
-      "turn_player": 0,
-      "players": [
-        {
-          "base_units": [
-            {
-              "card_id": "ogn-010-298",
-              "instance_id": 1,
-              "controller": 0,
-              "might": 2,
-              "keywords": [],
-              "exhausted": true,
-              "damage": 0,
-              "is_token": false,
-              "moved_this_turn": 1
-            }
-          ],
-          "hand": [],
-          "runes": [
-            "Calm",
-            "Fury",
-            "Fury",
-            "Fury",
-            "Fury",
-            "Fury"
-          ],
-          "runes_energy_spent": 5,
-          "runes_power_spent": [
-            "Calm"
-          ],
-          "score": 7,
-          "legend": null
-        },
-        {
-          "base_units": [],
-          "hand": [],
-          "runes": [],
-          "runes_energy_spent": 0,
-          "runes_power_spent": [],
-          "score": 0,
-          "legend": null
-        }
-      ],
-      "battlefields": [
-        {
-          "battlefield_id": "left",
-          "controller": null,
-          "units": [],
-          "effect_id": null
-        },
-        {
-          "battlefield_id": "right",
-          "controller": 0,
-          "units": [
-            {
-              "card_id": "ogn-067-298",
-              "instance_id": 4,
-              "controller": 0,
-              "might": 5,
-              "keywords": [
-                "Tank"
-              ],
-              "exhausted": true,
-              "damage": 0,
-              "is_token": false,
-              "moved_this_turn": 0
-            }
-          ],
-          "effect_id": null
-        }
-      ],
-      "scored_this_turn": [
-        "right"
-      ],
-      "cards_played_this_turn": 1,
-      "showdown": null
-    },
     "84d307608dd0c565": {
       "turn_player": 0,
       "players": [
@@ -2522,6 +2148,83 @@
               "is_token": false,
               "moved_this_turn": 1
             },
+            {
+              "card_id": "ogn-067-298",
+              "instance_id": 4,
+              "controller": 0,
+              "might": 5,
+              "keywords": [
+                "Tank"
+              ],
+              "exhausted": true,
+              "damage": 0,
+              "is_token": false,
+              "moved_this_turn": 0
+            }
+          ],
+          "effect_id": null
+        }
+      ],
+      "scored_this_turn": [
+        "right"
+      ],
+      "cards_played_this_turn": 1,
+      "showdown": null
+    },
+    "5d426c3ec50adb95": {
+      "turn_player": 0,
+      "players": [
+        {
+          "base_units": [
+            {
+              "card_id": "ogn-010-298",
+              "instance_id": 1,
+              "controller": 0,
+              "might": 2,
+              "keywords": [],
+              "exhausted": true,
+              "damage": 0,
+              "is_token": false,
+              "moved_this_turn": 1
+            }
+          ],
+          "hand": [],
+          "runes": [
+            "Calm",
+            "Fury",
+            "Fury",
+            "Fury",
+            "Fury",
+            "Fury"
+          ],
+          "runes_energy_spent": 5,
+          "runes_power_spent": [
+            "Calm"
+          ],
+          "score": 7,
+          "legend": null
+        },
+        {
+          "base_units": [],
+          "hand": [],
+          "runes": [],
+          "runes_energy_spent": 0,
+          "runes_power_spent": [],
+          "score": 0,
+          "legend": null
+        }
+      ],
+      "battlefields": [
+        {
+          "battlefield_id": "left",
+          "controller": null,
+          "units": [],
+          "effect_id": null
+        },
+        {
+          "battlefield_id": "right",
+          "controller": 0,
+          "units": [
             {
               "card_id": "ogn-067-298",
               "instance_id": 4,
@@ -2730,11 +2433,9 @@
           "instance_id": null
         },
         "to": [
-          "76d5b84fef5491e3",
-          "76d5b84fef5491e3",
           "ec639e41bd31b239"
         ],
-        "adversarial": true
+        "adversarial": false
       }
     ],
     "20bbd3f8c0b04242": [
@@ -2898,15 +2599,9 @@
           "instance_id": null
         },
         "to": [
-          "8381f2e6f0ebf68b",
-          "8381f2e6f0ebf68b",
-          "8381f2e6f0ebf68b",
-          "c42781c9950780b5",
-          "c42781c9950780b5",
-          "c42781c9950780b5",
           "14e5f6f5a0def580"
         ],
-        "adversarial": true
+        "adversarial": false
       }
     ],
     "794261cea50f12fb": [
@@ -3020,43 +2715,7 @@
           "instance_id": null
         },
         "to": [
-          "2d1a5942d29edb69",
-          "2d1a5942d29edb69",
           "c42781c9950780b5"
-        ],
-        "adversarial": true
-      }
-    ],
-    "76d5b84fef5491e3": [
-      {
-        "action": {
-          "id": "a24",
-          "type": "MoveUnit",
-          "label": "Move Faithful Manufactor from base to left",
-          "card_id": "ogn-211-298",
-          "keywords": [],
-          "from_zone": "base",
-          "to_zone": "left",
-          "instance_id": 2
-        },
-        "to": [
-          "f07a9b21d09b7a26"
-        ],
-        "adversarial": false
-      },
-      {
-        "action": {
-          "id": "a25",
-          "type": "MoveUnit",
-          "label": "Move Faithful Manufactor from base to right",
-          "card_id": "ogn-211-298",
-          "keywords": [],
-          "from_zone": "base",
-          "to_zone": "right",
-          "instance_id": 2
-        },
-        "to": [
-          "8381f2e6f0ebf68b"
         ],
         "adversarial": false
       }
@@ -3064,7 +2723,7 @@
     "ec639e41bd31b239": [
       {
         "action": {
-          "id": "a26",
+          "id": "a24",
           "type": "MoveUnit",
           "label": "Move Faithful Manufactor from base to left",
           "card_id": "ogn-211-298",
@@ -3080,7 +2739,7 @@
       },
       {
         "action": {
-          "id": "a27",
+          "id": "a25",
           "type": "MoveUnit",
           "label": "Move Faithful Manufactor from base to right",
           "card_id": "ogn-211-298",
@@ -3096,7 +2755,7 @@
       },
       {
         "action": {
-          "id": "a28",
+          "id": "a26",
           "type": "MoveUnit",
           "label": "Move Legion Rearguard from right to base",
           "card_id": "ogn-010-298",
@@ -3114,7 +2773,7 @@
     "f1575b2cde094c24": [
       {
         "action": {
-          "id": "a29",
+          "id": "a27",
           "type": "MoveUnit",
           "label": "Move Legion Rearguard from right to base",
           "card_id": "ogn-010-298",
@@ -3132,7 +2791,7 @@
     "9aee2a1cf7ffa13c": [
       {
         "action": {
-          "id": "a30",
+          "id": "a28",
           "type": "MoveUnit",
           "label": "Move Faithful Manufactor from base to right",
           "card_id": "ogn-211-298",
@@ -3148,7 +2807,7 @@
       },
       {
         "action": {
-          "id": "a31",
+          "id": "a29",
           "type": "ResolveCombat",
           "label": "Move Faithful Manufactor from base to left (combat)",
           "card_id": "ogn-211-298",
@@ -3166,7 +2825,7 @@
     "31108201656a5d61": [
       {
         "action": {
-          "id": "a32",
+          "id": "a30",
           "type": "MoveUnit",
           "label": "Move Legion Rearguard from right to base",
           "card_id": "ogn-010-298",
@@ -3184,7 +2843,7 @@
     "c8c34822f0c54272": [
       {
         "action": {
-          "id": "a33",
+          "id": "a31",
           "type": "MoveUnit",
           "label": "Move Legion Rearguard from right to base",
           "card_id": "ogn-010-298",
@@ -3202,7 +2861,7 @@
     "3ff0a3362769c426": [
       {
         "action": {
-          "id": "a34",
+          "id": "a32",
           "type": "MoveUnit",
           "label": "Move Faithful Manufactor from base to right",
           "card_id": "ogn-211-298",
@@ -3218,7 +2877,7 @@
       },
       {
         "action": {
-          "id": "a35",
+          "id": "a33",
           "type": "ResolveCombat",
           "label": "Move Faithful Manufactor from base to left (combat)",
           "card_id": "ogn-211-298",
@@ -3236,7 +2895,7 @@
     "4d35c7675c2be032": [
       {
         "action": {
-          "id": "a36",
+          "id": "a34",
           "type": "MoveUnit",
           "label": "Move Legion Rearguard from right to base",
           "card_id": "ogn-010-298",
@@ -3254,7 +2913,7 @@
     "3e4726b8950c6421": [
       {
         "action": {
-          "id": "a37",
+          "id": "a35",
           "type": "PlayUnit",
           "label": "Play Blitzcrank, Impassive to base",
           "card_id": "ogn-067-298",
@@ -3270,7 +2929,7 @@
       },
       {
         "action": {
-          "id": "a38",
+          "id": "a36",
           "type": "PlayUnit",
           "label": "Play Blitzcrank, Impassive to right",
           "card_id": "ogn-067-298",
@@ -3286,7 +2945,7 @@
       },
       {
         "action": {
-          "id": "a39",
+          "id": "a37",
           "type": "PlayUnit",
           "label": "Play Blitzcrank, Impassive to right",
           "card_id": "ogn-067-298",
@@ -3296,11 +2955,45 @@
           "instance_id": null
         },
         "to": [
-          "5d426c3ec50adb95",
-          "5d426c3ec50adb95",
           "84d307608dd0c565"
         ],
-        "adversarial": true
+        "adversarial": false
+      }
+    ],
+    "14e5f6f5a0def580": [
+      {
+        "action": {
+          "id": "a38",
+          "type": "MoveUnit",
+          "label": "Move Legion Rearguard from right to base",
+          "card_id": "ogn-010-298",
+          "keywords": [],
+          "from_zone": "right",
+          "to_zone": "base",
+          "instance_id": 1
+        },
+        "to": [
+          "84d307608dd0c565"
+        ],
+        "adversarial": false
+      }
+    ],
+    "e9978da909d2596f": [
+      {
+        "action": {
+          "id": "a39",
+          "type": "PlayUnit",
+          "label": "Play Blitzcrank, Impassive to base",
+          "card_id": "ogn-067-298",
+          "keywords": [],
+          "from_zone": null,
+          "to_zone": "base",
+          "instance_id": null
+        },
+        "to": [
+          "d467f70a8aa4d360"
+        ],
+        "adversarial": false
       }
     ],
     "c42781c9950780b5": [
@@ -3321,46 +3014,10 @@
         "adversarial": false
       }
     ],
-    "14e5f6f5a0def580": [
-      {
-        "action": {
-          "id": "a41",
-          "type": "MoveUnit",
-          "label": "Move Legion Rearguard from right to base",
-          "card_id": "ogn-010-298",
-          "keywords": [],
-          "from_zone": "right",
-          "to_zone": "base",
-          "instance_id": 1
-        },
-        "to": [
-          "84d307608dd0c565"
-        ],
-        "adversarial": false
-      }
-    ],
-    "e9978da909d2596f": [
-      {
-        "action": {
-          "id": "a42",
-          "type": "PlayUnit",
-          "label": "Play Blitzcrank, Impassive to base",
-          "card_id": "ogn-067-298",
-          "keywords": [],
-          "from_zone": null,
-          "to_zone": "base",
-          "instance_id": null
-        },
-        "to": [
-          "d467f70a8aa4d360"
-        ],
-        "adversarial": false
-      }
-    ],
     "b17e16b3b4d89b84": [
       {
         "action": {
-          "id": "a43",
+          "id": "a41",
           "type": "MoveUnit",
           "label": "Move Faithful Manufactor from base to left",
           "card_id": "ogn-211-298",
@@ -3376,7 +3033,7 @@
       },
       {
         "action": {
-          "id": "a44",
+          "id": "a42",
           "type": "MoveUnit",
           "label": "Move Faithful Manufactor from base to right",
           "card_id": "ogn-211-298",
@@ -3393,16 +3050,13 @@
     ]
   },
   "terminal": {
-    "8381f2e6f0ebf68b": "dead_end",
-    "2d1a5942d29edb69": "dead_end",
-    "f07a9b21d09b7a26": "win",
     "8caca1fbc607b99e": "win",
     "322bb519e1161d22": "dead_end",
     "d467f70a8aa4d360": "dead_end",
     "22b61cc7369dfdff": "dead_end",
     "233aebc0fb1ccb88": "dead_end",
-    "5d426c3ec50adb95": "dead_end",
     "84d307608dd0c565": "dead_end",
+    "5d426c3ec50adb95": "dead_end",
     "f27fddc30b10708a": "win"
   }
 }

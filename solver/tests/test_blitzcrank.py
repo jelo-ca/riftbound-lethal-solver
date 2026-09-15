@@ -97,39 +97,52 @@ def test_redirect_causes_combat_we_are_defender_and_kill_the_weak_enemy():
         assert left.controller == 0
 
 
-def test_redirect_produces_a_genuine_opponent_choice_via_real_generation():
-    """A fragile ally (Might 1) is already at "left" alongside where
-    Blitzcrank will land. Once redirected there, the enemy unit (Might 4,
-    pool enough to fully lethal either target) can choose to kill the
-    fragile ally OR dump its damage on Blitzcrank instead (never both:
-    lethal-first means committing to one). This proves the REAL
-    Blitzcrank generation path produces a genuine multi-outcome AND-node
-    (not just the synthetic one test_combat.py constructs directly) -
-    the actual adversarial search over these outcomes is already proven
-    correct there.
-    """
+def _ally_outcomes(root, card):
+    """Whether the enemy's possible responses include the fragile ally
+    surviving, dying, or both — across every generated redirect."""
     from solver.engine import abilities
 
-    root = make_root(enemy_might=4, ally_might=1)
-    cards = {BLITZCRANK_IMPASSIVE: BLITZCRANK_CARD}
+    cards = {BLITZCRANK_IMPASSIVE: card}
     triggered = [
         a for a in legal_actions(root, cards)
         if isinstance(a, PlayUnit) and a.card_id == BLITZCRANK_IMPASSIVE and a.trigger_params
     ]
     assert triggered
-
-    # Across all of our (defender) assignment candidates, the enemy's
-    # possible responses must include both "ally dies, Blitzcrank fine"
-    # and "Blitzcrank takes it, ally survives" for at least one of them -
-    # i.e. a genuine choice exists somewhere in the generated action set.
-    saw_ally_death = False
-    saw_ally_survival = False
+    survived = died = False
     for action in triggered:
-        outcomes = abilities.resolve_unit_play_trigger_outcomes(root, action, BLITZCRANK_CARD)
-        for outcome in outcomes:
-            left_controllers_and_ids = {u.instance_id for u in outcome.battlefields[0].units}
-            if 10 in left_controllers_and_ids:
-                saw_ally_survival = True
+        for outcome in abilities.resolve_unit_play_trigger_outcomes(root, action, card):
+            if 10 in {u.instance_id for u in outcome.battlefields[0].units}:
+                survived = True
             else:
-                saw_ally_death = True
-    assert saw_ally_death and saw_ally_survival
+                died = True
+    return survived, died
+
+
+def test_tank_removes_the_opponents_choice_in_the_redirect():
+    """This test used to assert the opposite, and was right to until
+    [Tank] was implemented.
+
+    A fragile ally (Might 1) stands where Blitzcrank lands. The redirected
+    enemy (Might 4) has pool enough to kill either. Without Tank that is a
+    real fork — kill the ally, or dump it all on Blitzcrank — and this
+    test existed to prove the REAL generation path produces a multi-outcome
+    AND-node rather than only the synthetic one in test_combat.py.
+
+    Blitzcrank prints [Tank]: "I must be assigned combat damage first."
+    So the fork was never legal Riftbound; it only existed because
+    combat.py ignored Tank entirely. With the ordering enforced the enemy
+    has exactly one option, and the ally is protected.
+    """
+    survived, died = _ally_outcomes(make_root(enemy_might=4, ally_might=1), BLITZCRANK_CARD)
+    assert survived and not died
+
+
+def test_without_tank_the_same_redirect_is_a_genuine_fork():
+    """The contrast, so the AND-node coverage this file used to provide
+    isn't silently lost: strip Tank from the same body and the opponent's
+    choice reappears, proving real action generation still produces
+    multi-outcome adversarial nodes."""
+    no_tank = CardDef(card_id=BLITZCRANK_IMPASSIVE, card_type="Unit", energy_cost=0,
+                       power_cost=0, might=5, keywords=frozenset())
+    survived, died = _ally_outcomes(make_root(enemy_might=4, ally_might=1), no_tank)
+    assert survived and died
