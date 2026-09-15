@@ -52,6 +52,10 @@ TRAIT_REGISTRY: dict[str, TraitDef] = {
     # Also zero Might, and also play-time: it gates whether a card's own
     # printed effect happens at all (abilities.legion_condition_met).
     "Legion": TraitDef(might_delta=0, applies_when=None),
+    # Zero Might too — it taxes the OPPONENT's targeting instead. The
+    # numeric form ("Deflect 2") scales the tax, not any Might. See
+    # deflect_tax.
+    "Deflect": TraitDef(might_delta=0, applies_when=None),
 }
 
 TARIC_PROTECTOR = "ogn-074-298"  # "Other friendly units here have [Shield]."
@@ -109,6 +113,31 @@ def resolved_traits(state: GameState, unit: UnitInstance, zone: Zone) -> frozens
                 traits |= aura.grants
 
     return frozenset(traits)
+
+
+def deflect_tax(state: GameState, unit: UnitInstance, zone: Zone, chooser: int) -> int:
+    """Extra runes `chooser` must Recycle (any domain) to choose `unit`
+    with a spell or ability — [Deflect]'s "Opponents must pay ⟨rainbow⟩ to
+    choose me," where "Deflect N" charges N.
+
+    Zero when `chooser` controls the unit: the tax is on OPPONENTS, so
+    targeting your own units is always free. In these puzzles the
+    opponent never acts, which means this only ever bites in one
+    direction — us paying to touch an enemy unit.
+
+    Resolved through resolved_traits rather than unit.keywords so a
+    granted or aura-granted Deflect would count too (Fiora, Victorious
+    grants herself Deflect while Mighty — not wired, but the resolver is
+    the right source regardless).
+    """
+    if unit.controller == chooser:
+        return 0
+    tax = 0
+    for trait in resolved_traits(state, unit, zone):
+        name, amount = parse_trait(trait)
+        if name == "Deflect":
+            tax += amount if amount is not None else 1
+    return tax
 
 
 def effective_might(state: GameState, unit: UnitInstance, zone: Zone,

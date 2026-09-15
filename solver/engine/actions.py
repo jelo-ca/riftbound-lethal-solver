@@ -43,6 +43,15 @@ Zone = str  # "base" or a battlefield_id
 class RunePayment:
     energy_runes: tuple[Domain, ...]  # domains of runes Exhausted for Energy
     power_runes: tuple[Domain, ...]  # domains of runes Recycled for Power
+    # Runes Recycled to pay a domain-FREE cost — today only [Deflect]'s
+    # "opponents must pay ⟨rainbow⟩ to choose me." Recycled like Power but
+    # accepting any domain, so it can't ride in power_runes (which are
+    # domain-checked). Recorded separately rather than folded into
+    # energy_runes because the two are paid by different rule 164.2.b
+    # halves (Recycle vs Exhaust), even though this engine consumes a rune
+    # identically either way — nothing here models rune recovery, so the
+    # distinction is currently bookkeeping, not mechanics.
+    rainbow_runes: tuple[Domain, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -147,13 +156,20 @@ Action = (PlayUnit | MoveUnit | ResolveCombat | EnterShowdown | ResolveShowdown
 
 
 def generate_rune_payments(pool: RunePool, energy_cost: int, power_cost: int,
-                            power_domain: Optional[Domain]) -> list[RunePayment]:
+                            power_domain: Optional[Domain],
+                            rainbow_cost: int = 0) -> list[RunePayment]:
     """All distinct ways to pay `energy_cost` Energy + `power_cost` Power
-    (of `power_domain`) out of `pool`, deduplicated by domain-count split —
-    not by which physical rune is used (design/03-action-space.md's
-    "rune-payment dedup" note). A rune produces Energy (any domain) XOR
-    Power (its own domain), never both (rule 164.2.b) — so this picks
-    disjoint sub-multisets of `pool.available` for the two costs.
+    (of `power_domain`) + `rainbow_cost` domain-free Recycled runes out of
+    `pool`, deduplicated by domain-count split — not by which physical
+    rune is used (design/03-action-space.md's "rune-payment dedup" note).
+    A rune produces Energy (any domain) XOR Power (its own domain), never
+    both (rule 164.2.b) — so this picks disjoint sub-multisets of
+    `pool.available` for the costs.
+
+    `rainbow_cost` is [Deflect]'s targeting tax (see traits.deflect_tax).
+    It behaves like Energy for selection purposes — any domain will do —
+    so it inherits the same single-representative-split simplification,
+    and the same caveat below.
     """
     if power_cost > 0 and power_domain is None:
         raise ValueError("power_cost > 0 requires a power_domain")
@@ -175,23 +191,33 @@ def generate_rune_payments(pool: RunePool, energy_cost: int, power_cost: int,
     remaining = available[:]
     for _ in range(power_cost):
         remaining.remove(power_domain)
-    if energy_cost > len(remaining):
-        return []  # not enough runes left for Energy
+    if energy_cost + rainbow_cost > len(remaining):
+        return []  # not enough runes left for Energy + the rainbow tax
 
-    # v0 keeps this simple: Energy is domain-agnostic, so a single
-    # representative payment (the first `energy_cost` remaining runes) is
-    # sufficient — which specific domains get spent on Energy never affects
-    # future legality, since Energy never checks domain. Only Power's
-    # domain-matching requirement can create genuinely distinct splits, and
-    # that's already pinned to power_domain above.
+    # v0 keeps this simple: Energy (and the rainbow tax) are domain-
+    # agnostic, so a single representative payment — the first
+    # `energy_cost` remaining runes, then the next `rainbow_cost` — stands
+    # in for all of them. Only Power's domain-matching requirement creates
+    # genuinely distinct splits, and that's pinned to power_domain above.
+    #
+    # KNOWN INCOMPLETENESS: that holds for the cost being paid here, but
+    # not across a turn. Domain-agnostic payment still *removes a specific
+    # domain* from the pool, so paying 1 Energy out of (Fury, Order) by
+    # taking Order can strand a later Order-Power spell that taking Fury
+    # would have left payable — and only one of those splits is ever
+    # generated. Restrictive rather than permissive (it hides lines, never
+    # invents them), so it can under-report solutions but not accept
+    # illegal ones. Pre-dates the rainbow tax; unfixed.
     energy_runes = tuple(remaining[:energy_cost])
-    payments.append(RunePayment(energy_runes=energy_runes, power_runes=power_runes))
+    rainbow_runes = tuple(remaining[energy_cost:energy_cost + rainbow_cost])
+    payments.append(RunePayment(energy_runes=energy_runes, power_runes=power_runes,
+                                 rainbow_runes=rainbow_runes))
     return payments
 
 
 def consume_runes(pool: RunePool, payment: RunePayment) -> RunePool:
     remaining = list(pool.available)
-    for domain in payment.energy_runes + payment.power_runes:
+    for domain in payment.energy_runes + payment.power_runes + payment.rainbow_runes:
         remaining.remove(domain)
     return RunePool(available=tuple(remaining))
 
