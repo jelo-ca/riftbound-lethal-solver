@@ -68,12 +68,21 @@ def card_text(card_id: str) -> str | None:
     Prose for a reader, never a rules source — see this module's
     docstring."""
     card = _cache().get(card_id)
-    if isinstance(card, dict):
-        text = card.get("text")
-        if isinstance(text, dict):
-            plain = text.get("plain")
-            if isinstance(plain, str) and plain:
-                return plain
+    if not isinstance(card, dict):
+        return None
+    # RiftScribe (current source) carries a flat `description`. The nested
+    # text.plain below is Riftcodex's shape, kept only so an older cache
+    # still reads — when the source switched, this function silently
+    # returned None for every card, and nothing noticed because it feeds
+    # display and nothing else.
+    description = card.get("description")
+    if isinstance(description, str) and description:
+        return description
+    text = card.get("text")
+    if isinstance(text, dict):
+        plain = text.get("plain")
+        if isinstance(plain, str) and plain:
+            return plain
     return None
 
 

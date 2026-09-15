@@ -1,0 +1,147 @@
+"""The coverage ledger and the refusal it drives.
+
+The property under test is "the engine never bluffs": for any board, it
+either answers correctly or names the cards it can't reason about. With
+298 Origins cards and a couple of dozen modelled, an engine that silently
+treats unknown text as absent gives wrong answers that look exactly like
+right ones.
+"""
+
+import json
+
+from solver.engine import card_names, coverage
+from solver.engine.card_pool import CARD_POOL
+from solver.engine.state import (
+    BattlefieldState,
+    GameState,
+    PlayerState,
+    RunePool,
+    UnitInstance,
+)
+from solver.lethal import find_lethal
+
+VOLIBEAR = "ogn-041-298"  # [Deflect 2] + "when I attack, deal 5 damage split among enemies"
+STALWART_PORO = "ogn-052-298"  # handled: plain [Shield]
+
+
+def make_unit(card_id, instance_id=1, controller=0, might=3):
+    return UnitInstance(card_id=card_id, instance_id=instance_id, controller=controller,
+                         might=might, keywords=frozenset(), exhausted=False, damage=0,
+                         is_token=False)
+
+
+def make_state(base_units=frozenset(), hand=(), left_units=frozenset(), left_effect=None):
+    return GameState(
+        turn_player=0,
+        players=(
+            PlayerState(base_units=base_units, hand=hand, runes=RunePool(available=()), score=0),
+            PlayerState(base_units=frozenset(), hand=(), runes=RunePool(available=()), score=0),
+        ),
+        battlefields=(
+            BattlefieldState("left", None, left_units, left_effect),
+            BattlefieldState("right", None, frozenset(), None),
+        ),
+        scored_this_turn=frozenset(),
+        cards_played_this_turn=0,
+    )
+
+
+# --- ledger integrity ---
+
+
+def test_every_ledger_entry_is_a_real_printing():
+    """A typo or a renamed printing would silently clear the wrong card,
+    which is worse than not clearing it at all."""
+    cache = json.loads(coverage.card_names.CACHE_PATH.read_text(encoding="utf-8"))
+    for card_id in list(coverage.HANDLED) + list(coverage.INERT_FOR_LETHAL):
+        assert card_id in cache, f"{card_id} is in the ledger but not in the card cache"
+
+
+def test_no_card_is_both_handled_and_inert():
+    assert not set(coverage.HANDLED) & set(coverage.INERT_FOR_LETHAL)
+
+
+def test_blocking_is_the_default_for_an_unlisted_card():
+    """The fail-safe direction: a card nobody has classified refuses,
+    rather than being quietly assumed harmless."""
+    assert coverage.classify("ogn-999-298") == "blocking"
+    assert coverage.classify(VOLIBEAR) == "blocking"
+
+
+def test_being_in_card_pool_does_not_clear_a_card():
+    """Faithful Manufactor sat in CARD_POOL with a trigger that did
+    nothing. Membership means "the engine has stats for it", not "the
+    engine understands it", so the ledger must not be derived from it.
+
+    These three are the live proof: all are in CARD_POOL, none are fully
+    implemented. Caitlyn's "I must be assigned combat damage last" is
+    unimplemented, and Blitzcrank and Taric both print [Tank] — which is
+    registered as a known trait but enforces nothing, since combat.py
+    contains no reference to it at all.
+    """
+    for card_id in ("ogn-068-298", "ogn-067-298", "ogn-074-298"):
+        assert card_id in CARD_POOL
+        assert coverage.classify(card_id) == "blocking"
+
+
+def test_handled_cards_really_are_in_the_pool():
+    """Nothing should be cleared as handled that the engine has no stats
+    for — that would be a different flavour of the same lie."""
+    for card_id in coverage.HANDLED:
+        assert card_id in CARD_POOL, f"{card_id} cleared as handled but absent from CARD_POOL"
+
+
+# --- what the board scan sees ---
+
+
+def test_scan_finds_cards_in_every_zone():
+    state = make_state(base_units=frozenset({make_unit("a", 1)}), hand=("b",),
+                        left_units=frozenset({make_unit("c", 2)}), left_effect="d")
+    assert coverage.card_ids_present(state) >= {"a", "b", "c", "d"}
+
+
+def test_the_synthetic_opponent_body_is_not_treated_as_an_unmodelled_card():
+    """generate.py's "generic-opponent" is a stat-stick the engine invents,
+    not a printing — it has no text to miss."""
+    state = make_state(left_units=frozenset({make_unit("generic-opponent", 1, controller=1)}))
+    assert coverage.blocking_cards(state) == []
+
+
+# --- the refusal itself ---
+
+
+def test_a_board_with_an_unmodelled_card_is_unanswerable_and_names_it():
+    state = make_state(left_units=frozenset({make_unit(VOLIBEAR, 1, controller=1, might=9)}))
+    answer = find_lethal(state, {})
+    assert answer.outcome == "unanswerable"
+    assert any(VOLIBEAR in reason for reason in answer.blocking)
+    assert any("deal 5" in reason.lower() for reason in answer.blocking), \
+        "the refusal should quote the card's own text, not just its id"
+
+
+def test_an_unanswerable_board_is_falsy():
+    """`if find_lethal(...)` must never be satisfied by a board the engine
+    couldn't actually reason about."""
+    state = make_state(left_units=frozenset({make_unit(VOLIBEAR, 1, controller=1, might=9)}))
+    assert not find_lethal(state, {})
+
+
+def test_a_fully_modelled_board_gets_a_real_answer():
+    state = make_state(base_units=frozenset({make_unit(STALWART_PORO, 1)}))
+    answer = find_lethal(state, {})
+    assert answer.outcome == "no_lethal"  # nothing to attack, no score
+    assert answer.blocking == ()
+
+
+def test_no_lethal_and_unanswerable_are_not_conflated():
+    modelled = make_state(base_units=frozenset({make_unit(STALWART_PORO, 1)}))
+    unmodelled = make_state(base_units=frozenset({make_unit(VOLIBEAR, 1, might=9)}))
+    assert find_lethal(modelled, {}).outcome == "no_lethal"
+    assert find_lethal(unmodelled, {}).outcome == "unanswerable"
+
+
+def test_ignore_unmodelled_forces_an_answer():
+    """The opt-out the hand-authored puzzles need, since their positions
+    were built against the engine's own subset."""
+    state = make_state(base_units=frozenset({make_unit(VOLIBEAR, 1, might=9)}))
+    assert find_lethal(state, {}, ignore_unmodelled=True).outcome == "no_lethal"
