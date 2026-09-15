@@ -53,8 +53,36 @@ def test_every_ledger_entry_is_a_real_printing():
     """A typo or a renamed printing would silently clear the wrong card,
     which is worse than not clearing it at all."""
     cache = json.loads(coverage.card_names.CACHE_PATH.read_text(encoding="utf-8"))
-    for card_id in list(coverage.HANDLED) + list(coverage.INERT_FOR_LETHAL):
+    listed = (list(coverage.HANDLED) + list(coverage.INERT_FOR_LETHAL)
+              + list(coverage.CONDITIONALLY_INERT))
+    for card_id in listed:
         assert card_id in cache, f"{card_id} is in the ledger but not in the card cache"
+
+
+# --- board-conditional inertness ---
+
+
+def test_vision_is_inert_on_its_own():
+    """No Main Deck, so looking at its top card does nothing observable."""
+    state = make_state(left_units=frozenset({make_unit("ogn-171-298", 1)}))  # Mystic Poro
+    assert coverage.blocking_cards(state) == []
+
+
+def test_vision_becomes_blocking_next_to_karma():
+    """Karma, Channeler is the one card that triggers on recycling, which
+    would turn a Vision into a Might buff — so the same card stops being
+    inert purely because of what else is on the board."""
+    state = make_state(
+        left_units=frozenset({make_unit("ogn-171-298", 1), make_unit(coverage.KARMA_CHANNELER, 2)}))
+    reasons = coverage.blocking_cards(state)
+    assert any("ogn-171-298" in r for r in reasons), "Mystic Poro should block beside Karma"
+
+
+def test_conditional_inertness_defaults_to_blocking_without_a_board():
+    """classify() with no board can't verify the condition, so it must
+    take the unsafe-to-assume side."""
+    assert coverage.classify("ogn-171-298") == "blocking"
+    assert coverage.classify("ogn-171-298", present={"ogn-171-298"}) == "inert"
 
 
 def test_no_card_is_both_handled_and_inert():

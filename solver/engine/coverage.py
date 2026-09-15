@@ -69,20 +69,69 @@ HANDLED: dict[str, str] = {
 # card_id -> why its text cannot change whether lethal exists this turn.
 # These are rules judgements, not derivations; each one needs an argument
 # that holds for a SINGLE TURN specifically.
+#
+# The position model they all lean on (settled 2026-09-15): there is no
+# Main Deck, and the Beginning Phase is already resolved before the
+# question is asked. So "draw" has nothing to draw, and no effect that
+# only pays off on a later turn can ever pay off.
 INERT_FOR_LETHAL: dict[str, str] = {
-    "ogn-096-298": "Watchful Sentry — [Deathknell] Draw 1. A drawn card can't be "
-                   "played: no Main Deck is modelled, so the draw has no content.",
+    "ogn-096-298": "Watchful Sentry — [Deathknell] Draw 1. No Main Deck, so the "
+                   "draw has no content and cannot add a playable card.",
     "ogn-114-298": "Progress Day — Draw 4. Same: no deck, nothing arrives.",
-    "ogn-178-298": "Undercover Agent — [Deathknell] Discard 2 then draw 2. Hand "
-                   "churn only; no deck modelled.",
+    "ogn-178-298": "Undercover Agent — [Deathknell] Discard 2 then draw 2. The "
+                   "draw is empty; the discard only shrinks our own hand, which "
+                   "a solver would never choose and which cannot create lethal.",
+    "ogn-083-298": "Consult the Past — Draw 2. No deck.",
+    "ogn-099-298": "Garbage Grabber — an activated ability whose whole effect is "
+                   "Draw 1. With no deck it does nothing, so it is never worth "
+                   "activating regardless of its trash cost.",
+    "ogn-135-298": "Pakaa Cub — [Hidden] and nothing else. Hiding spends a rune "
+                   "now to play for 0 Energy later; inside one turn that is "
+                   "strictly worse than playing the card, and no Origins card "
+                   "rewards holding fewer runes (verified across the set), so "
+                   "hiding is never correct.",
+    "ogn-274-298": "Sprite — [Temporary] and nothing else. It dies at the start "
+                   "of your next Beginning Phase, which a single turn never "
+                   "reaches.",
 }
 
 
-def classify(card_id: str) -> Classification:
+KARMA_CHANNELER = "ogn-235-298"
+
+
+def _vision_inert_unless_karma(present: set[str]) -> bool:
+    """[Vision] looks at the top of the Main Deck and may recycle it. With
+    no deck there is nothing to look at and nothing to recycle, so it does
+    nothing observable — UNLESS Karma, Channeler is on the board. She is
+    the only card in Origins that triggers on recycling ("when you recycle
+    one or more cards, buff a friendly unit"), which would turn a Vision
+    into a Might buff and therefore into something that can change lethal.
+    """
+    return KARMA_CHANNELER not in present
+
+
+# card_id -> (reason, predicate over the card ids present on the board).
+# Inert only while the predicate holds; blocking otherwise. Board-dependent
+# because some text is dead on its own and live next to one specific card.
+CONDITIONALLY_INERT: dict[str, tuple[str, "object"]] = {
+    "ogn-171-298": ("Mystic Poro — [Vision] only", _vision_inert_unless_karma),
+}
+
+
+def classify(card_id: str, present: Optional[set[str]] = None) -> Classification:
+    """Static classification, plus the board-conditional entries when
+    `present` (the card ids on the board) is supplied. Without `present` a
+    conditionally-inert card reports blocking — the safe direction, since
+    the condition is unverified rather than known to hold."""
     if card_id in HANDLED:
         return "handled"
     if card_id in INERT_FOR_LETHAL:
         return "inert"
+    rule = CONDITIONALLY_INERT.get(card_id)
+    if rule is not None and present is not None:
+        _, is_inert = rule
+        if is_inert(present):
+            return "inert"
     return "blocking"
 
 
@@ -126,8 +175,9 @@ def blocking_cards(state: GameState, ignore: Optional[set[str]] = None) -> list[
     no printing behind them and no text to miss.
     """
     exempt = (ignore or set()) | set(card_names.PLACEHOLDER_NAMES)
+    present = card_ids_present(state)
     return sorted(
         blocking_reason(card_id)
-        for card_id in card_ids_present(state)
-        if card_id not in exempt and classify(card_id) == "blocking"
+        for card_id in present
+        if card_id not in exempt and classify(card_id, present) == "blocking"
     )
