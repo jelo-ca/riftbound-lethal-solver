@@ -484,6 +484,21 @@ RECRUIT_TOKEN_CARD = CardDef(card_id=RECRUIT_TOKEN, card_type="Unit", energy_cos
 MANDATORY_PLAY_TRIGGERS = frozenset({FAITHFUL_MANUFACTOR, VANGUARD_CAPTAIN})
 
 
+def legion_condition_met(state_after_play: GameState) -> bool:
+    """[Legion] — "Get the effect if you've played another card this turn."
+    Shared by every Legion card; only the gate is shared, since the
+    printed effects differ (tokens, a Might buff, a cost reduction).
+
+    Call this from a "when you play me" EFFECT, i.e. after
+    apply_play_unit has already counted the Legion card's own play — so
+    "another card" means a count of at least 2, not at least 1. A
+    cost-time Legion (Noxus Hopeful's "I cost 2 less") is evaluated
+    BEFORE that increment and would need the > 0 threshold instead; no
+    such card is in the pool, and this helper is not it.
+    """
+    return state_after_play.cards_played_this_turn > 1
+
+
 def _mint_recruit_tokens(state: GameState, zone: str, controller: int, count: int) -> GameState:
     for _ in range(count):
         state = mint_token_unit(state, RECRUIT_TOKEN_CARD, controller, zone)
@@ -509,13 +524,10 @@ def _vanguard_captain_is_legal(state: GameState, action: PlayUnit, card: CardDef
 
 
 def _vanguard_captain_effect(state_after_play: GameState, action: PlayUnit) -> list[GameState]:
-    """Legion's condition is "you've played ANOTHER card this turn" —
-    i.e. before this one. `apply_play_unit` already incremented
-    `cards_played_this_turn` for Vanguard Captain's own play by the time
-    this runs, so the check is `> 1` (this play plus at least one prior),
-    not `> 0`. No tokens at all if the condition fails — Legion isn't
-    "one token instead of two," it's the whole effect being conditional."""
-    count = 2 if state_after_play.cards_played_this_turn > 1 else 0
+    """No tokens at all if Legion's condition fails — it isn't "one token
+    instead of two," it's the whole effect being conditional. See
+    legion_condition_met for the off-by-one the shared gate handles."""
+    count = 2 if legion_condition_met(state_after_play) else 0
     return [_mint_recruit_tokens(state_after_play, action.target_zone, state_after_play.turn_player, count)]
 
 

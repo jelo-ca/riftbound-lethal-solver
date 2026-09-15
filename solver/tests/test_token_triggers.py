@@ -11,6 +11,7 @@ from solver.engine.abilities import (
     FAITHFUL_MANUFACTOR,
     VANGUARD_CAPTAIN,
     is_legal_unit_play_trigger,
+    legion_condition_met,
     resolve_unit_play_trigger_outcomes,
 )
 from solver.engine.actions import PlayUnit, generate_rune_payments
@@ -71,6 +72,22 @@ def test_faithful_manufactor_only_the_triggered_form_is_a_legal_action():
     play_unit_actions = [a for a in legal_actions(root, cards) if isinstance(a, PlayUnit)]
     assert len(play_unit_actions) == 1
     assert play_unit_actions[0].trigger_params == ("mint",)
+
+
+# --- Legion, the shared gate ---
+
+
+def test_legion_gate_counts_the_legion_cards_own_play():
+    """[Legion] is "you've played ANOTHER card this turn," evaluated from
+    an on-play effect — by which point apply_play_unit has already counted
+    the Legion card itself. So a count of 1 is that card alone (condition
+    fails) and 2 is one prior card plus it (condition holds). Pinned
+    directly rather than only through Vanguard Captain's token count,
+    since this off-by-one is the whole subtlety and the next Legion card
+    will reuse it."""
+    assert not legion_condition_met(make_root(hand=(), cards_played_this_turn=0))
+    assert not legion_condition_met(make_root(hand=(), cards_played_this_turn=1))
+    assert legion_condition_met(make_root(hand=(), cards_played_this_turn=2))
 
 
 # --- Vanguard Captain ---

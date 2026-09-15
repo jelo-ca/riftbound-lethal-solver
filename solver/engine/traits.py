@@ -49,6 +49,9 @@ TRAIT_REGISTRY: dict[str, TraitDef] = {
     # time rather than on the board. Registered so it parses as a trait
     # rather than falling through as unknown.
     "Accelerate": TraitDef(might_delta=0, applies_when=None),
+    # Also zero Might, and also play-time: it gates whether a card's own
+    # printed effect happens at all (abilities.legion_condition_met).
+    "Legion": TraitDef(might_delta=0, applies_when=None),
 }
 
 TARIC_PROTECTOR = "ogn-074-298"  # "Other friendly units here have [Shield]."
