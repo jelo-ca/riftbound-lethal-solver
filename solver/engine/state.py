@@ -64,6 +64,28 @@ def energy_capacity(pool: RunePool) -> int:
     return len(pool.available) - pool.energy_spent
 
 
+def ready_runes(pool: RunePool, count: Optional[int] = None) -> RunePool:
+    """Un-Exhaust up to `count` runes (all of them when None), restoring
+    Energy capacity — Ekko, Recurrent's "[Deathknell] Recycle me to ready
+    your runes".
+
+    Readying touches the Exhausted state only. It does NOT give back
+    Recycle capacity: a Recycled rune has already produced its Power, and
+    readying is about untapping, not undoing that. So only `energy_spent`
+    moves.
+
+    Deliberately NOT paired with a channel operation. Channelling pulls a
+    fresh rune off the Rune Deck, which this model doesn't have, and every
+    printed channel in Origins reads "channel N runes EXHAUSTED" — a rune
+    arriving with its Energy already spent and its domain unknowable,
+    which can pay nothing except a domain-free Recycle cost. See
+    engine/coverage.py for how those cards are classified instead.
+    """
+    if count is None:
+        return dataclasses.replace(pool, energy_spent=0)
+    return dataclasses.replace(pool, energy_spent=max(0, pool.energy_spent - count))
+
+
 def power_capacity(pool: RunePool, domain: Optional[Domain]) -> int:
     """Runes of `domain` still able to be Recycled for Power. `None`
     counts every domain, for a domain-free (rainbow) cost."""

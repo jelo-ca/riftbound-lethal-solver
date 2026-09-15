@@ -69,6 +69,9 @@ HANDLED: dict[str, str] = {
                    "combat.DAMAGE_LAST_CARD_IDS, activated ability via ABILITY_EFFECTS",
     "ogn-074-298": "Taric, Protector — [Shield] and [Tank] via traits/combat, "
                    "\"other friendly units here have [Shield]\" via traits.AURA_SOURCES",
+    "ogn-110-298": "Ekko, Recurrent — [Accelerate] via play_unit_cost, [Deathknell] "
+                   "\"recycle me to ready your runes\" via deaths.DEATH_TRIGGERS and "
+                   "state.ready_runes",
     "ogn-229-298": "Vengeance — abilities.SPELL_EFFECTS",
     "ogn-239-298": "Machine Evangel — [Deathknell] via deaths.DEATH_TRIGGERS",
     "ogn-271-298": "Recruit token — vanilla, no text to model",
@@ -102,6 +105,13 @@ INERT_FOR_LETHAL: dict[str, str] = {
     "ogn-274-298": "Sprite — [Temporary] and nothing else. It dies at the start "
                    "of your next Beginning Phase, which a single turn never "
                    "reaches.",
+    "ogn-073-298": "Sona, Harmonious — \"ready 4 friendly runes AT THE END OF YOUR "
+                   "TURN\". The lethal question is settled during the Action Phase; "
+                   "runes readied after it can't pay for anything. Contrast Ekko, "
+                   "whose readying fires mid-turn on death and is therefore real.",
+    "ogn-289-298": "Targon's Peak — \"when you conquer here, ready 2 runes AT THE "
+                   "END OF THIS TURN\". Same: the readying lands after every action "
+                   "that could have used it.",
 }
 
 

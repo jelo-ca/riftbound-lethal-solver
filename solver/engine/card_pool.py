@@ -26,7 +26,7 @@ from .abilities import (
     ZAUNITE_BOUNCER,
 )
 from .cards import CardDef
-from .deaths import KOGMAW_CAUSTIC, MACHINE_EVANGEL
+from .deaths import EKKO_RECURRENT, KOGMAW_CAUSTIC, MACHINE_EVANGEL
 from .traits import TARIC_PROTECTOR
 
 LEGION_REARGUARD = "ogn-010-298"
@@ -77,6 +77,12 @@ CARD_POOL: dict[str, CardDef] = {
     MACHINE_EVANGEL: CardDef(card_id=MACHINE_EVANGEL, card_type="Unit", energy_cost=5,
                               power_cost=1, power_domain="Order", might=4,
                               keywords=frozenset({"Deathknell"})),
+    # The one card whose "ready your runes" fires mid-turn, so the one
+    # whose rune economy can actually change whether lethal exists.
+    EKKO_RECURRENT: CardDef(card_id=EKKO_RECURRENT, card_type="Unit", energy_cost=5,
+                             power_cost=1, power_domain="Mind", might=5,
+                             keywords=frozenset({"Accelerate", "Deathknell"}),
+                             accelerate_domain="Mind"),
     ZAUNITE_BOUNCER: CardDef(card_id=ZAUNITE_BOUNCER, card_type="Unit", energy_cost=4,
                               power_cost=2, power_domain="Chaos", might=2, keywords=frozenset()),
     TARIC_PROTECTOR: CardDef(card_id=TARIC_PROTECTOR, card_type="Unit", energy_cost=4,

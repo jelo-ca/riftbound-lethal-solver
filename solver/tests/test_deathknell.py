@@ -8,6 +8,8 @@ which turns "kill your own unit" into a real line (Vengeance can target
 your own units).
 """
 
+import dataclasses
+
 from solver.engine import combat
 from solver.engine.actions import kill_unit
 from solver.engine.card_pool import CARD_POOL, KOGMAW_CAUSTIC, MACHINE_EVANGEL, RECRUIT_TOKEN
@@ -152,6 +154,44 @@ def test_machine_evangel_mints_three_tokens_into_base():
     tokens = [u for u in result.players[0].base_units if u.card_id == RECRUIT_TOKEN]
     assert len(tokens) == 3
     assert all(t.might == 1 and t.is_token for t in tokens)
+
+
+# --- Ekko: readying runes mid-turn ---
+
+
+def test_ekko_readies_exhausted_runes_on_death():
+    """The only "ready your runes" in the set that fires mid-turn, so the
+    only one that can change whether lethal exists. Sona and Targon's Peak
+    both ready "at the end of your turn", by which point the question is
+    already settled."""
+    from solver.engine.deaths import EKKO_RECURRENT
+    from solver.engine.state import energy_capacity
+
+    ekko = make_unit(1, card_id=EKKO_RECURRENT, might=5, keywords=frozenset({"Deathknell"}))
+    state = make_state(frozenset({ekko}), left_ctrl=0)
+    tapped = dataclasses.replace(state.players[0], runes=RunePool(
+        available=("Fury", "Fury", "Mind"), energy_spent=3, power_spent=("Mind",)))
+    state = dataclasses.replace(state, players=(tapped, state.players[1]))
+    assert energy_capacity(state.players[0].runes) == 0  # tapped out
+
+    result = kill_unit(state, 1)
+    assert energy_capacity(result.players[0].runes) == 3  # all three ready again
+
+
+def test_readying_does_not_give_back_recycled_power():
+    """Readying untaps; it doesn't undo a Recycle. A rune that already
+    produced its Power has produced it."""
+    from solver.engine.deaths import EKKO_RECURRENT
+    from solver.engine.state import power_capacity
+
+    ekko = make_unit(1, card_id=EKKO_RECURRENT, might=5, keywords=frozenset({"Deathknell"}))
+    state = make_state(frozenset({ekko}), left_ctrl=0)
+    spent = dataclasses.replace(state.players[0], runes=RunePool(
+        available=("Mind",), energy_spent=1, power_spent=("Mind",)))
+    state = dataclasses.replace(state, players=(spent, state.players[1]))
+
+    result = kill_unit(state, 1)
+    assert power_capacity(result.players[0].runes, "Mind") == 0  # still spent
 
 
 # --- cascades ---

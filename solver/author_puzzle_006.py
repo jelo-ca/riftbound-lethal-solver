@@ -1,21 +1,32 @@
 """Author puzzle 006: "Redirection" (design/08-puzzle-concepts.md #6).
 
-At 7 points, we hold "right" (Scored via Hold this turn) with a small
-unit already there. The opponent has exactly one blocker, sitting at
-"left" — the battlefield we still need. Attacking it head-on is the trap
-this puzzle is about: the real solution plays Blitzcrank - Impassive to
-"right" and uses his "when you play me, you may move an enemy unit to
-here" trigger to pull the opponent's blocker away from "left" entirely.
-"left" becomes empty and uncontrolled the instant the blocker leaves it —
-our separate attacker then walks in for a free Conquer and the Final
-Point, since "right" was already Scored this turn.
+RE-AUTHORED after [Tank] was implemented. The original version's
+adversarial fork — the opponent choosing whether to kill our fragile unit
+or Blitzcrank — was never legal Riftbound: Blitzcrank prints [Tank], so
+that choice never existed. It only appeared because combat.py ignored the
+keyword. Rather than withdraw the puzzle, this version makes Tank the
+load-bearing piece instead of an accident.
 
-This is the case design/09-combat-resolution.md calls "we are not always
-the Attacker": redirecting the enemy unit onto "right" (which we hold)
-makes THEM the Attacker and us the Defender for that combat. The redirect
-also incidentally kills their blocker (Blitzcrank's Might comfortably
-covers it), but that's not the point of the puzzle — leaving "left" open
-is.
+At 7 points we hold "right" (Scored via Hold this turn), where our only
+mobile unit stands — a 2-Might Legion Rearguard, which "right" being
+Windswept Hillock grants [Ganking], so it alone can hop straight to
+"left". The opponent's single blocker sits on "left", the battlefield we
+still need.
+
+The line: play Blitzcrank - Impassive to "right" and use his "when you
+play me, you may move an enemy unit to here" trigger to drag the blocker
+off "left" entirely. That leaves "left" empty and uncontrolled, and the
+Rearguard walks in for the Conquer and the Final Point.
+
+Why it needs Tank. Dragging the blocker onto "right" starts a combat with
+US as Defender (design/09-combat-resolution.md's "we are not always the
+Attacker"). The blocker's 3 damage would comfortably kill the 2-Might
+Rearguard — and the Rearguard is the only unit that can reach "left",
+since Blitzcrank enters exhausted the turn he is played and cannot move.
+Tank forces that damage onto Blitzcrank instead, who at 5 Might shrugs
+off 3. Strip Tank and the same line kills our own conqueror; the puzzle
+is exactly the margin the keyword provides, which
+test_puzzle_006.py asserts directly.
 
 Run with: python -m solver.author_puzzle_006
 """
@@ -26,6 +37,7 @@ import json
 from pathlib import Path
 
 from .engine.abilities import BLITZCRANK_IMPASSIVE
+from .engine.battlefields import WINDSWEPT_HILLOCK
 from .engine.card_pool import CARD_POOL
 from .engine.state import BattlefieldState, GameState, PlayerState, RunePool, UnitInstance
 from .export import export_puzzle
@@ -37,14 +49,13 @@ OUTPUT_PATH = Path(__file__).parent.parent / "puzzles" / "puzzle-006-redirection
 
 
 def build_root() -> GameState:
-    right_guard = UnitInstance(
+    # Our only mobile unit, and deliberately fragile: 2 Might dies to the
+    # blocker's 3 damage, which is the whole tension Tank resolves. It
+    # gets [Ganking] from Windswept Hillock underneath it, so it can go
+    # "right" -> "left" directly (rule 810).
+    conqueror = UnitInstance(
         card_id="ogn-010-298",  # Legion Rearguard, 2 might (real Origins printing)
         instance_id=1, controller=0, might=2, keywords=frozenset(),
-        exhausted=False, damage=0, is_token=False,
-    )
-    attacker = UnitInstance(
-        card_id="ogn-211-298",  # Faithful Manufactor, 2 might (real Origins printing)
-        instance_id=2, controller=0, might=2, keywords=frozenset(),
         exhausted=False, damage=0, is_token=False,
     )
     blocker = UnitInstance(
@@ -56,7 +67,7 @@ def build_root() -> GameState:
         turn_player=0,
         players=(
             PlayerState(
-                base_units=frozenset({attacker}),
+                base_units=frozenset(),
                 hand=(BLITZCRANK_IMPASSIVE,),
                 # Blitzcrank costs 5 Energy + 1 Calm Power. Energy is
                 # domain-agnostic, the Power rune is not — five Fury runes
@@ -69,7 +80,9 @@ def build_root() -> GameState:
         ),
         battlefields=(
             BattlefieldState("left", 1, frozenset({blocker}), None),
-            BattlefieldState("right", 0, frozenset({right_guard}), None),
+            # Windswept Hillock: "Units here have [Ganking]" — what lets the
+            # Rearguard reach "left" in one hop once it is emptied.
+            BattlefieldState("right", 0, frozenset({conqueror}), WINDSWEPT_HILLOCK),
         ),
         scored_this_turn=frozenset({"right"}),  # Held this turn, pre-resolved
         cards_played_this_turn=0,

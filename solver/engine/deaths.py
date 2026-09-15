@@ -30,14 +30,16 @@ back at module scope would be a cycle.
 
 from __future__ import annotations
 
+import dataclasses
 from typing import Callable
 
-from .state import GameState, UnitInstance
+from .state import GameState, UnitInstance, replace_player
 
 Zone = str  # "base" or a battlefield_id
 
 KOGMAW_CAUSTIC = "ogn-190-298"  # "Deal 4 to all units at my battlefield."
 MACHINE_EVANGEL = "ogn-239-298"  # "Play three 1 Might Recruit unit tokens into your base."
+EKKO_RECURRENT = "ogn-110-298"  # "Recycle me to ready your runes."
 
 
 def _kogmaw_effect(state: GameState, unit: UnitInstance, zone: Zone) -> GameState:
@@ -67,6 +69,21 @@ def _machine_evangel_effect(state: GameState, unit: UnitInstance, zone: Zone) ->
     return state
 
 
+def _ekko_effect(state: GameState, unit: UnitInstance, zone: Zone) -> GameState:
+    """"Recycle me to ready your runes." Readying restores Energy capacity
+    on runes already Exhausted this turn, which is real resource: it can
+    pay for another card after the board already looked tapped out.
+
+    "Recycle me" is where the dying card goes, not a cost to weigh — it is
+    already leaving the board, and no trash or rune deck is modelled, so
+    the only observable half is the readying.
+    """
+    from .state import ready_runes  # deferred purely for symmetry with the others
+    player = state.players[unit.controller]
+    return replace_player(state, unit.controller,
+                          dataclasses.replace(player, runes=ready_runes(player.runes)))
+
+
 # card_id -> effect(state, dead_unit, zone_it_died_in) -> GameState
 #
 # Effects are deterministic (single state, no player choice), which is
@@ -76,6 +93,7 @@ def _machine_evangel_effect(state: GameState, unit: UnitInstance, zone: Zone) ->
 DEATH_TRIGGERS: dict[str, Callable[[GameState, UnitInstance, Zone], GameState]] = {
     KOGMAW_CAUSTIC: _kogmaw_effect,
     MACHINE_EVANGEL: _machine_evangel_effect,
+    EKKO_RECURRENT: _ekko_effect,
 }
 
 

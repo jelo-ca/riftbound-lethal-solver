@@ -17,12 +17,7 @@ def test_puzzle_006_solves_by_redirecting_the_blocker():
     assert redirect_actions[0].target_zone == "right"
 
 
-def test_puzzle_006_redirect_empties_left_regardless_of_opponent_choice():
-    """The whole lesson: no matter which of our two units at "right" the
-    opponent's redirected blocker targets, "left" ends up open and our
-    separate attacker can still win. This is the AND-node's job, proven
-    here through a real authored puzzle rather than a synthetic scenario.
-    """
+def test_puzzle_006_redirect_empties_left():
     root = build_root()
     redirect_candidates = [
         a for a in legal_actions(root, CARDS)
@@ -34,8 +29,37 @@ def test_puzzle_006_redirect_empties_left_regardless_of_opponent_choice():
         outcomes = resolve_unit_play_trigger_outcomes(root, action, BLITZCRANK_CARD)
         for outcome in outcomes:
             left = outcome.battlefields[0]
-            assert left.units == frozenset()  # blocker is gone (dead) either way
+            assert left.units == frozenset()  # blocker is gone (dead)
             assert left.controller is None  # "left" is open
+
+
+def test_puzzle_006_is_unsolvable_without_tank():
+    """The point of the re-authored puzzle, asserted directly.
+
+    Dragging the blocker onto "right" makes it the Attacker and us the
+    Defender, and its 3 damage would kill our 2-Might Rearguard — the only
+    unit that can reach "left", since Blitzcrank enters exhausted the turn
+    he's played. [Tank] forces that damage onto Blitzcrank, who at 5 Might
+    survives it.
+
+    Strip Tank from the same body and the identical line kills our own
+    conqueror, so the puzzle stops having a solution at all. That margin
+    IS the puzzle — which is what makes this version about Tank rather
+    than merely compatible with it.
+    """
+    import dataclasses
+
+    root = build_root()
+    without_tank = {BLITZCRANK_IMPASSIVE: dataclasses.replace(
+        BLITZCRANK_CARD, keywords=frozenset())}
+    assert solve(root, CARDS, max_depth=4) is not None
+    assert solve(root, without_tank, max_depth=4) is None
+
+
+def test_puzzle_006_has_exactly_one_winning_line():
+    from solver.search import count_winning_strategies
+
+    assert count_winning_strategies(build_root(), CARDS, max_depth=4) == 1
 
 
 def test_puzzle_006_direct_attack_on_the_blocker_is_not_the_solution():
@@ -49,28 +73,16 @@ def test_puzzle_006_direct_attack_on_the_blocker_is_not_the_solution():
     assert not any(isinstance(a, ResolveCombat) and a.to_zone == "left" for a in actions)
 
 
-def test_puzzle_006_lost_its_adversarial_edge_when_tank_was_implemented():
-    """DESIGN INVALIDATED — this puzzle needs re-authoring or withdrawing.
-
-    Puzzle 6 "Redirection" was built around one thing: redirecting an
-    enemy onto ground we hold creates a genuine adversarial fork, because
-    the enemy chooses whether to kill our fragile ally or our Blitzcrank.
-    This test asserted that fork existed, and passed for as long as the
-    engine ignored [Tank].
-
-    Blitzcrank prints [Tank] — "I must be assigned combat damage first" —
-    so the enemy never actually had that choice. The fork was an artifact
-    of the missing rule, and implementing Tank correctly deletes it. The
-    puzzle still solves, but it no longer demonstrates what its own design
-    docstring says it demonstrates.
-
-    Asserting the collapse rather than deleting the test, so the loss
-    can't be mistaken for a puzzle that was always this way. Precedent:
-    puzzles 7 and 8 were withdrawn when the Hold invariant was enforced.
-    """
+def test_puzzle_006_exports_cleanly():
+    """No adversarial edges, and that is now correct by design rather than
+    a loss. The original version's fork — the opponent choosing whether to
+    kill our fragile unit or Blitzcrank — was never legal Riftbound, since
+    Blitzcrank prints [Tank]. This version gets its difficulty from Tank
+    being load-bearing instead of from a fork that only existed because
+    the keyword was unimplemented."""
     root = build_root()
     result = export_puzzle("puzzle-006-redirection", root, CARDS)
-    assert "win" in result["terminal"].values()  # still solvable
+    assert "win" in result["terminal"].values()
     adversarial_edges = [
         e for edge_list in result["edges"].values() for e in edge_list if e["adversarial"]
     ]
