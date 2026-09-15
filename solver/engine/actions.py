@@ -31,6 +31,7 @@ from .state import (
     BattlefieldState,
     Domain,
     GameState,
+    GearInstance,
     RunePool,
     UnitInstance,
     energy_capacity,
@@ -142,8 +143,13 @@ class PlaySpell:
 
 @dataclass(frozen=True)
 class PlayGear:
+    """Gear has NO target. The original shape here carried a
+    `target_unit`, assuming equipment that attaches to a body — no Origins
+    Gear card works that way. All 30 refer to themselves as "this" and act
+    from their own place on the board, so playing one is just paying its
+    cost and putting it down. See state.GearInstance.
+    """
     card_id: str
-    target_unit: int  # instance_id
     rune_payment: RunePayment
 
 
@@ -276,6 +282,11 @@ def next_instance_id(state: GameState) -> int:
     ids = [0]
     for player in state.players:
         ids += [u.instance_id for u in player.base_units]
+        # Gear shares the unit id space: effects that return "a friendly
+        # gear, unit, or Hidden card" (Pack of Wonders) name one target by
+        # instance_id without caring which kind it is, so the ids must not
+        # collide.
+        ids += [g.instance_id for g in player.gear]
     for bf in state.battlefields:
         ids += [u.instance_id for u in bf.units]
     return max(ids) + 1
@@ -419,6 +430,74 @@ def mint_token_unit(state: GameState, card: CardDef, controller: int, zone: Zone
     new_controller = bf.controller if bf.controller is not None else controller
     new_bf = dataclasses.replace(bf, units=bf.units | {new_unit}, controller=new_controller)
     return replace_battlefield(state, new_bf)
+
+
+# --- PlayGear -------------------------------------------------------------
+
+
+def is_legal_play_gear(state: GameState, action: PlayGear, card: CardDef) -> bool:
+    """Cost and hand checks only. Gear has no target and no placement
+    choice — it isn't played "to" anywhere, so none of PlayUnit's rule
+    355.7/355.8 zone restrictions apply. Its own text is the per-card
+    registry's business (engine/gear.py), same split as PlaySpell."""
+    if card.card_type != "Gear":
+        return False
+    player = state.players[state.turn_player]
+    if action.card_id not in player.hand:
+        return False
+    if len(action.rune_payment.energy_runes) != card.energy_cost:
+        return False
+    if len(action.rune_payment.power_runes) != card.power_cost:
+        return False
+    if card.power_cost and any(d != card.power_domain for d in action.rune_payment.power_runes):
+        return False
+    # Playing Gear chooses no unit, so nothing can charge a [Deflect] tax.
+    if action.rune_payment.rainbow_runes:
+        return False
+    return payment_is_affordable(player.runes, action.rune_payment)
+
+
+def apply_play_gear(state: GameState, action: PlayGear, card: CardDef) -> GameState:
+    """Board mechanics only: spend the runes, drop the card from hand, and
+    put the Gear down. Any "when you play this" text is the registry's
+    job, exactly as apply_play_unit leaves triggers to abilities.py."""
+    player_index = state.turn_player
+    player = state.players[player_index]
+
+    new_gear = GearInstance(
+        card_id=card.card_id,
+        instance_id=next_instance_id(state),
+        exhausted=card.gear_enters_exhausted,
+    )
+    new_hand = list(player.hand)
+    new_hand.remove(action.card_id)
+    state = dataclasses.replace(state, cards_played_this_turn=state.cards_played_this_turn + 1)
+    return replace_player(state, player_index, dataclasses.replace(
+        player,
+        hand=tuple(new_hand),
+        runes=consume_runes(player.runes, action.rune_payment),
+        gear=player.gear | {new_gear},
+    ))
+
+
+def find_gear(state: GameState, instance_id: int) -> Optional[tuple[GearInstance, int]]:
+    """The Gear with this instance_id and whose player holds it, or None."""
+    for index, player in enumerate(state.players):
+        for gear in player.gear:
+            if gear.instance_id == instance_id:
+                return gear, index
+    return None
+
+
+def replace_gear(state: GameState, controller: int, old: GearInstance,
+                  new: Optional[GearInstance]) -> GameState:
+    """Swap one Gear for an updated copy, or remove it entirely when `new`
+    is None (Treasure Trove's "Kill this")."""
+    player = state.players[controller]
+    remaining = player.gear - {old}
+    if new is not None:
+        remaining = remaining | {new}
+    return replace_player(state, controller, dataclasses.replace(player, gear=remaining))
 
 
 # --- PlaySpell (generic cost/hand bookkeeping; effects live in abilities.py) --

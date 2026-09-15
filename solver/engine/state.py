@@ -92,11 +92,35 @@ class LegendState:
 
 
 @dataclass(frozen=True)
+class GearInstance:
+    """A Gear permanent. Gear does NOT attach to a unit — no Origins Gear
+    card says "attach" or "equip"; all 30 refer to themselves as "this"
+    and act from their own place on the board ("Exhaust: Deal 2 to a unit
+    at a battlefield"). So Gear is a standalone permanent owned by a
+    player, not an aura on a body, and a unit dying does nothing to it.
+
+    It carries no Might (every printing has Might None) and so never
+    fights, never occupies a battlefield, and never contests control.
+
+    `exhausted` is real state: most Gear pays an Exhaust cost to activate.
+    Unlike units, Gear enters READY by default — Iron Ballista has to
+    spell out "This enters exhausted", which only needs saying because the
+    default is the opposite (contrast rule 143.4.a for units).
+    """
+    card_id: str
+    instance_id: int
+    exhausted: bool = False
+
+
+@dataclass(frozen=True)
 class PlayerState:
     base_units: frozenset[UnitInstance]
     hand: tuple[str, ...]
     runes: RunePool
     score: int
+    # Defaulted so every existing construction still works — Gear was
+    # added long after these positions were authored.
+    gear: frozenset[GearInstance] = frozenset()
     # None for a position that doesn't involve a Legend at all — every
     # puzzle authored before Legends existed, and any sampled position
     # that didn't draw one.
@@ -170,6 +194,10 @@ def _canonical_player(player: PlayerState) -> tuple:
         # Exhaustion matters: a Legend that's already paid its Exhaust cost
         # this turn is a genuinely different position from one that hasn't.
         (player.legend.card_id, player.legend.exhausted) if player.legend else None,
+        # Same reasoning for Gear, and for the same reason instance_id is
+        # excluded from units: two structurally identical Gear pieces are
+        # the same position regardless of which counter values they drew.
+        tuple(sorted((g.card_id, g.exhausted) for g in player.gear)),
     )
 
 

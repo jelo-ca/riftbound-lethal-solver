@@ -84,6 +84,11 @@ def render_player(player: PlayerState) -> dict:
         "score": player.score,
         "legend": ({"card_id": player.legend.card_id, "exhausted": player.legend.exhausted}
                    if player.legend else None),
+        # Gear's card_id and exhaustion are both in canonical_key, so both
+        # have to render — otherwise two positions the engine treats as
+        # different would be indistinguishable to a consumer replaying it.
+        "gear": [{"card_id": g.card_id, "instance_id": g.instance_id, "exhausted": g.exhausted}
+                 for g in sorted(player.gear, key=lambda g: g.instance_id)],
     }
 
 
