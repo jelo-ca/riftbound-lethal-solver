@@ -278,6 +278,7 @@ def apply_play_unit(state: GameState, action: PlayUnit, card: CardDef) -> GameSt
     new_hand = list(player.hand)
     new_hand.remove(action.card_id)
     new_runes = consume_runes(player.runes, action.rune_payment)
+    state = dataclasses.replace(state, cards_played_this_turn=state.cards_played_this_turn + 1)
 
     if action.target_zone == "base":
         new_player = dataclasses.replace(
@@ -296,6 +297,37 @@ def apply_play_unit(state: GameState, action: PlayUnit, card: CardDef) -> GameSt
     # a battlefield already controlled by this player is a no-op for
     # controller (it's already theirs).
     new_controller = bf.controller if bf.controller is not None else player_index
+    new_bf = dataclasses.replace(bf, units=bf.units | {new_unit}, controller=new_controller)
+    return replace_battlefield(state, new_bf)
+
+
+def mint_token_unit(state: GameState, card: CardDef, controller: int, zone: Zone) -> GameState:
+    """Creates a fresh token unit straight from `card`'s printed stats
+    (is_token=True, enters exhausted per rule 143.4.a same as any other
+    unit) directly into `zone` — no hand/cost bookkeeping, since a token
+    is never actually played from hand. For card-effect token generation
+    (Faithful Manufactor, Vanguard Captain) rather than a PlayUnit action;
+    does NOT bump `cards_played_this_turn` for the same reason.
+
+    Establishes control the same way apply_play_unit does when entering
+    a battlefield — matters when the token's own card text sends it to an
+    open battlefield, though neither card in the pool today does that."""
+    new_unit = UnitInstance(
+        card_id=card.card_id,
+        instance_id=next_instance_id(state),
+        controller=controller,
+        might=card.might if card.might is not None else 0,
+        keywords=card.keywords,
+        exhausted=True,
+        damage=0,
+        is_token=True,
+    )
+    if zone == "base":
+        player = state.players[controller]
+        new_player = dataclasses.replace(player, base_units=player.base_units | {new_unit})
+        return replace_player(state, controller, new_player)
+    bf = _battlefield(state, zone)
+    new_controller = bf.controller if bf.controller is not None else controller
     new_bf = dataclasses.replace(bf, units=bf.units | {new_unit}, controller=new_controller)
     return replace_battlefield(state, new_bf)
 
@@ -340,6 +372,7 @@ def apply_play_spell_cost(state: GameState, action: PlaySpell) -> GameState:
     new_hand.remove(action.card_id)
     new_runes = consume_runes(player.runes, action.rune_payment)
     new_player = dataclasses.replace(player, hand=tuple(new_hand), runes=new_runes)
+    state = dataclasses.replace(state, cards_played_this_turn=state.cards_played_this_turn + 1)
     return replace_player(state, player_index, new_player)
 
 

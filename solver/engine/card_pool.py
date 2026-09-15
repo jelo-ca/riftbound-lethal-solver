@@ -15,8 +15,12 @@ from .abilities import (
     BLITZCRANK_IMPASSIVE,
     CAITLYN_PATROLLING,
     CHARM,
+    FAITHFUL_MANUFACTOR,
     PRIMAL_STRENGTH,
+    RECRUIT_TOKEN,
+    RECRUIT_TOKEN_CARD,
     RIDE_THE_WIND,
+    VANGUARD_CAPTAIN,
     VENGEANCE,
     YASUO_WINDRIDER,
     ZAUNITE_BOUNCER,
@@ -25,8 +29,6 @@ from .cards import CardDef
 from .traits import TARIC_PROTECTOR
 
 LEGION_REARGUARD = "ogn-010-298"
-FAITHFUL_MANUFACTOR = "ogn-211-298"
-VANGUARD_CAPTAIN = "ogn-218-298"
 SNEAKY_DECKHAND = "ogn-176-298"
 DARING_PORO = "ogn-210-298"
 STALWART_PORO = "ogn-052-298"
@@ -58,6 +60,7 @@ CARD_POOL: dict[str, CardDef] = {
     TARIC_PROTECTOR: CardDef(card_id=TARIC_PROTECTOR, card_type="Unit", energy_cost=4,
                               power_cost=1, power_domain="Calm", might=4,
                               keywords=frozenset({"Shield", "Tank"})),
+    RECRUIT_TOKEN: RECRUIT_TOKEN_CARD,
     RIDE_THE_WIND: CardDef(card_id=RIDE_THE_WIND, card_type="Spell", energy_cost=2,
                             power_cost=1, power_domain="Chaos", keywords=frozenset(),
                             speed="Action"),

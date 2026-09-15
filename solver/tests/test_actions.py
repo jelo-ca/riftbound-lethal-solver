@@ -2,9 +2,11 @@ import pytest
 
 from solver.engine.actions import (
     MoveUnit,
+    PlaySpell,
     PlayUnit,
     RunePayment,
     apply_move_unit,
+    apply_play_spell_cost,
     apply_play_unit,
     generate_rune_payments,
     is_legal_move_unit,
@@ -102,6 +104,25 @@ def test_play_unit_to_base_legal_and_applies():
     unit = next(iter(new_units))
     assert unit.exhausted is True
     assert unit.might == 2
+
+
+def test_play_unit_increments_cards_played_this_turn():
+    """cards_played_this_turn exists on GameState but nothing incremented
+    it before this — needed for Vanguard Captain's Legion condition
+    ("you've played another card this turn") to ever be true."""
+    state = make_state(hand=("ogn-010-298",), runes=("Fury", "Fury"))
+    payment = generate_rune_payments(state.players[0].runes, 2, 0, None)[0]
+    action = PlayUnit(card_id="ogn-010-298", target_zone="base", rune_payment=payment)
+    new_state = apply_play_unit(state, action, CHEAP_UNIT)
+    assert new_state.cards_played_this_turn == 1
+
+
+def test_play_spell_cost_increments_cards_played_this_turn():
+    state = make_state(hand=("some-spell",), runes=("Fury", "Fury"))
+    payment = RunePayment(energy_runes=("Fury", "Fury"), power_runes=())
+    action = PlaySpell(card_id="some-spell", params=(), rune_payment=payment)
+    new_state = apply_play_spell_cost(state, action)
+    assert new_state.cards_played_this_turn == 1
 
 
 def test_play_unit_insufficient_runes_illegal():

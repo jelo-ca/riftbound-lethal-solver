@@ -25,6 +25,7 @@ from .actions import (
     is_legal_play_spell_cost,
     is_legal_play_unit,
     kill_unit,
+    mint_token_unit,
     next_instance_id,
     relocate_unit,
     replace_battlefield,
@@ -466,6 +467,62 @@ def _blitzcrank_candidates(state: GameState, base_action: PlayUnit, card: CardDe
     return candidates
 
 
+FAITHFUL_MANUFACTOR = "ogn-211-298"  # When you play me, play a 1 Might Recruit unit token here.
+VANGUARD_CAPTAIN = "ogn-218-298"  # [Legion] When you play me, play two 1 Might Recruit unit tokens
+# here. (Get the effect if you've played another card this turn.)
+RECRUIT_TOKEN = "ogn-271-298"  # one of three same-stat printings (see card_pool.py); this one
+# picked as the canonical id for tokens minted by card effects.
+RECRUIT_TOKEN_CARD = CardDef(card_id=RECRUIT_TOKEN, card_type="Unit", energy_cost=0,
+                              power_cost=0, might=1, keywords=frozenset())
+
+# card_ids whose "when you play me" trigger has NO decision to make — no
+# target, no "you may." legal_actions() (search.py) withholds the bare
+# trigger_params=() PlayUnit for these: offering "play it WITHOUT minting
+# the token" as a separate legal move would be wrong, since the card's own
+# text isn't optional. Contrast with Blitzcrank/Zaunite Bouncer, where
+# trigger_params=() legitimately means "decline."
+MANDATORY_PLAY_TRIGGERS = frozenset({FAITHFUL_MANUFACTOR, VANGUARD_CAPTAIN})
+
+
+def _mint_recruit_tokens(state: GameState, zone: str, controller: int, count: int) -> GameState:
+    for _ in range(count):
+        state = mint_token_unit(state, RECRUIT_TOKEN_CARD, controller, zone)
+    return state
+
+
+def _faithful_manufactor_is_legal(state: GameState, action: PlayUnit, card: CardDef) -> bool:
+    """No target/choice — trigger_params is a fixed sentinel marking "the
+    (only) triggered form," never empty (see MANDATORY_PLAY_TRIGGERS)."""
+    return action.trigger_params == ("mint",)
+
+
+def _faithful_manufactor_effect(state_after_play: GameState, action: PlayUnit) -> list[GameState]:
+    return [_mint_recruit_tokens(state_after_play, action.target_zone, state_after_play.turn_player, 1)]
+
+
+def _faithful_manufactor_candidates(state: GameState, base_action: PlayUnit, card: CardDef) -> list[tuple]:
+    return [("mint",)]
+
+
+def _vanguard_captain_is_legal(state: GameState, action: PlayUnit, card: CardDef) -> bool:
+    return action.trigger_params == ("mint",)
+
+
+def _vanguard_captain_effect(state_after_play: GameState, action: PlayUnit) -> list[GameState]:
+    """Legion's condition is "you've played ANOTHER card this turn" —
+    i.e. before this one. `apply_play_unit` already incremented
+    `cards_played_this_turn` for Vanguard Captain's own play by the time
+    this runs, so the check is `> 1` (this play plus at least one prior),
+    not `> 0`. No tokens at all if the condition fails — Legion isn't
+    "one token instead of two," it's the whole effect being conditional."""
+    count = 2 if state_after_play.cards_played_this_turn > 1 else 0
+    return [_mint_recruit_tokens(state_after_play, action.target_zone, state_after_play.turn_player, count)]
+
+
+def _vanguard_captain_candidates(state: GameState, base_action: PlayUnit, card: CardDef) -> list[tuple]:
+    return [("mint",)]
+
+
 ZAUNITE_BOUNCER = "ogn-188-298"  # When you play me, return another unit at a battlefield to its owner's hand.
 
 
@@ -521,6 +578,9 @@ UNIT_PLAY_TRIGGERS: dict[str, tuple[
 ]] = {
     BLITZCRANK_IMPASSIVE: (_blitzcrank_is_legal, _blitzcrank_effect, _blitzcrank_candidates),
     ZAUNITE_BOUNCER: (_zaunite_bouncer_is_legal, _zaunite_bouncer_effect, _zaunite_bouncer_candidates),
+    FAITHFUL_MANUFACTOR: (_faithful_manufactor_is_legal, _faithful_manufactor_effect,
+                           _faithful_manufactor_candidates),
+    VANGUARD_CAPTAIN: (_vanguard_captain_is_legal, _vanguard_captain_effect, _vanguard_captain_candidates),
 }
 
 

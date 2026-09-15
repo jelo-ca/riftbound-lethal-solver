@@ -175,13 +175,19 @@ def legal_actions(state: GameState, cards: dict[str, CardDef]) -> list[Action]:
     # PlayUnit "when you play me" trigger candidates: legal_board_actions
     # already generated the plain (trigger_params=()) form for every
     # affordable PlayUnit — this adds the "use the trigger" variants on
-    # top, one per registered card's own candidate generator.
+    # top, one per registered card's own candidate generator. For a
+    # MANDATORY trigger (no "you may" — Faithful Manufactor, Vanguard
+    # Captain), the plain form is removed rather than kept alongside the
+    # triggered one: "play it WITHOUT the effect" was never actually a
+    # legal choice.
     for base_action in [a for a in result if isinstance(a, PlayUnit)]:
         entry = abilities.UNIT_PLAY_TRIGGERS.get(base_action.card_id)
         if entry is None:
             continue
         card = cards[base_action.card_id]
         _, _, generate_trigger_candidates = entry
+        if base_action.card_id in abilities.MANDATORY_PLAY_TRIGGERS:
+            result.remove(base_action)
         for trigger_params in generate_trigger_candidates(state, base_action, card):
             triggered = dataclasses.replace(base_action, trigger_params=trigger_params)
             if abilities.is_legal_unit_play_trigger(state, triggered, card):

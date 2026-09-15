@@ -62,18 +62,22 @@ OUR_UNIT_POOL = [LEGION_REARGUARD, FAITHFUL_MANUFACTOR, VANGUARD_CAPTAIN,
                   DARING_PORO, STALWART_PORO]
 HAND_SPELL_POOL = [RIDE_THE_WIND, VENGEANCE, CHARM, PRIMAL_STRENGTH]
 # Units worth sampling into HAND rather than pre-placed on the board.
-# Deliberately only the three whose text does something *at the moment of
+# Deliberately only the five whose text does something *at the moment of
 # being played* - without this, PlayUnit never appeared in a generated
-# line at all and these three mechanics were invisible to generation:
+# line at all and these mechanics were invisible to generation:
 #   Blitzcrank / Zaunite Bouncer - "when you play me" triggers, so they
 #     can ONLY fire from hand;
 #   Sneaky Deckhand - can_play_to_open_battlefield, i.e. playing it IS a
-#     Conquer, the whole reason it's in the pool.
+#     Conquer, the whole reason it's in the pool;
+#   Faithful Manufactor / Vanguard Captain - mandatory "when you play me"
+#     token-mint triggers (abilities.MANDATORY_PLAY_TRIGGERS) - same
+#     "only fires from hand" reasoning as Blitzcrank/Zaunite Bouncer.
 # Plain bodies are left out on purpose: a unit enters exhausted (rule
 # 143.4.a), so in a single-turn puzzle a freshly played vanilla can't
 # move or fight afterwards, making it a dead action that would just
 # dilute sampling.
-HAND_UNIT_POOL = [BLITZCRANK_IMPASSIVE, ZAUNITE_BOUNCER, SNEAKY_DECKHAND]
+HAND_UNIT_POOL = [BLITZCRANK_IMPASSIVE, ZAUNITE_BOUNCER, SNEAKY_DECKHAND,
+                   FAITHFUL_MANUFACTOR, VANGUARD_CAPTAIN]
 HAND_CARD_POOL = HAND_SPELL_POOL + HAND_UNIT_POOL
 
 # Battlefield effects worth sampling (engine/battlefields.py's registered
