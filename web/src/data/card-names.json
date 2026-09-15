@@ -1,0 +1,48 @@
+{
+  "generic-opponent": {
+    "name": "Opponent Unit",
+    "text": null,
+    "type": null,
+    "placeholder": true
+  },
+  "ogn-010-298": {
+    "name": "Legion Rearguard",
+    "text": null,
+    "type": null
+  },
+  "ogn-067-298": {
+    "name": "Blitzcrank, Impassive",
+    "text": null,
+    "type": null
+  },
+  "ogn-068-298": {
+    "name": "Caitlyn, Patrolling",
+    "text": null,
+    "type": null
+  },
+  "ogn-173-298": {
+    "name": "Ride the Wind",
+    "text": null,
+    "type": null
+  },
+  "ogn-205-298": {
+    "name": "Yasuo, Windrider",
+    "text": null,
+    "type": null
+  },
+  "ogn-211-298": {
+    "name": "Faithful Manufactor",
+    "text": null,
+    "type": null
+  },
+  "ogn-218-298": {
+    "name": "Vanguard Captain",
+    "text": null,
+    "type": null
+  },
+  "ogn-295-298": {
+    "name": "Vilemaw's Lair",
+    "text": null,
+    "type": null
+  }
+}
