@@ -24,7 +24,7 @@ import dataclasses
 from dataclasses import dataclass
 from typing import Optional
 
-from . import battlefields, combat
+from . import battlefields, combat, deaths
 from .cards import CardDef
 from .combat import Assignment
 from .state import (
@@ -493,16 +493,19 @@ def kill_unit(state: GameState, instance_id: int) -> GameState:
     effects like Vengeance ("kill a unit") that aren't a damage
     *amount*, just a removal. Reuses combat.deal_damage_to_unit for a
     battlefield target (dealing its own Might guarantees lethal,
-    correctly recomputing the battlefield's controller); a Base target
-    has no controller to recompute, just removal from that player's
-    base_units."""
+    correctly recomputing the battlefield's controller, and firing any
+    [Deathknell] on the way); a Base target has no controller to
+    recompute, just removal from that player's base_units — and its own
+    death trigger fired here, since that path doesn't go through
+    combat.py at all."""
     located = find_unit_anywhere(state, instance_id)
     assert located is not None
     unit, zone = located
     if zone == "base":
         player = state.players[unit.controller]
         new_player = dataclasses.replace(player, base_units=player.base_units - {unit})
-        return replace_player(state, unit.controller, new_player)
+        return deaths.fire_death_triggers(
+            replace_player(state, unit.controller, new_player), [(unit, "base")])
     return combat.deal_damage_to_unit(state, zone, instance_id, unit.might)
 
 

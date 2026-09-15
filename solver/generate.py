@@ -42,7 +42,9 @@ from .engine.card_pool import (
     CARD_POOL,
     DARING_PORO,
     FAITHFUL_MANUFACTOR,
+    KOGMAW_CAUSTIC,
     LEGION_REARGUARD,
+    MACHINE_EVANGEL,
     SNEAKY_DECKHAND,
     STALWART_PORO,
     VANGUARD_CAPTAIN,
@@ -57,9 +59,15 @@ OUTPUT_DIR = Path(__file__).parent.parent / "puzzles" / "generated"
 # --- Verified card pool (design/10-generation-pipeline.md) -----------------
 
 # Units that can be sampled onto the board (pre-placed) or into hand.
+#
+# Kog'Maw and Machine Evangel carry [Deathknell], which unlike a "when
+# you play me" trigger is fully live on a PRE-PLACED unit — it fires when
+# the unit dies, and dying is something a pre-placed body does all the
+# time. So they need no hand-pool entry to be exercised, and there's no
+# "trigger already spent" caveat of the kind Faithful Manufactor has.
 OUR_UNIT_POOL = [LEGION_REARGUARD, FAITHFUL_MANUFACTOR, VANGUARD_CAPTAIN,
                   SNEAKY_DECKHAND, CAITLYN_PATROLLING, BLITZCRANK_IMPASSIVE, YASUO_WINDRIDER,
-                  DARING_PORO, STALWART_PORO]
+                  DARING_PORO, STALWART_PORO, KOGMAW_CAUSTIC, MACHINE_EVANGEL]
 HAND_SPELL_POOL = [RIDE_THE_WIND, VENGEANCE, CHARM, PRIMAL_STRENGTH]
 # Units worth sampling into HAND rather than pre-placed on the board.
 # Deliberately only the five whose text does something *at the moment of

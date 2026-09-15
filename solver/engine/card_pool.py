@@ -26,6 +26,7 @@ from .abilities import (
     ZAUNITE_BOUNCER,
 )
 from .cards import CardDef
+from .deaths import KOGMAW_CAUSTIC, MACHINE_EVANGEL
 from .traits import TARIC_PROTECTOR
 
 LEGION_REARGUARD = "ogn-010-298"
@@ -67,6 +68,15 @@ CARD_POOL: dict[str, CardDef] = {
     # "play me to an occupied enemy battlefield").
     POUTY_PORO: CardDef(card_id=POUTY_PORO, card_type="Unit", energy_cost=2,
                          power_cost=0, might=2, keywords=frozenset({"Deflect"})),
+    # A 1-Might body that wipes its own battlefield for 4 when it dies —
+    # the [Deathknell] worth having, since dying is cheap for it and
+    # Vengeance can target your own units.
+    KOGMAW_CAUSTIC: CardDef(card_id=KOGMAW_CAUSTIC, card_type="Unit", energy_cost=3,
+                             power_cost=1, power_domain="Chaos", might=1,
+                             keywords=frozenset({"Deathknell"})),
+    MACHINE_EVANGEL: CardDef(card_id=MACHINE_EVANGEL, card_type="Unit", energy_cost=5,
+                              power_cost=1, power_domain="Order", might=4,
+                              keywords=frozenset({"Deathknell"})),
     ZAUNITE_BOUNCER: CardDef(card_id=ZAUNITE_BOUNCER, card_type="Unit", energy_cost=4,
                               power_cost=2, power_domain="Chaos", might=2, keywords=frozenset()),
     TARIC_PROTECTOR: CardDef(card_id=TARIC_PROTECTOR, card_type="Unit", energy_cost=4,

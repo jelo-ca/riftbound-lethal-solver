@@ -26,10 +26,19 @@ from __future__ import annotations
 import dataclasses
 from typing import Optional
 
+from . import deaths
 from .state import BattlefieldState, GameState, ShowdownState, UnitInstance, replace_player
 from .traits import effective_might
 
 Assignment = tuple[tuple[int, int], ...]  # (instance_id, damage_amount) pairs
+
+
+def _dead_among(before: frozenset[UnitInstance], after: frozenset[UnitInstance]) -> list[UnitInstance]:
+    """Which of `before` didn't survive into `after`. Compared by
+    instance_id, since survivors come back as fresh objects carrying
+    updated damage."""
+    survived = {u.instance_id for u in after}
+    return [u for u in before if u.instance_id not in survived]
 
 
 def determine_sides(state: GameState, mover: UnitInstance, destination_id: str):
@@ -163,7 +172,31 @@ def deal_damage_to_unit(state: GameState, battlefield_id: str, target_instance_i
     remaining = _apply_damage(state, battlefield_id, bf.units, ((target_instance_id, amount),), None)
     controllers = {u.controller for u in remaining}
     new_controller = next(iter(controllers)) if len(controllers) == 1 else None
-    return _replace_battlefield(state, dataclasses.replace(bf, units=remaining, controller=new_controller))
+    state = _replace_battlefield(state, dataclasses.replace(bf, units=remaining, controller=new_controller))
+    return deaths.fire_death_triggers(
+        state, [(u, battlefield_id) for u in _dead_among(bf.units, remaining)])
+
+
+def deal_damage_to_all_at(state: GameState, battlefield_id: str, amount: int) -> GameState:
+    """Flat damage to every unit at a battlefield, both controllers' —
+    for an effect that doesn't choose targets (Kog'Maw, Caustic's
+    Deathknell: "Deal 4 to all units at my battlefield"). Like
+    deal_damage_to_unit this is an effect rather than a Combat Damage
+    Step assignment, so designation is None: no Assault/Shield bonus
+    applies against it."""
+    bf = next(b for b in state.battlefields if b.battlefield_id == battlefield_id)
+    if not bf.units:
+        return state
+    assignment = tuple((u.instance_id, amount) for u in bf.units)
+    remaining = _apply_damage(state, battlefield_id, bf.units, assignment, None)
+    controllers = {u.controller for u in remaining}
+    new_controller = next(iter(controllers)) if len(controllers) == 1 else None
+    state = _replace_battlefield(state, dataclasses.replace(bf, units=remaining, controller=new_controller))
+    # Whatever this killed fires its own Deathknell — that recursion is
+    # the cascade, and it terminates because each pass removes its own
+    # trigger's unit from the board.
+    return deaths.fire_death_triggers(
+        state, [(u, battlefield_id) for u in _dead_among(bf.units, remaining)])
 
 
 def open_showdown(state: GameState, mover: UnitInstance, from_zone: str, destination_id: str,
@@ -222,7 +255,9 @@ def resolve_showdown(state: GameState, attacker_assignment: Assignment,
 
     resolved = dataclasses.replace(bf, units=surviving_attackers | surviving_defenders,
                                     controller=new_controller)
-    return dataclasses.replace(_replace_battlefield(state, resolved), showdown=None)
+    state = dataclasses.replace(_replace_battlefield(state, resolved), showdown=None)
+    dead = _dead_among(attacker_units, surviving_attackers) + _dead_among(defender_units, surviving_defenders)
+    return deaths.fire_death_triggers(state, [(u, showdown.battlefield_id) for u in dead])
 
 
 def showdown_assignment_options(state: GameState, for_controller: int) -> list[Assignment]:
@@ -306,7 +341,9 @@ def apply_combat(state: GameState, mover: UnitInstance, from_zone: str, destinat
     new_bf = dataclasses.replace(
         destination, units=surviving_attackers | surviving_defenders, controller=new_controller
     )
-    return _replace_battlefield(state, new_bf)
+    state = _replace_battlefield(state, new_bf)
+    dead = _dead_among(attacker_units, surviving_attackers) + _dead_among(defender_units, surviving_defenders)
+    return deaths.fire_death_triggers(state, [(u, destination_id) for u in dead])
 
 
 def enumerate_combat_outcomes(state: GameState, mover: UnitInstance, from_zone: str, destination_id: str,

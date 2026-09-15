@@ -56,6 +56,14 @@ TRAIT_REGISTRY: dict[str, TraitDef] = {
     # numeric form ("Deflect 2") scales the tax, not any Might. See
     # deflect_tax.
     "Deflect": TraitDef(might_delta=0, applies_when=None),
+    # Fires on death rather than affecting the board while alive — see
+    # engine/deaths.py.
+    "Deathknell": TraitDef(might_delta=0, applies_when=None),
+    # Registered, and deliberately inert: "Kill me at the start of your
+    # Beginning Phase, before scoring" — a single-turn puzzle never
+    # reaches a next Beginning Phase, so nothing can ever observe it.
+    # Here so it parses as a known trait instead of falling through.
+    "Temporary": TraitDef(might_delta=0, applies_when=None),
 }
 
 TARIC_PROTECTOR = "ogn-074-298"  # "Other friendly units here have [Shield]."
