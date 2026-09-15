@@ -33,6 +33,8 @@ from .state import (
     GameState,
     RunePool,
     UnitInstance,
+    energy_capacity,
+    power_capacity,
     replace_player,
 )
 
@@ -166,66 +168,90 @@ def generate_rune_payments(pool: RunePool, energy_cost: int, power_cost: int,
                             rainbow_cost: int = 0) -> list[RunePayment]:
     """All distinct ways to pay `energy_cost` Energy + `power_cost` Power
     (of `power_domain`) + `rainbow_cost` domain-free Recycled runes out of
-    `pool`, deduplicated by domain-count split — not by which physical
-    rune is used (design/03-action-space.md's "rune-payment dedup" note).
-    A rune produces Energy (any domain) XOR Power (its own domain), never
-    both (rule 164.2.b) — so this picks disjoint sub-multisets of
-    `pool.available` for the costs.
+    `pool`.
 
-    `rainbow_cost` is [Deflect]'s targeting tax (see traits.deflect_tax).
-    It behaves like Energy for selection purposes — any domain will do —
-    so it inherits the same single-representative-split simplification,
-    and the same caveat below.
+    Energy and Power draw on SEPARATE capacities of the same runes (see
+    RunePool): Exhausting a rune for Energy doesn't stop it being Recycled
+    for Power later, and vice versa. So the two never compete, and the
+    only real choice left is which domains absorb a domain-free rainbow
+    cost — those DO compete with a later Power cost, since they consume
+    Recycle capacity of a specific domain.
+
+    Energy is therefore a pure count (no domain ever checks it) and gets
+    one representative split; rainbow splits are enumerated properly,
+    because picking Fury over Order here can strand an Order spell later.
     """
     if power_cost > 0 and power_domain is None:
         raise ValueError("power_cost > 0 requires a power_domain")
 
-    available = list(pool.available)
-    matching_domain_count = available.count(power_domain) if power_domain else 0
-    if power_cost > matching_domain_count:
-        return []  # not enough of the right domain to pay Power at all
+    if energy_cost > energy_capacity(pool):
+        return []
+    if power_cost > power_capacity(pool, power_domain):
+        return []
 
-    payments = []
-    # Power must be paid with power_domain runes specifically; the number of
-    # ways to choose *which* power_domain runes is irrelevant (they're
-    # interchangeable), so there's exactly one representative power split.
     power_runes = tuple([power_domain] * power_cost) if power_cost else ()
 
-    # Energy can be paid with any remaining runes, any domain — again, only
-    # the *count* used from each remaining domain matters, not which
-    # physical rune. Remaining pool after removing the power runes:
-    remaining = available[:]
-    for _ in range(power_cost):
-        remaining.remove(power_domain)
-    if energy_cost + rainbow_cost > len(remaining):
-        return []  # not enough runes left for Energy + the rainbow tax
+    # Recycle capacity left per domain once this cost's own Power is taken.
+    remaining_by_domain: dict[Domain, int] = {}
+    for domain in set(pool.available):
+        left = power_capacity(pool, domain) - (power_cost if domain == power_domain else 0)
+        if left > 0:
+            remaining_by_domain[domain] = left
 
-    # v0 keeps this simple: Energy (and the rainbow tax) are domain-
-    # agnostic, so a single representative payment — the first
-    # `energy_cost` remaining runes, then the next `rainbow_cost` — stands
-    # in for all of them. Only Power's domain-matching requirement creates
-    # genuinely distinct splits, and that's pinned to power_domain above.
-    #
-    # KNOWN INCOMPLETENESS: that holds for the cost being paid here, but
-    # not across a turn. Domain-agnostic payment still *removes a specific
-    # domain* from the pool, so paying 1 Energy out of (Fury, Order) by
-    # taking Order can strand a later Order-Power spell that taking Fury
-    # would have left payable — and only one of those splits is ever
-    # generated. Restrictive rather than permissive (it hides lines, never
-    # invents them), so it can under-report solutions but not accept
-    # illegal ones. Pre-dates the rainbow tax; unfixed.
-    energy_runes = tuple(remaining[:energy_cost])
-    rainbow_runes = tuple(remaining[energy_cost:energy_cost + rainbow_cost])
-    payments.append(RunePayment(energy_runes=energy_runes, power_runes=power_runes,
-                                 rainbow_runes=rainbow_runes))
+    # Energy is domain-agnostic, so which runes are Exhausted is never
+    # observable — one representative is exact, not a simplification.
+    energy_runes = tuple(pool.available[:energy_cost])
+
+    payments = []
+    for rainbow_runes in _domain_multisets(remaining_by_domain, rainbow_cost):
+        payments.append(RunePayment(energy_runes=energy_runes, power_runes=power_runes,
+                                     rainbow_runes=rainbow_runes))
     return payments
 
 
+def _domain_multisets(capacity: dict[Domain, int], size: int) -> list[tuple[Domain, ...]]:
+    """Every distinct multiset of `size` domains drawable from `capacity`.
+    Distinct by domain counts, not by which physical rune — two Fury runes
+    are interchangeable, but Fury-vs-Order is a real choice with different
+    consequences for what's payable afterwards."""
+    if size == 0:
+        return [()]
+    results: list[tuple[Domain, ...]] = []
+    domains = sorted(capacity)
+
+    def recurse(index: int, left: int, picked: tuple[Domain, ...]) -> None:
+        if left == 0:
+            results.append(picked)
+            return
+        if index >= len(domains):
+            return
+        domain = domains[index]
+        for count in range(min(capacity[domain], left) + 1):
+            recurse(index + 1, left - count, picked + (domain,) * count)
+
+    recurse(0, size, ())
+    return results
+
+
+def payment_is_affordable(pool: RunePool, payment: RunePayment) -> bool:
+    """Whether `pool` can still cover `payment`. Energy draws Exhaust
+    capacity (domain-agnostic); Power and the rainbow tax are both
+    Recycles and draw that domain's Recycle capacity. The two never
+    compete — one rune supplies both."""
+    if len(payment.energy_runes) > energy_capacity(pool):
+        return False
+    recycled = list(payment.power_runes + payment.rainbow_runes)
+    return all(recycled.count(domain) <= power_capacity(pool, domain) for domain in set(recycled))
+
+
 def consume_runes(pool: RunePool, payment: RunePayment) -> RunePool:
-    remaining = list(pool.available)
-    for domain in payment.energy_runes + payment.power_runes + payment.rainbow_runes:
-        remaining.remove(domain)
-    return RunePool(available=tuple(remaining))
+    """Energy spend is a count; Power and the rainbow tax are both Recycles
+    and record their domains."""
+    return RunePool(
+        available=pool.available,
+        energy_spent=pool.energy_spent + len(payment.energy_runes),
+        power_spent=pool.power_spent + payment.power_runes + payment.rainbow_runes,
+    )
 
 
 # --- Board helpers ------------------------------------------------------
@@ -297,12 +323,8 @@ def is_legal_play_unit(state: GameState, action: PlayUnit, card: CardDef) -> boo
     # trigger's own legality in abilities.py.
     if action.rune_payment.rainbow_runes:
         return False
-    spent = list(action.rune_payment.energy_runes + action.rune_payment.power_runes)
-    pool = list(player.runes.available)
-    for domain in spent:
-        if domain not in pool:
-            return False
-        pool.remove(domain)
+    if not payment_is_affordable(player.runes, action.rune_payment):
+        return False
     if action.target_zone == "base":
         return True
     # rule 355.7/355.8: a battlefield is only a valid PlayUnit target if you
@@ -422,14 +444,7 @@ def is_legal_play_spell_cost(state: GameState, action: PlaySpell, card: CardDef)
     # Affordability is checked here; that the AMOUNT matches what the
     # chosen targets actually charge is abilities.is_legal_play_spell's
     # job, since only the per-card registry knows what a spell targets.
-    spent = list(action.rune_payment.energy_runes + action.rune_payment.power_runes
-                 + action.rune_payment.rainbow_runes)
-    pool = list(player.runes.available)
-    for domain in spent:
-        if domain not in pool:
-            return False
-        pool.remove(domain)
-    return True
+    return payment_is_affordable(player.runes, action.rune_payment)
 
 
 def apply_play_spell_cost(state: GameState, action: PlaySpell) -> GameState:

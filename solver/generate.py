@@ -49,7 +49,16 @@ from .engine.card_pool import (
     STALWART_PORO,
     VANGUARD_CAPTAIN,
 )
-from .engine.state import BattlefieldState, GameState, PlayerState, RunePool, UnitInstance, canonical_key
+from .engine.state import (
+    BattlefieldState,
+    GameState,
+    PlayerState,
+    RunePool,
+    UnitInstance,
+    canonical_key,
+    energy_capacity,
+    power_capacity,
+)
 from .export import export_puzzle, resolve_action_outcomes
 from .maneuvers import Signature, is_duplicate, known_signatures, maneuver_signature
 from .search import Strategy, count_winning_strategies, solve
@@ -255,7 +264,13 @@ def _runes_left_over(root: GameState, cards: dict[str, CardDef], strategy: Strat
     strategy's spine via the first enumerated outcome at each step (same
     approach as maneuvers.maneuver_signature): rune spending only comes
     from OUR OWN actions, never the opponent's combat-assignment choice,
-    so which branch gets followed doesn't affect the answer."""
+    so which branch gets followed doesn't affect the answer.
+
+    NOTE: this got materially stricter when the rune model was corrected.
+    A rune now carries TWO independent capacities (Exhaust for Energy,
+    Recycle for Power), so "used every resource" means both are gone from
+    every rune, not just that the rune was touched once. Prime tuning knob
+    if generation yield needs loosening."""
     state = root
     visited: set[tuple] = set()
     while True:
@@ -267,7 +282,8 @@ def _runes_left_over(root: GameState, cards: dict[str, CardDef], strategy: Strat
         if action is None:
             break
         state = resolve_action_outcomes(state, action, cards)[0]
-    return len(state.players[root.turn_player].runes.available) > 0
+    pool = state.players[root.turn_player].runes
+    return energy_capacity(pool) > 0 or power_capacity(pool, None) > 0
 
 
 def evaluate_filters(root: GameState, cards: dict[str, CardDef], puzzle_id: str) -> Optional[dict]:

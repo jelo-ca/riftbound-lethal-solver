@@ -26,6 +26,7 @@ from .actions import (
     ActivateAbility,
     RunePayment,
     consume_runes,
+    payment_is_affordable,
     find_unit,
     is_legal_ability_move_destination,
     relocate_unit,
@@ -162,12 +163,7 @@ def _can_pay(player, ability_id: str, payment: Optional[RunePayment]) -> bool:
         return False
     if power_cost and any(d != power_domain for d in payment.power_runes):
         return False
-    pool = list(player.runes.available)
-    for domain in payment.energy_runes + payment.power_runes:
-        if domain not in pool:
-            return False
-        pool.remove(domain)
-    return True
+    return payment_is_affordable(player.runes, payment)
 
 
 def resolve_legend_ability_outcomes(state: GameState, action: ActivateAbility) -> list[GameState]:

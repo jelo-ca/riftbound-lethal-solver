@@ -20,6 +20,8 @@ from solver.engine.state import (
     PlayerState,
     RunePool,
     UnitInstance,
+    energy_capacity,
+    power_capacity,
 )
 
 
@@ -67,10 +69,20 @@ def test_generate_rune_payment_insufficient_domain():
     assert payments == []
 
 
-def test_generate_rune_payment_insufficient_total():
+def test_one_rune_pays_both_an_energy_and_a_power_cost():
+    """A rune Exhausts for 1 Energy AND Recycles for 1 Power of its own
+    domain — independently, either order. So a lone Order rune covers a
+    1 Energy + 1 Order cost by itself. The original model deleted the
+    rune on first use and called this unpayable."""
     pool = RunePool(available=("Order",))
     payments = generate_rune_payments(pool, energy_cost=1, power_cost=1, power_domain="Order")
-    assert payments == []
+    assert payments
+
+
+def test_generate_rune_payment_insufficient_total():
+    """Energy capacity is one per rune, so two Energy needs two runes."""
+    pool = RunePool(available=("Order",))
+    assert generate_rune_payments(pool, energy_cost=2, power_cost=0, power_domain=None) == []
 
 
 def test_generate_rune_payment_no_power_cost():
@@ -98,7 +110,11 @@ def test_play_unit_to_base_legal_and_applies():
 
     new_state = apply_play_unit(state, action, CHEAP_UNIT)
     assert "ogn-010-298" not in new_state.players[0].hand
-    assert new_state.players[0].runes.available == ()
+    # Runes persist and track what's been spent — Exhausting both for
+    # Energy leaves their Recycle capacity untouched.
+    assert new_state.players[0].runes.energy_spent == 2
+    assert energy_capacity(new_state.players[0].runes) == 0
+    assert power_capacity(new_state.players[0].runes, "Fury") == 2
     new_units = new_state.players[0].base_units
     assert len(new_units) == 1
     unit = next(iter(new_units))

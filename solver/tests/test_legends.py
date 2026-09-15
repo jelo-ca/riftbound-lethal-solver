@@ -54,7 +54,7 @@ def test_legend_ability_moves_a_unit_from_base_and_pays_its_costs():
     assert next(iter(new_state.battlefields[0].units)).instance_id == 1
     assert new_state.battlefields[0].controller == 0  # established control
     assert new_state.players[0].legend.exhausted is True  # paid its Exhaust cost
-    assert new_state.players[0].runes.available == ()  # paid 2 Energy
+    assert new_state.players[0].runes.energy_spent == 2  # paid 2 Energy by Exhausting
 
 
 def test_legend_ability_cannot_fire_twice():

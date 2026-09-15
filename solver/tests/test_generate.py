@@ -211,7 +211,17 @@ def test_generation_is_deterministic_per_attempt():
     assert canonical_key(sample_for_attempt(5, 17)[0]) != canonical_key(sample_for_attempt(5, 18)[0])
 
 
-def test_runes_left_over_false_when_the_line_spends_everything():
+def test_runes_left_over_now_reports_unspent_recycle_capacity():
+    """KNOWN GAP, deliberately pinned rather than hidden: this used to
+    assert False — under the old model puzzle 4's three runes were exactly
+    consumed by Ride The Wind's 2 Energy + 1 Chaos.
+
+    The corrected rune model gives each rune TWO capacities (Exhaust for
+    Energy, Recycle for Power), so those three runes now carry six
+    resource units and the same line spends three. The filter's "used
+    every resource" test is therefore near-unsatisfiable as written, and
+    needs redefining before generation is picked back up — generation is
+    deferred behind the solver MVP, so it's recorded here, not patched."""
     from solver import author_puzzle_004, generate
     from solver.engine.abilities import RIDE_THE_WIND
 
@@ -219,7 +229,7 @@ def test_runes_left_over_false_when_the_line_spends_everything():
     cards = {RIDE_THE_WIND: author_puzzle_004.RIDE_THE_WIND_CARD}
     strategy = solve(root, cards, max_depth=4)
     assert strategy is not None
-    assert generate._runes_left_over(root, cards, strategy) is False
+    assert generate._runes_left_over(root, cards, strategy) is True
 
 
 def test_runes_left_over_true_when_a_spare_rune_goes_unused():

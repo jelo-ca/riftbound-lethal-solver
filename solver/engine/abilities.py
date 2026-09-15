@@ -28,6 +28,7 @@ from .actions import (
     kill_unit,
     mint_token_unit,
     next_instance_id,
+    payment_is_affordable,
     relocate_unit,
     replace_battlefield,
     return_unit_to_hand,
@@ -328,11 +329,8 @@ def _caitlyn_is_legal(state: GameState, action: ActivateAbility) -> bool:
     if action.rune_payment is not None:
         if action.rune_payment.energy_runes or action.rune_payment.power_runes:
             return False  # nothing but the tax is ever owed here
-        pool = list(state.players[state.turn_player].runes.available)
-        for domain in action.rune_payment.rainbow_runes:
-            if domain not in pool:
-                return False
-            pool.remove(domain)
+        if not payment_is_affordable(state.players[state.turn_player].runes, action.rune_payment):
+            return False
     return True
 
 
@@ -704,12 +702,9 @@ def is_legal_unit_play_trigger(state: GameState, action: PlayUnit, card: CardDef
         if action.trigger_payment.energy_runes or action.trigger_payment.power_runes:
             return False  # only the tax is ever owed by a trigger
         # Spendable out of what the card's OWN cost leaves behind.
-        pool = list(consume_runes(state.players[state.turn_player].runes,
-                                  action.rune_payment).available)
-        for domain in action.trigger_payment.rainbow_runes:
-            if domain not in pool:
-                return False
-            pool.remove(domain)
+        left = consume_runes(state.players[state.turn_player].runes, action.rune_payment)
+        if not payment_is_affordable(left, action.trigger_payment):
+            return False
     is_legal_trigger, _, _ = entry
     return is_legal_trigger(state, action, card)
 

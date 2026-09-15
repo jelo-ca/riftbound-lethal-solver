@@ -63,7 +63,10 @@ def test_ride_the_wind_moves_an_exhausted_unit_and_readies_it():
     assert moved.exhausted is False  # readied, not just moved
     assert new_state.battlefields[0].controller == 0  # established control
     assert RIDE_THE_WIND not in new_state.players[0].hand
-    assert new_state.players[0].runes.available == ()
+    # 2 Energy Exhausted + 1 Chaos Recycled. Runes persist; the spend is
+    # tracked per capacity rather than by deleting them.
+    assert new_state.players[0].runes.energy_spent == 2
+    assert sorted(new_state.players[0].runes.power_spent) == ["Chaos"]
 
 
 def test_ride_the_wind_appears_in_legal_actions_when_affordable():

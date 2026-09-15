@@ -35,7 +35,41 @@ class UnitInstance:
 
 @dataclass(frozen=True)
 class RunePool:
-    available: tuple[Domain, ...]
+    """A rune gives up to TWO things per turn, independently: 1 Energy by
+    Exhausting it, and 1 Power of its own domain by Recycling it. Order
+    doesn't matter — Recycling a ready rune leaves a "floating rune" that
+    can still be Exhausted afterwards, and Exhausting one doesn't stop it
+    being Recycled later. So the two capacities are tracked separately
+    over the same physical runes.
+
+    This corrects the original model, which deleted a rune from the pool
+    the moment it paid for anything — roughly halving the real resources
+    and making every puzzle authored against it tighter than actual
+    Riftbound. The card text is unambiguous that runes persist with a
+    ready/exhausted state ("ready 4 friendly runes", "Recycle me to ready
+    your runes", and a dozen cards that specify "channel 1 rune
+    exhausted", which only needs saying if channelling normally arrives
+    ready).
+
+    Energy is domain-agnostic, so its spend is just a count; Power is
+    domain-matched, so its spend records which domains went.
+    """
+    available: tuple[Domain, ...]  # the runes held this turn
+    energy_spent: int = 0  # how many have been Exhausted
+    power_spent: tuple[Domain, ...] = ()  # domains already Recycled
+
+
+def energy_capacity(pool: RunePool) -> int:
+    """Runes still able to be Exhausted for Energy — any domain will do."""
+    return len(pool.available) - pool.energy_spent
+
+
+def power_capacity(pool: RunePool, domain: Optional[Domain]) -> int:
+    """Runes of `domain` still able to be Recycled for Power. `None`
+    counts every domain, for a domain-free (rainbow) cost."""
+    if domain is None:
+        return len(pool.available) - len(pool.power_spent)
+    return pool.available.count(domain) - pool.power_spent.count(domain)
 
 
 @dataclass(frozen=True)
@@ -127,7 +161,11 @@ def _canonical_player(player: PlayerState) -> tuple:
     return (
         _canonical_units(player.base_units),
         tuple(sorted(player.hand)),
-        tuple(sorted(player.runes.available)),
+        # Both spend-trackers are significant: the same starting runes with
+        # different amounts already Exhausted or Recycled are genuinely
+        # different positions.
+        (tuple(sorted(player.runes.available)), player.runes.energy_spent,
+         tuple(sorted(player.runes.power_spent))),
         player.score,
         # Exhaustion matters: a Legend that's already paid its Exhaust cost
         # this turn is a genuinely different position from one that hasn't.

@@ -1,13 +1,13 @@
 {
   "schema_version": 2,
   "puzzle_id": "puzzle-001-one-point-short",
-  "root": "e6542b239e8e1208",
+  "root": "d4e3658a1cc52dd2",
   "solution": {
-    "0a0206ee5f1bff2a": "a6",
-    "e6542b239e8e1208": "a1"
+    "ea8e75d554688549": "a6",
+    "d4e3658a1cc52dd2": "a1"
   },
   "nodes": {
-    "e6542b239e8e1208": {
+    "d4e3658a1cc52dd2": {
       "turn_player": 0,
       "players": [
         {
@@ -37,6 +37,8 @@
           ],
           "hand": [],
           "runes": [],
+          "runes_energy_spent": 0,
+          "runes_power_spent": [],
           "score": 7,
           "legend": null
         },
@@ -44,6 +46,8 @@
           "base_units": [],
           "hand": [],
           "runes": [],
+          "runes_energy_spent": 0,
+          "runes_power_spent": [],
           "score": 0,
           "legend": null
         }
@@ -66,7 +70,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "0a0206ee5f1bff2a": {
+    "ea8e75d554688549": {
       "turn_player": 0,
       "players": [
         {
@@ -85,6 +89,8 @@
           ],
           "hand": [],
           "runes": [],
+          "runes_energy_spent": 0,
+          "runes_power_spent": [],
           "score": 7,
           "legend": null
         },
@@ -92,6 +98,8 @@
           "base_units": [],
           "hand": [],
           "runes": [],
+          "runes_energy_spent": 0,
+          "runes_power_spent": [],
           "score": 0,
           "legend": null
         }
@@ -128,7 +136,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "880e165803dc33bc": {
+    "2c606ca3ff78af15": {
       "turn_player": 0,
       "players": [
         {
@@ -147,6 +155,8 @@
           ],
           "hand": [],
           "runes": [],
+          "runes_energy_spent": 0,
+          "runes_power_spent": [],
           "score": 7,
           "legend": null
         },
@@ -154,6 +164,8 @@
           "base_units": [],
           "hand": [],
           "runes": [],
+          "runes_energy_spent": 0,
+          "runes_power_spent": [],
           "score": 0,
           "legend": null
         }
@@ -190,7 +202,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "1198971948bf41c7": {
+    "31ad9bcc0960625f": {
       "turn_player": 0,
       "players": [
         {
@@ -209,6 +221,8 @@
           ],
           "hand": [],
           "runes": [],
+          "runes_energy_spent": 0,
+          "runes_power_spent": [],
           "score": 7,
           "legend": null
         },
@@ -216,6 +230,8 @@
           "base_units": [],
           "hand": [],
           "runes": [],
+          "runes_energy_spent": 0,
+          "runes_power_spent": [],
           "score": 0,
           "legend": null
         }
@@ -252,7 +268,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "9d6db7af144cb32a": {
+    "d46fbe2b1af89937": {
       "turn_player": 0,
       "players": [
         {
@@ -271,6 +287,8 @@
           ],
           "hand": [],
           "runes": [],
+          "runes_energy_spent": 0,
+          "runes_power_spent": [],
           "score": 7,
           "legend": null
         },
@@ -278,6 +296,8 @@
           "base_units": [],
           "hand": [],
           "runes": [],
+          "runes_energy_spent": 0,
+          "runes_power_spent": [],
           "score": 0,
           "legend": null
         }
@@ -314,13 +334,15 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "50accea9337de69b": {
+    "cfe27c0fdd8f2b83": {
       "turn_player": 0,
       "players": [
         {
           "base_units": [],
           "hand": [],
           "runes": [],
+          "runes_energy_spent": 0,
+          "runes_power_spent": [],
           "score": 7,
           "legend": null
         },
@@ -328,6 +350,8 @@
           "base_units": [],
           "hand": [],
           "runes": [],
+          "runes_energy_spent": 0,
+          "runes_power_spent": [],
           "score": 0,
           "legend": null
         }
@@ -375,13 +399,15 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "3fcbab5c4c9ae764": {
+    "f10ea2dae7b819ad": {
       "turn_player": 0,
       "players": [
         {
           "base_units": [],
           "hand": [],
           "runes": [],
+          "runes_energy_spent": 0,
+          "runes_power_spent": [],
           "score": 8,
           "legend": null
         },
@@ -389,6 +415,8 @@
           "base_units": [],
           "hand": [],
           "runes": [],
+          "runes_energy_spent": 0,
+          "runes_power_spent": [],
           "score": 0,
           "legend": null
         }
@@ -438,13 +466,15 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "63b4e08a93ba28d7": {
+    "e6797b87902531d4": {
       "turn_player": 0,
       "players": [
         {
           "base_units": [],
           "hand": [],
           "runes": [],
+          "runes_energy_spent": 0,
+          "runes_power_spent": [],
           "score": 8,
           "legend": null
         },
@@ -452,6 +482,8 @@
           "base_units": [],
           "hand": [],
           "runes": [],
+          "runes_energy_spent": 0,
+          "runes_power_spent": [],
           "score": 0,
           "legend": null
         }
@@ -501,13 +533,15 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "0abfa9cedd4da8d8": {
+    "300b971f54be686e": {
       "turn_player": 0,
       "players": [
         {
           "base_units": [],
           "hand": [],
           "runes": [],
+          "runes_energy_spent": 0,
+          "runes_power_spent": [],
           "score": 7,
           "legend": null
         },
@@ -515,6 +549,8 @@
           "base_units": [],
           "hand": [],
           "runes": [],
+          "runes_energy_spent": 0,
+          "runes_power_spent": [],
           "score": 0,
           "legend": null
         }
@@ -564,7 +600,7 @@
     }
   },
   "edges": {
-    "e6542b239e8e1208": [
+    "d4e3658a1cc52dd2": [
       {
         "action": {
           "id": "a1",
@@ -577,7 +613,7 @@
           "instance_id": 1
         },
         "to": [
-          "0a0206ee5f1bff2a"
+          "ea8e75d554688549"
         ],
         "adversarial": false
       },
@@ -593,7 +629,7 @@
           "instance_id": 1
         },
         "to": [
-          "880e165803dc33bc"
+          "2c606ca3ff78af15"
         ],
         "adversarial": false
       },
@@ -609,7 +645,7 @@
           "instance_id": 2
         },
         "to": [
-          "1198971948bf41c7"
+          "31ad9bcc0960625f"
         ],
         "adversarial": false
       },
@@ -625,12 +661,12 @@
           "instance_id": 2
         },
         "to": [
-          "9d6db7af144cb32a"
+          "d46fbe2b1af89937"
         ],
         "adversarial": false
       }
     ],
-    "0a0206ee5f1bff2a": [
+    "ea8e75d554688549": [
       {
         "action": {
           "id": "a5",
@@ -643,7 +679,7 @@
           "instance_id": 2
         },
         "to": [
-          "50accea9337de69b"
+          "cfe27c0fdd8f2b83"
         ],
         "adversarial": false
       },
@@ -659,12 +695,12 @@
           "instance_id": 2
         },
         "to": [
-          "3fcbab5c4c9ae764"
+          "f10ea2dae7b819ad"
         ],
         "adversarial": false
       }
     ],
-    "880e165803dc33bc": [
+    "2c606ca3ff78af15": [
       {
         "action": {
           "id": "a7",
@@ -677,7 +713,7 @@
           "instance_id": 2
         },
         "to": [
-          "63b4e08a93ba28d7"
+          "e6797b87902531d4"
         ],
         "adversarial": false
       },
@@ -693,12 +729,12 @@
           "instance_id": 2
         },
         "to": [
-          "0abfa9cedd4da8d8"
+          "300b971f54be686e"
         ],
         "adversarial": false
       }
     ],
-    "1198971948bf41c7": [
+    "31ad9bcc0960625f": [
       {
         "action": {
           "id": "a9",
@@ -711,7 +747,7 @@
           "instance_id": 1
         },
         "to": [
-          "50accea9337de69b"
+          "cfe27c0fdd8f2b83"
         ],
         "adversarial": false
       },
@@ -727,12 +763,12 @@
           "instance_id": 1
         },
         "to": [
-          "63b4e08a93ba28d7"
+          "e6797b87902531d4"
         ],
         "adversarial": false
       }
     ],
-    "9d6db7af144cb32a": [
+    "d46fbe2b1af89937": [
       {
         "action": {
           "id": "a11",
@@ -745,7 +781,7 @@
           "instance_id": 1
         },
         "to": [
-          "3fcbab5c4c9ae764"
+          "f10ea2dae7b819ad"
         ],
         "adversarial": false
       },
@@ -761,16 +797,16 @@
           "instance_id": 1
         },
         "to": [
-          "0abfa9cedd4da8d8"
+          "300b971f54be686e"
         ],
         "adversarial": false
       }
     ]
   },
   "terminal": {
-    "50accea9337de69b": "dead_end",
-    "3fcbab5c4c9ae764": "win",
-    "63b4e08a93ba28d7": "win",
-    "0abfa9cedd4da8d8": "dead_end"
+    "cfe27c0fdd8f2b83": "dead_end",
+    "f10ea2dae7b819ad": "win",
+    "e6797b87902531d4": "win",
+    "300b971f54be686e": "dead_end"
   }
 }

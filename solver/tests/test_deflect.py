@@ -27,7 +27,14 @@ from solver.engine.actions import (
 )
 from solver.engine.card_pool import CARD_POOL, POUTY_PORO
 from solver.engine.cards import CardDef
-from solver.engine.state import BattlefieldState, GameState, PlayerState, RunePool, UnitInstance
+from solver.engine.state import (
+    BattlefieldState,
+    GameState,
+    PlayerState,
+    RunePool,
+    UnitInstance,
+    power_capacity,
+)
 from solver.engine.traits import deflect_tax
 from solver.search import legal_actions
 
@@ -111,16 +118,31 @@ def test_rainbow_tax_stacks_on_top_of_a_normal_cost():
 
 
 def test_rainbow_tax_can_make_an_otherwise_affordable_cost_unpayable():
-    pool = RunePool(available=("Order", "Fury"))
+    """The tax competes for RECYCLE capacity specifically. A lone Order
+    rune covers 1 Energy + 1 Order Power by itself, but its single
+    Recycle is then gone, so there's nothing left to pay a rainbow with."""
+    pool = RunePool(available=("Order",))
     assert generate_rune_payments(pool, 1, 1, "Order", rainbow_cost=0)  # fine untaxed
-    assert generate_rune_payments(pool, 1, 1, "Order", rainbow_cost=1) == []  # one rune short
+    assert generate_rune_payments(pool, 1, 1, "Order", rainbow_cost=1) == []
 
 
-def test_consume_runes_spends_the_rainbow_runes_too():
-    """Missing this would hand the tax back for free on the next action."""
+def test_the_rainbow_tax_does_not_compete_with_energy():
+    """Energy is Exhaust, the tax is Recycle — separate capacities of the
+    same rune, so a tax never prices out the Energy half."""
+    pool = RunePool(available=("Order", "Fury"))
+    assert generate_rune_payments(pool, 2, 0, None, rainbow_cost=2)
+
+
+def test_consume_runes_records_the_rainbow_as_a_recycle():
+    """Missing this would hand the tax back for free on the next action.
+    Runes aren't removed — the Recycle is recorded against the domain."""
     pool = RunePool(available=("Fury", "Order", "Calm"))
     payment = RunePayment(energy_runes=("Fury",), power_runes=(), rainbow_runes=("Order",))
-    assert sorted(consume_runes(pool, payment).available) == ["Calm"]
+    spent = consume_runes(pool, payment)
+    assert spent.energy_spent == 1
+    assert sorted(spent.power_spent) == ["Order"]
+    assert power_capacity(spent, "Order") == 0
+    assert power_capacity(spent, "Fury") == 1  # Exhausting Fury left its Recycle intact
 
 
 def test_payments_without_a_tax_carry_no_rainbow_runes():
@@ -187,10 +209,11 @@ def test_paying_the_printed_cost_alone_is_illegal_against_a_deflect_target():
 
 
 def test_deflect_can_price_a_spell_out_entirely():
-    """Exactly the printed cost in the pool — enough untaxed, one rune
-    short once Deflect charges."""
-    assert _charm_actions(_charm_state(frozenset(), ("Calm", "Fury")))
-    assert _charm_actions(_charm_state(frozenset({"Deflect"}), ("Calm", "Fury"))) == []
+    """One Calm rune covers Charm's whole 1 Energy + 1 Calm cost by
+    itself (Exhaust for the Energy, Recycle for the Power). But that
+    spends its only Recycle, so the tax has nothing left to draw on."""
+    assert _charm_actions(_charm_state(frozenset(), ("Calm",)))
+    assert _charm_actions(_charm_state(frozenset({"Deflect"}), ("Calm",))) == []
 
 
 def test_deflect_2_charges_two_runes():
@@ -258,7 +281,7 @@ def test_caitlyns_tax_is_actually_spent():
     state = _caitlyn_state(frozenset({"Deflect"}), ("Fury", "Calm"))
     paid = RunePayment(energy_runes=(), power_runes=(), rainbow_runes=("Fury",))
     result = apply_ability(state, _shoot(paid))
-    assert sorted(result.players[0].runes.available) == ["Calm"]
+    assert sorted(result.players[0].runes.power_spent) == ["Fury"]
 
 
 # --- enforcement: a "when you play me" trigger, which has no cost channel of its own ---
@@ -321,4 +344,4 @@ def test_the_trigger_tax_is_actually_spent():
     state = _bouncer_state(frozenset({"Deflect"}), ("Fury", "Calm"))
     paid = RunePayment(energy_runes=(), power_runes=(), rainbow_runes=("Fury",))
     result = resolve_unit_play_trigger_outcomes(state, _bounce(paid), FREE_BOUNCER)[0]
-    assert sorted(result.players[0].runes.available) == ["Calm"]
+    assert sorted(result.players[0].runes.power_spent) == ["Fury"]

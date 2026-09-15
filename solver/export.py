@@ -76,7 +76,11 @@ def render_player(player: PlayerState) -> dict:
     return {
         "base_units": [render_unit(u) for u in sorted(player.base_units, key=lambda u: u.instance_id)],
         "hand": sorted(player.hand),
+        # Both spend-trackers are in canonical_key, so both have to render
+        # or two genuinely different positions would look identical here.
         "runes": sorted(player.runes.available),
+        "runes_energy_spent": player.runes.energy_spent,
+        "runes_power_spent": sorted(player.runes.power_spent),
         "score": player.score,
         "legend": ({"card_id": player.legend.card_id, "exhausted": player.legend.exhausted}
                    if player.legend else None),
