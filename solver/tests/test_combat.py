@@ -11,30 +11,54 @@ def make_unit(instance_id, controller=0, might=3, keywords=frozenset(), damage=0
     )
 
 
+def make_state(left_units=frozenset(), left_effect=None):
+    """A bare state with an (unoccupied-by-default) "left" battlefield —
+    all effective_might/enumerate_assignments/_apply_damage tests need a
+    state+zone to resolve traits against, even when the unit under test
+    isn't actually placed there."""
+    return GameState(
+        turn_player=0,
+        players=(
+            PlayerState(base_units=frozenset(), hand=(), runes=RunePool(available=()), score=0),
+            PlayerState(base_units=frozenset(), hand=(), runes=RunePool(available=()), score=0),
+        ),
+        battlefields=(
+            BattlefieldState("left", None, left_units, left_effect),
+            BattlefieldState("right", None, frozenset(), None),
+        ),
+        scored_this_turn=frozenset(),
+        cards_played_this_turn=0,
+    )
+
+
 # --- effective_might: Assault/Shield bonuses ---
 
 
 def test_might_no_keywords_is_base_might():
     unit = make_unit(1, might=3)
-    assert combat.effective_might(unit, "attacker") == 3
-    assert combat.effective_might(unit, "defender") == 3
+    state = make_state()
+    assert combat.effective_might(state, unit, "left", "attacker") == 3
+    assert combat.effective_might(state, unit, "left", "defender") == 3
 
 
 def test_assault_bonus_only_while_attacking():
     unit = make_unit(1, might=3, keywords=frozenset({"Assault"}))
-    assert combat.effective_might(unit, "attacker") == 4
-    assert combat.effective_might(unit, "defender") == 3
+    state = make_state()
+    assert combat.effective_might(state, unit, "left", "attacker") == 4
+    assert combat.effective_might(state, unit, "left", "defender") == 3
 
 
 def test_assault_numbered_bonus():
     unit = make_unit(1, might=3, keywords=frozenset({"Assault 2"}))
-    assert combat.effective_might(unit, "attacker") == 5
+    state = make_state()
+    assert combat.effective_might(state, unit, "left", "attacker") == 5
 
 
 def test_shield_bonus_only_while_defending():
     unit = make_unit(1, might=3, keywords=frozenset({"Shield 2"}))
-    assert combat.effective_might(unit, "defender") == 5
-    assert combat.effective_might(unit, "attacker") == 3
+    state = make_state()
+    assert combat.effective_might(state, unit, "left", "defender") == 5
+    assert combat.effective_might(state, unit, "left", "attacker") == 3
 
 
 def test_keyword_bonus_does_not_apply_outside_combat():
@@ -42,7 +66,8 @@ def test_keyword_bonus_does_not_apply_outside_combat():
     condition holds, so a 3-Might Shield unit still dies to a 3-damage
     spell — it isn't defending at that moment."""
     unit = make_unit(1, might=3, keywords=frozenset({"Shield"}))
-    assert combat.effective_might(unit, None) == 3
+    state = make_state()
+    assert combat.effective_might(state, unit, "left", None) == 3
 
 
 def test_assault_raises_the_lethal_threshold_not_just_damage_dealt():
@@ -51,16 +76,18 @@ def test_assault_raises_the_lethal_threshold_not_just_damage_dealt():
     kill it — the original implementation applied the bonus only to
     damage dealt and wrongly let it die here."""
     attacker = make_unit(1, might=3, keywords=frozenset({"Assault"}))
-    survivors = combat._apply_damage(frozenset({attacker}), ((1, 3),), "attacker")
+    state = make_state(left_units=frozenset({attacker}))
+    survivors = combat._apply_damage(state, "left", frozenset({attacker}), ((1, 3),), "attacker")
     assert len(survivors) == 1  # 3 < effective 4, survives
-    assert combat._apply_damage(frozenset({attacker}), ((1, 4),), "attacker") == frozenset()
+    assert combat._apply_damage(state, "left", frozenset({attacker}), ((1, 4),), "attacker") == frozenset()
 
 
 def test_shield_raises_the_lethal_threshold_while_defending():
     defender = make_unit(1, might=3, keywords=frozenset({"Shield"}))
-    assert len(combat._apply_damage(frozenset({defender}), ((1, 3),), "defender")) == 1
+    state = make_state(left_units=frozenset({defender}))
+    assert len(combat._apply_damage(state, "left", frozenset({defender}), ((1, 3),), "defender")) == 1
     # ...but the same 3 damage kills it when it isn't defending.
-    assert combat._apply_damage(frozenset({defender}), ((1, 3),), None) == frozenset()
+    assert combat._apply_damage(state, "left", frozenset({defender}), ((1, 3),), None) == frozenset()
 
 
 def test_lethal_first_enumeration_accounts_for_the_targets_effective_might():
@@ -68,7 +95,8 @@ def test_lethal_first_enumeration_accounts_for_the_targets_effective_might():
     enumeration has to know the targets' designation or it would offer an
     assignment that doesn't actually kill."""
     defender = make_unit(1, might=3, keywords=frozenset({"Shield"}))
-    options = combat.enumerate_assignments(frozenset({defender}), pool=4, designation="defender")
+    state = make_state(left_units=frozenset({defender}))
+    options = combat.enumerate_assignments(state, "left", frozenset({defender}), pool=4, designation="defender")
     assert ((1, 4),) in options
 
 
@@ -77,7 +105,8 @@ def test_lethal_first_enumeration_accounts_for_the_targets_effective_might():
 
 def test_enumerate_single_target_partial_hit():
     target = make_unit(1, might=3)
-    options = combat.enumerate_assignments(frozenset({target}), pool=2)
+    state = make_state(left_units=frozenset({target}))
+    options = combat.enumerate_assignments(state, "left", frozenset({target}), pool=2)
     assert options == [((1, 2),)]
 
 
@@ -90,7 +119,8 @@ def test_enumerate_lethal_first_pdf_example():
     # so options may total less than the full pool; what must never happen
     # is more than one unit receiving a non-lethal (<3) amount.
     targets = frozenset({make_unit(i, might=3) for i in range(1, 5)})
-    options = combat.enumerate_assignments(targets, pool=5)
+    state = make_state(left_units=targets)
+    options = combat.enumerate_assignments(state, "left", targets, pool=5)
     assert options  # at least one valid way to assign
     for option in options:
         total = sum(amount for _, amount in option)
@@ -101,7 +131,8 @@ def test_enumerate_lethal_first_pdf_example():
 
 def test_enumerate_death_sets_pool_kills_exactly_one_of_two():
     u1, u2 = make_unit(1, might=3), make_unit(2, might=3)
-    options = combat.enumerate_assignments(frozenset({u1, u2}), pool=3)
+    state = make_state(left_units=frozenset({u1, u2}))
+    options = combat.enumerate_assignments(state, "left", frozenset({u1, u2}), pool=3)
     death_sets = set()
     for option in options:
         dead = frozenset(uid for uid, amt in option if amt >= 3)
@@ -111,11 +142,13 @@ def test_enumerate_death_sets_pool_kills_exactly_one_of_two():
 
 def test_enumerate_zero_pool_is_noop():
     target = make_unit(1, might=3)
-    assert combat.enumerate_assignments(frozenset({target}), pool=0) == [()]
+    state = make_state(left_units=frozenset({target}))
+    assert combat.enumerate_assignments(state, "left", frozenset({target}), pool=0) == [()]
 
 
 def test_enumerate_empty_targets():
-    assert combat.enumerate_assignments(frozenset(), pool=5) == [()]
+    state = make_state()
+    assert combat.enumerate_assignments(state, "left", frozenset(), pool=5) == [()]
 
 
 # --- apply_combat: deterministic outcomes ---

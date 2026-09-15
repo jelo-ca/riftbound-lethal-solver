@@ -9,54 +9,67 @@ combat math or movement legality purely by virtue of the unit being
 physically at that battlefield. Battlefields whose text is a TRIGGER
 ("when you conquer here...", "when you defend here...") need a whole
 trigger-timing hook that doesn't exist yet and stay out of scope until
-one is actually needed.
+one is actually needed (e.g. Fortified Position's "When you defend
+here, choose a unit. It gains [Shield 2] this combat.").
 
-This module deliberately imports nothing from combat.py/actions.py —
-both of those import THIS, so keeping the dependency one-directional
-avoids a cycle.
+This module deliberately imports nothing from combat.py/actions.py/
+traits.py — all three import THIS, so keeping the dependency one-
+directional avoids a cycle.
 """
 
 from __future__ import annotations
 
+import dataclasses
 from typing import Optional
 
 WINDSWEPT_HILLOCK = "ogn-297-298"  # "Units here have [Ganking]."
 TRIFARIAN_WAR_CAMP = "ogn-294-298"  # "Units here have +1 Might. (This includes attackers.)"
 VILEMAWS_LAIR = "ogn-295-298"  # "Units can't move from here to base."
 
-# effect_id -> keywords granted to any unit physically at this battlefield.
-GRANTED_KEYWORDS: dict[str, frozenset[str]] = {
-    WINDSWEPT_HILLOCK: frozenset({"Ganking"}),
+
+@dataclasses.dataclass(frozen=True)
+class BattlefieldEffect:
+    """One record per static battlefield effect, replacing the three
+    parallel dicts (`GRANTED_KEYWORDS`/`MIGHT_BONUS`/`NO_MOVE_TO_BASE`)
+    the first version of this module used. `might_bonus_by_trait` exists
+    for text shaped like "Shield units get +2 here" — a flat int alone
+    can't express a bonus conditional on which trait a unit already has."""
+    grants: frozenset[str] = frozenset()
+    flat_might_bonus: int = 0
+    might_bonus_by_trait: dict[str, int] = dataclasses.field(default_factory=dict)
+    blocks_move_to_base: bool = False
+
+
+BATTLEFIELD_EFFECTS: dict[str, BattlefieldEffect] = {
+    WINDSWEPT_HILLOCK: BattlefieldEffect(grants=frozenset({"Ganking"})),
+    TRIFARIAN_WAR_CAMP: BattlefieldEffect(flat_might_bonus=1),
+    VILEMAWS_LAIR: BattlefieldEffect(blocks_move_to_base=True),
 }
 
-# effect_id -> flat Might bonus for any unit physically at this
-# battlefield. Applies to attackers moving in too, per the card's own
-# parenthetical — combat resolves AT the destination, so everyone
-# involved counts as "here".
-MIGHT_BONUS: dict[str, int] = {
-    TRIFARIAN_WAR_CAMP: 1,
-}
+REGISTERED: frozenset[str] = frozenset(BATTLEFIELD_EFFECTS)
 
-# effect_ids that forbid a unit moving from this battlefield back to Base.
-# Applied to spell/ability-granted moves as well as a unit's own Standard
-# Move: the text is a flat restriction on movement, not one scoped to a
-# particular way of moving.
-NO_MOVE_TO_BASE: frozenset[str] = frozenset({VILEMAWS_LAIR})
 
-REGISTERED: frozenset[str] = frozenset(GRANTED_KEYWORDS) | frozenset(MIGHT_BONUS) | NO_MOVE_TO_BASE
+def _effect(effect_id: Optional[str]) -> Optional[BattlefieldEffect]:
+    if effect_id is None:
+        return None
+    return BATTLEFIELD_EFFECTS.get(effect_id)
 
 
 def granted_keywords(effect_id: Optional[str]) -> frozenset[str]:
-    if effect_id is None:
-        return frozenset()
-    return GRANTED_KEYWORDS.get(effect_id, frozenset())
+    effect = _effect(effect_id)
+    return effect.grants if effect else frozenset()
 
 
 def might_bonus(effect_id: Optional[str]) -> int:
-    if effect_id is None:
-        return 0
-    return MIGHT_BONUS.get(effect_id, 0)
+    effect = _effect(effect_id)
+    return effect.flat_might_bonus if effect else 0
+
+
+def might_bonus_by_trait(effect_id: Optional[str]) -> dict[str, int]:
+    effect = _effect(effect_id)
+    return effect.might_bonus_by_trait if effect else {}
 
 
 def blocks_move_to_base(effect_id: Optional[str]) -> bool:
-    return effect_id is not None and effect_id in NO_MOVE_TO_BASE
+    effect = _effect(effect_id)
+    return effect.blocks_move_to_base if effect else False

@@ -509,10 +509,9 @@ def is_legal_resolve_combat(state: GameState, action: ResolveCombat) -> bool:
     if not combat.is_combat_triggered(state, unit, action.to_zone):
         return False
     _, _, _, defender_units = combat.determine_sides(state, unit, action.to_zone)
-    destination_effect = battlefield_effect_id(state, action.to_zone)
-    our_pool = combat.effective_might(unit, "attacker", destination_effect)
+    our_pool = combat.effective_might(state, unit, action.to_zone, "attacker")
     return action.our_assignment in combat.enumerate_assignments(
-        defender_units, our_pool, "defender", destination_effect)
+        state, action.to_zone, defender_units, our_pool, "defender")
 
 
 def relocate_unit(state: GameState, instance_id: int, from_zone: Zone, to_zone: Zone,
@@ -612,10 +611,9 @@ def legal_board_actions(state: GameState, cards: dict[str, CardDef]) -> list[Act
     def add_move_candidates(unit: UnitInstance, from_zone: Zone, to_zone: Zone) -> None:
         if to_zone != "base" and combat.is_combat_triggered(state, unit, to_zone):
             _, _, _, defender_units = combat.determine_sides(state, unit, to_zone)
-            destination_effect = battlefield_effect_id(state, to_zone)
-            our_pool = combat.effective_might(unit, "attacker", destination_effect)
+            our_pool = combat.effective_might(state, unit, to_zone, "attacker")
             for assignment in combat.enumerate_assignments(
-                    defender_units, our_pool, "defender", destination_effect):
+                    state, to_zone, defender_units, our_pool, "defender"):
                 action = ResolveCombat(
                     instance_id=unit.instance_id, from_zone=from_zone, to_zone=to_zone,
                     our_assignment=assignment,

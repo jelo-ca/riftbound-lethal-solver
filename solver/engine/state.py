@@ -31,12 +31,6 @@ class UnitInstance:
     # "The third time I move in a turn, you score 1 point") - default 0
     # since most units never reference it.
     moved_this_turn: int = 0
-    # Net "+N/-N Might this turn" from card effects (Primal Strength,
-    # Smoke Screen, ...). No expiry is tracked because none is needed: a
-    # puzzle IS one turn, so "this turn" lasts the whole puzzle. Raising
-    # Might raises both damage dealt and the lethal threshold, since Might
-    # is one stat doing both jobs - see combat.effective_might.
-    might_bonus: int = 0
 
 
 @dataclass(frozen=True)
@@ -122,7 +116,6 @@ def _canonical_unit(unit: UnitInstance) -> tuple:
         unit.damage,
         unit.is_token,
         unit.moved_this_turn,
-        unit.might_bonus,
     )
 
 

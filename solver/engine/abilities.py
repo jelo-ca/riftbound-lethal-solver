@@ -156,13 +156,14 @@ PRIMAL_STRENGTH = "ogn-154-298"  # 4 Energy, 1 Body Power, [Action]: "Give a uni
 
 
 def _grant_might(state: GameState, instance_id: int, amount: int) -> GameState:
-    """Adds `amount` to a unit's `might_bonus` wherever it stands. No
-    expiry bookkeeping: a puzzle is a single turn, so "this turn" covers
-    the rest of it (see UnitInstance.might_bonus)."""
+    """Adds `amount` to a unit's `might` wherever it stands — unconditional
+    Might raises are just Might (see engine/traits.py's module docstring).
+    No expiry bookkeeping: a puzzle is a single turn, so "this turn" covers
+    the rest of it."""
     located = find_unit_anywhere(state, instance_id)
     assert located is not None
     unit, zone = located
-    buffed = dataclasses.replace(unit, might_bonus=unit.might_bonus + amount)
+    buffed = dataclasses.replace(unit, might=unit.might + amount)
     if zone == "base":
         player = state.players[unit.controller]
         new_units = (player.base_units - {unit}) | {buffed}

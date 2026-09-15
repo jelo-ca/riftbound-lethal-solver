@@ -22,6 +22,7 @@ from .abilities import (
     ZAUNITE_BOUNCER,
 )
 from .cards import CardDef
+from .traits import TARIC_PROTECTOR
 
 LEGION_REARGUARD = "ogn-010-298"
 FAITHFUL_MANUFACTOR = "ogn-211-298"
@@ -54,6 +55,9 @@ CARD_POOL: dict[str, CardDef] = {
                             power_cost=0, might=2, keywords=frozenset({"Shield"})),
     ZAUNITE_BOUNCER: CardDef(card_id=ZAUNITE_BOUNCER, card_type="Unit", energy_cost=4,
                               power_cost=2, power_domain="Chaos", might=2, keywords=frozenset()),
+    TARIC_PROTECTOR: CardDef(card_id=TARIC_PROTECTOR, card_type="Unit", energy_cost=4,
+                              power_cost=1, power_domain="Calm", might=4,
+                              keywords=frozenset({"Shield", "Tank"})),
     RIDE_THE_WIND: CardDef(card_id=RIDE_THE_WIND, card_type="Spell", energy_cost=2,
                             power_cost=1, power_domain="Chaos", keywords=frozenset(),
                             speed="Action"),

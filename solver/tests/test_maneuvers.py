@@ -115,7 +115,7 @@ def test_a_fighting_step_keeps_its_combat_keywords():
 def node_with(card_id, moved_this_turn):
     unit = {"card_id": card_id, "instance_id": 1, "controller": 0, "might": 2,
             "keywords": [], "exhausted": False, "damage": 0, "is_token": False,
-            "moved_this_turn": moved_this_turn, "might_bonus": 0}
+            "moved_this_turn": moved_this_turn}
     return {"players": [{"base_units": [unit]}, {"base_units": []}],
             "battlefields": [{"battlefield_id": "left", "units": []}]}
 

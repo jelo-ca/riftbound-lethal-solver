@@ -98,11 +98,12 @@ def test_an_ordinary_battlefield_still_allows_moving_to_base():
 
 def test_war_camp_raises_might_for_both_damage_dealt_and_toughness():
     unit = make_unit(1, might=3)
-    assert combat.effective_might(unit, "attacker", TRIFARIAN_WAR_CAMP) == 4
-    assert combat.effective_might(unit, "defender", TRIFARIAN_WAR_CAMP) == 4
+    state = make_state(left_effect=TRIFARIAN_WAR_CAMP, left_units=frozenset({unit}), left_ctrl=0)
+    assert combat.effective_might(state, unit, "left", "attacker") == 4
+    assert combat.effective_might(state, unit, "left", "defender") == 4
     # 3 damage no longer kills a 3-Might unit standing here.
-    assert len(combat._apply_damage(frozenset({unit}), ((1, 3),), "defender", TRIFARIAN_WAR_CAMP)) == 1
-    assert combat._apply_damage(frozenset({unit}), ((1, 4),), "defender", TRIFARIAN_WAR_CAMP) == frozenset()
+    assert len(combat._apply_damage(state, "left", frozenset({unit}), ((1, 3),), "defender")) == 1
+    assert combat._apply_damage(state, "left", frozenset({unit}), ((1, 4),), "defender") == frozenset()
 
 
 def test_war_camp_bonus_is_positional_and_applies_outside_combat_too():
@@ -110,11 +111,13 @@ def test_war_camp_bonus_is_positional_and_applies_outside_combat_too():
     a combat role - a unit standing here is +1 Might against direct
     effect damage as well."""
     unit = make_unit(1, might=3)
-    assert combat.effective_might(unit, None, TRIFARIAN_WAR_CAMP) == 4
-    assert len(combat._apply_damage(frozenset({unit}), ((1, 3),), None, TRIFARIAN_WAR_CAMP)) == 1
+    state = make_state(left_effect=TRIFARIAN_WAR_CAMP, left_units=frozenset({unit}), left_ctrl=0)
+    assert combat.effective_might(state, unit, "left", None) == 4
+    assert len(combat._apply_damage(state, "left", frozenset({unit}), ((1, 3),), None)) == 1
 
 
 def test_war_camp_stacks_with_a_keyword_bonus():
     unit = make_unit(1, might=3, keywords=frozenset({"Assault"}))
-    assert combat.effective_might(unit, "attacker", TRIFARIAN_WAR_CAMP) == 5
-    assert combat.effective_might(unit, "defender", TRIFARIAN_WAR_CAMP) == 4
+    state = make_state(left_effect=TRIFARIAN_WAR_CAMP, left_units=frozenset({unit}), left_ctrl=0)
+    assert combat.effective_might(state, unit, "left", "attacker") == 5
+    assert combat.effective_might(state, unit, "left", "defender") == 4

@@ -1,12 +1,12 @@
 {
   "schema_version": 2,
   "puzzle_id": "puzzle-004-extra-innings",
-  "root": "1e7adbcbfcc5cca3",
+  "root": "88fc48c3ed51897d",
   "solution": {
-    "1e7adbcbfcc5cca3": "a2"
+    "88fc48c3ed51897d": "a2"
   },
   "nodes": {
-    "1e7adbcbfcc5cca3": {
+    "88fc48c3ed51897d": {
       "turn_player": 0,
       "players": [
         {
@@ -44,8 +44,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -63,7 +62,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "6280dc0822fb83bc": {
+    "334bf79a70b1040b": {
       "turn_player": 0,
       "players": [
         {
@@ -77,8 +76,7 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
+              "moved_this_turn": 1
             }
           ],
           "hand": [],
@@ -114,7 +112,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "f0219a6641ae00dc": {
+    "641919b1ac69333b": {
       "turn_player": 0,
       "players": [
         {
@@ -152,8 +150,7 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
+              "moved_this_turn": 1
             }
           ],
           "effect_id": null
@@ -166,7 +163,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "20b11b5542dbdbe8": {
+    "af774b86bc6d054e": {
       "turn_player": 0,
       "players": [
         {
@@ -198,8 +195,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2,
-              "might_bonus": 0
+              "moved_this_turn": 2
             }
           ],
           "effect_id": null
@@ -217,7 +213,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "b39b0e28aa151523": {
+    "8361be81a1f3c39c": {
       "turn_player": 0,
       "players": [
         {
@@ -255,8 +251,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2,
-              "might_bonus": 0
+              "moved_this_turn": 2
             }
           ],
           "effect_id": null
@@ -271,7 +266,7 @@
     }
   },
   "edges": {
-    "1e7adbcbfcc5cca3": [
+    "88fc48c3ed51897d": [
       {
         "action": {
           "id": "a1",
@@ -284,7 +279,7 @@
           "instance_id": null
         },
         "to": [
-          "6280dc0822fb83bc"
+          "334bf79a70b1040b"
         ],
         "adversarial": false
       },
@@ -300,12 +295,12 @@
           "instance_id": null
         },
         "to": [
-          "f0219a6641ae00dc"
+          "641919b1ac69333b"
         ],
         "adversarial": false
       }
     ],
-    "6280dc0822fb83bc": [
+    "334bf79a70b1040b": [
       {
         "action": {
           "id": "a3",
@@ -318,7 +313,7 @@
           "instance_id": 1
         },
         "to": [
-          "20b11b5542dbdbe8"
+          "af774b86bc6d054e"
         ],
         "adversarial": false
       },
@@ -334,15 +329,15 @@
           "instance_id": 1
         },
         "to": [
-          "b39b0e28aa151523"
+          "8361be81a1f3c39c"
         ],
         "adversarial": false
       }
     ]
   },
   "terminal": {
-    "f0219a6641ae00dc": "win",
-    "20b11b5542dbdbe8": "dead_end",
-    "b39b0e28aa151523": "win"
+    "641919b1ac69333b": "win",
+    "af774b86bc6d054e": "dead_end",
+    "8361be81a1f3c39c": "win"
   }
 }

@@ -69,7 +69,6 @@ def render_unit(unit: UnitInstance) -> dict:
         "damage": unit.damage,
         "is_token": unit.is_token,
         "moved_this_turn": unit.moved_this_turn,
-        "might_bonus": unit.might_bonus,
     }
 
 

@@ -1,14 +1,14 @@
 {
   "schema_version": 2,
   "puzzle_id": "puzzle-003-the-long-way-around",
-  "root": "a8ff745776df226d",
+  "root": "f68a8855ac286775",
   "solution": {
-    "97948415b782a2b9": "a39",
-    "8892e1cceb3a62af": "a9",
-    "a8ff745776df226d": "a1"
+    "21b40d73cfdad1ba": "a39",
+    "7bc2f4553ae8abf5": "a9",
+    "f68a8855ac286775": "a1"
   },
   "nodes": {
-    "a8ff745776df226d": {
+    "f68a8855ac286775": {
       "turn_player": 0,
       "players": [
         {
@@ -48,8 +48,7 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             },
             {
               "card_id": "ogn-010-298",
@@ -60,8 +59,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -79,8 +77,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -93,7 +90,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "8892e1cceb3a62af": {
+    "7bc2f4553ae8abf5": {
       "turn_player": 0,
       "players": [
         {
@@ -109,8 +106,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
+              "moved_this_turn": 1
             }
           ],
           "hand": [
@@ -146,8 +142,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -165,8 +160,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -179,7 +173,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "7e6f31bddc5eabdb": {
+    "8db8e6971837609c": {
       "turn_player": 0,
       "players": [
         {
@@ -217,8 +211,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -238,8 +231,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
+              "moved_this_turn": 1
             },
             {
               "card_id": "ogn-211-298",
@@ -250,8 +242,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -264,7 +255,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "f4779f86a21d9dcd": {
+    "85e07dff7c881385": {
       "turn_player": 0,
       "players": [
         {
@@ -280,8 +271,7 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
+              "moved_this_turn": 1
             }
           ],
           "hand": [],
@@ -311,8 +301,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -330,8 +319,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -344,7 +332,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "8e813cee5bbec659": {
+    "e351eda509cbf3d5": {
       "turn_player": 0,
       "players": [
         {
@@ -376,8 +364,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -397,8 +384,7 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
+              "moved_this_turn": 1
             },
             {
               "card_id": "ogn-211-298",
@@ -409,8 +395,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -423,7 +408,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "bcc990cdfa3671a8": {
+    "17e71bbef502d235": {
       "turn_player": 0,
       "players": [
         {
@@ -437,8 +422,7 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
+              "moved_this_turn": 1
             }
           ],
           "hand": [],
@@ -470,8 +454,7 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -489,8 +472,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -503,7 +485,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "b4724d6178f2acb0": {
+    "1216a805828e91cf": {
       "turn_player": 0,
       "players": [
         {
@@ -537,8 +519,7 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -556,8 +537,7 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
+              "moved_this_turn": 1
             },
             {
               "card_id": "ogn-211-298",
@@ -568,8 +548,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -582,7 +561,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "9f146615a48d911c": {
+    "dcc3594f1ad4226e": {
       "turn_player": 0,
       "players": [
         {
@@ -596,8 +575,7 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
+              "moved_this_turn": 1
             }
           ],
           "hand": [],
@@ -629,8 +607,7 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             },
             {
               "card_id": "ogn-010-298",
@@ -641,8 +618,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -661,7 +637,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "40624c64f7ee0104": {
+    "df1aa413ab5c3f25": {
       "turn_player": 0,
       "players": [
         {
@@ -695,8 +671,7 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             },
             {
               "card_id": "ogn-010-298",
@@ -707,8 +682,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             },
             {
               "card_id": "ogn-211-298",
@@ -719,8 +693,7 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
+              "moved_this_turn": 1
             }
           ],
           "effect_id": null
@@ -739,7 +712,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "97948415b782a2b9": {
+    "21b40d73cfdad1ba": {
       "turn_player": 0,
       "players": [
         {
@@ -773,8 +746,7 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2,
-              "might_bonus": 0
+              "moved_this_turn": 2
             },
             {
               "card_id": "ogn-010-298",
@@ -785,8 +757,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -804,8 +775,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -818,7 +788,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "18a54d00d2387282": {
+    "0505cacbfa9b4be5": {
       "turn_player": 0,
       "players": [
         {
@@ -850,8 +820,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -871,8 +840,7 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2,
-              "might_bonus": 0
+              "moved_this_turn": 2
             },
             {
               "card_id": "ogn-211-298",
@@ -883,8 +851,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -897,7 +864,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "bb6978f1ba3b60c2": {
+    "5589a82d82f0d4ee": {
       "turn_player": 0,
       "players": [
         {
@@ -913,8 +880,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
+              "moved_this_turn": 1
             },
             {
               "card_id": "ogn-010-298",
@@ -925,8 +891,7 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
+              "moved_this_turn": 1
             }
           ],
           "hand": [],
@@ -962,8 +927,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -976,7 +940,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "ff469d4bde56ec67": {
+    "312c9fe6f9c920e7": {
       "turn_player": 0,
       "players": [
         {
@@ -992,8 +956,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
+              "moved_this_turn": 1
             }
           ],
           "hand": [],
@@ -1029,8 +992,7 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
+              "moved_this_turn": 1
             },
             {
               "card_id": "ogn-211-298",
@@ -1041,8 +1003,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -1055,7 +1016,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "a42b374bfead1413": {
+    "512b6b827e1ce11d": {
       "turn_player": 0,
       "players": [
         {
@@ -1071,8 +1032,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
+              "moved_this_turn": 1
             },
             {
               "card_id": "ogn-211-298",
@@ -1083,8 +1043,7 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
+              "moved_this_turn": 1
             }
           ],
           "hand": [],
@@ -1114,8 +1073,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -1134,7 +1092,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "8df3de721e025f67": {
+    "fab1df55863cdfbc": {
       "turn_player": 0,
       "players": [
         {
@@ -1150,8 +1108,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
+              "moved_this_turn": 1
             }
           ],
           "hand": [],
@@ -1181,8 +1138,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             },
             {
               "card_id": "ogn-211-298",
@@ -1193,8 +1149,7 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
+              "moved_this_turn": 1
             }
           ],
           "effect_id": null
@@ -1213,7 +1168,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "b15aace6206b040d": {
+    "2e94117bc10cca2b": {
       "turn_player": 0,
       "players": [
         {
@@ -1227,8 +1182,7 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
+              "moved_this_turn": 1
             }
           ],
           "hand": [],
@@ -1266,8 +1220,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
+              "moved_this_turn": 1
             },
             {
               "card_id": "ogn-211-298",
@@ -1278,8 +1231,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -1292,7 +1244,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "d1fbb60f9df298af": {
+    "cdbd46843f498ea8": {
       "turn_player": 0,
       "players": [
         {
@@ -1332,8 +1284,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
+              "moved_this_turn": 1
             },
             {
               "card_id": "ogn-010-298",
@@ -1344,8 +1295,7 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
+              "moved_this_turn": 1
             },
             {
               "card_id": "ogn-211-298",
@@ -1356,8 +1306,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -1370,7 +1319,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "3949a7af78d01045": {
+    "f6162189cb34c622": {
       "turn_player": 0,
       "players": [
         {
@@ -1386,8 +1335,7 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2,
-              "might_bonus": 0
+              "moved_this_turn": 2
             }
           ],
           "hand": [],
@@ -1417,8 +1365,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -1436,8 +1383,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -1450,7 +1396,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "4487d86d903e44dc": {
+    "2fe8579443839230": {
       "turn_player": 0,
       "players": [
         {
@@ -1464,8 +1410,7 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
+              "moved_this_turn": 1
             }
           ],
           "hand": [],
@@ -1495,8 +1440,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -1516,8 +1460,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
+              "moved_this_turn": 1
             }
           ],
           "effect_id": null
@@ -1530,7 +1473,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "90bfc38688856272": {
+    "100d09ffd2f62b2b": {
       "turn_player": 0,
       "players": [
         {
@@ -1562,8 +1505,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             },
             {
               "card_id": "ogn-211-298",
@@ -1574,8 +1516,7 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
+              "moved_this_turn": 1
             }
           ],
           "effect_id": null
@@ -1595,8 +1536,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
+              "moved_this_turn": 1
             }
           ],
           "effect_id": null
@@ -1609,7 +1549,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "91c7027d657ec548": {
+    "42b99d953a0c8342": {
       "turn_player": 0,
       "players": [
         {
@@ -1643,8 +1583,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2,
-              "might_bonus": 0
+              "moved_this_turn": 2
             },
             {
               "card_id": "ogn-010-298",
@@ -1655,8 +1594,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -1674,8 +1612,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -1688,7 +1625,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "303bbea1b1105c54": {
+    "05538c3fccbf3e84": {
       "turn_player": 0,
       "players": [
         {
@@ -1720,8 +1657,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -1741,8 +1677,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2,
-              "might_bonus": 0
+              "moved_this_turn": 2
             },
             {
               "card_id": "ogn-211-298",
@@ -1753,8 +1688,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -1767,7 +1701,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "64dacea0cf45ccbe": {
+    "8e5415fd317ddb85": {
       "turn_player": 0,
       "players": [
         {
@@ -1783,8 +1717,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2,
-              "might_bonus": 0
+              "moved_this_turn": 2
             }
           ],
           "hand": [],
@@ -1814,8 +1747,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -1833,8 +1765,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -1847,7 +1778,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "ff083b380aad6c2a": {
+    "855a126e6b157700": {
       "turn_player": 0,
       "players": [
         {
@@ -1881,8 +1812,7 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             },
             {
               "card_id": "ogn-010-298",
@@ -1893,8 +1823,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2,
-              "might_bonus": 0
+              "moved_this_turn": 2
             }
           ],
           "effect_id": null
@@ -1912,8 +1841,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -1926,7 +1854,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "57b9bb9663906d4b": {
+    "9ff3a11f54eb6658": {
       "turn_player": 0,
       "players": [
         {
@@ -1960,8 +1888,7 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -1979,8 +1906,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2,
-              "might_bonus": 0
+              "moved_this_turn": 2
             },
             {
               "card_id": "ogn-211-298",
@@ -1991,8 +1917,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -2005,7 +1930,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "d84a2fad65694c98": {
+    "482b31c632bed367": {
       "turn_player": 0,
       "players": [
         {
@@ -2019,8 +1944,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2,
-              "might_bonus": 0
+              "moved_this_turn": 2
             }
           ],
           "hand": [],
@@ -2052,8 +1976,7 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -2071,8 +1994,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -2085,7 +2007,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "56dacf99d8825a5f": {
+    "55080513a8626c2c": {
       "turn_player": 0,
       "players": [
         {
@@ -2119,8 +2041,7 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             },
             {
               "card_id": "ogn-010-298",
@@ -2131,8 +2052,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             },
             {
               "card_id": "ogn-211-298",
@@ -2143,8 +2063,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2,
-              "might_bonus": 0
+              "moved_this_turn": 2
             }
           ],
           "effect_id": null
@@ -2163,7 +2082,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "dcc193c3db492d38": {
+    "97594071b26aba98": {
       "turn_player": 0,
       "players": [
         {
@@ -2197,8 +2116,7 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             },
             {
               "card_id": "ogn-010-298",
@@ -2209,8 +2127,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -2228,8 +2145,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2,
-              "might_bonus": 0
+              "moved_this_turn": 2
             }
           ],
           "effect_id": null
@@ -2242,7 +2158,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "62850b5e4445084a": {
+    "8e2325b527219d02": {
       "turn_player": 0,
       "players": [
         {
@@ -2256,8 +2172,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2,
-              "might_bonus": 0
+              "moved_this_turn": 2
             }
           ],
           "hand": [],
@@ -2289,8 +2204,7 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             },
             {
               "card_id": "ogn-010-298",
@@ -2301,8 +2215,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -2321,7 +2234,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "ea42f1bbe407e45f": {
+    "c3eb0b8dc70fd9c3": {
       "turn_player": 0,
       "players": [
         {
@@ -2337,8 +2250,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 3,
-              "might_bonus": 0
+              "moved_this_turn": 3
             }
           ],
           "hand": [],
@@ -2368,8 +2280,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -2387,8 +2298,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -2401,7 +2311,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "361978a158686f4e": {
+    "8d9776c1b393fe3f": {
       "turn_player": 0,
       "players": [
         {
@@ -2433,8 +2343,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -2454,8 +2363,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 3,
-              "might_bonus": 0
+              "moved_this_turn": 3
             },
             {
               "card_id": "ogn-211-298",
@@ -2466,8 +2374,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -2480,7 +2387,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "7c7e5ed81609a4f1": {
+    "cb4f53772e642533": {
       "turn_player": 0,
       "players": [
         {
@@ -2514,8 +2421,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 3,
-              "might_bonus": 0
+              "moved_this_turn": 3
             },
             {
               "card_id": "ogn-010-298",
@@ -2526,8 +2432,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -2545,8 +2450,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -2559,7 +2463,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "a992d432d117fe2c": {
+    "94ae04e6b76d2982": {
       "turn_player": 0,
       "players": [
         {
@@ -2575,8 +2479,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
+              "moved_this_turn": 1
             }
           ],
           "hand": [],
@@ -2606,8 +2509,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2,
-              "might_bonus": 0
+              "moved_this_turn": 2
             }
           ],
           "effect_id": null
@@ -2625,8 +2527,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -2639,7 +2540,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "3363f04f2efe66c8": {
+    "15d86018b5622d31": {
       "turn_player": 0,
       "players": [
         {
@@ -2655,8 +2556,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
+              "moved_this_turn": 1
             }
           ],
           "hand": [],
@@ -2692,8 +2592,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2,
-              "might_bonus": 0
+              "moved_this_turn": 2
             },
             {
               "card_id": "ogn-211-298",
@@ -2704,8 +2603,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -2718,7 +2616,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "b4d0a87942febb7a": {
+    "a9d3d3fb3411bdf3": {
       "turn_player": 0,
       "players": [
         {
@@ -2734,8 +2632,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
+              "moved_this_turn": 1
             },
             {
               "card_id": "ogn-010-298",
@@ -2746,8 +2643,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2,
-              "might_bonus": 0
+              "moved_this_turn": 2
             }
           ],
           "hand": [],
@@ -2783,8 +2679,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -2797,7 +2692,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "6b17f49f365b2a79": {
+    "2e98d814ed5eee46": {
       "turn_player": 0,
       "players": [
         {
@@ -2813,8 +2708,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
+              "moved_this_turn": 1
             }
           ],
           "hand": [],
@@ -2844,8 +2738,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             },
             {
               "card_id": "ogn-211-298",
@@ -2856,8 +2749,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2,
-              "might_bonus": 0
+              "moved_this_turn": 2
             }
           ],
           "effect_id": null
@@ -2876,7 +2768,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "028386bbaa8b200d": {
+    "dd9f2b2d61cb913e": {
       "turn_player": 0,
       "players": [
         {
@@ -2892,8 +2784,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
+              "moved_this_turn": 1
             }
           ],
           "hand": [],
@@ -2923,8 +2814,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -2942,8 +2832,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2,
-              "might_bonus": 0
+              "moved_this_turn": 2
             }
           ],
           "effect_id": null
@@ -2956,7 +2845,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "7e36514de409b3c4": {
+    "459199290de0d53b": {
       "turn_player": 0,
       "players": [
         {
@@ -2972,8 +2861,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
+              "moved_this_turn": 1
             },
             {
               "card_id": "ogn-211-298",
@@ -2984,8 +2872,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2,
-              "might_bonus": 0
+              "moved_this_turn": 2
             }
           ],
           "hand": [],
@@ -3015,8 +2902,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -3035,7 +2921,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "6b7e75b88e5ca228": {
+    "56a50378b7e7d471": {
       "turn_player": 0,
       "players": [
         {
@@ -3067,8 +2953,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2,
-              "might_bonus": 0
+              "moved_this_turn": 2
             }
           ],
           "effect_id": null
@@ -3088,8 +2973,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
+              "moved_this_turn": 1
             },
             {
               "card_id": "ogn-211-298",
@@ -3100,8 +2984,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -3114,7 +2997,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "c04b653aef3ad5db": {
+    "955d9d272df93568": {
       "turn_player": 0,
       "players": [
         {
@@ -3154,8 +3037,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
+              "moved_this_turn": 1
             },
             {
               "card_id": "ogn-010-298",
@@ -3166,8 +3048,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2,
-              "might_bonus": 0
+              "moved_this_turn": 2
             },
             {
               "card_id": "ogn-211-298",
@@ -3178,8 +3059,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -3192,7 +3072,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "e2070fb1b99e68cb": {
+    "26aa5f0d111e49e4": {
       "turn_player": 0,
       "players": [
         {
@@ -3206,8 +3086,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2,
-              "might_bonus": 0
+              "moved_this_turn": 2
             }
           ],
           "hand": [],
@@ -3245,8 +3124,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
+              "moved_this_turn": 1
             },
             {
               "card_id": "ogn-211-298",
@@ -3257,8 +3135,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -3271,7 +3148,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "a9499e3ea534a6e2": {
+    "6a13f7f47ba85f22": {
       "turn_player": 0,
       "players": [
         {
@@ -3303,8 +3180,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             },
             {
               "card_id": "ogn-211-298",
@@ -3315,8 +3191,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2,
-              "might_bonus": 0
+              "moved_this_turn": 2
             }
           ],
           "effect_id": null
@@ -3336,8 +3211,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
+              "moved_this_turn": 1
             }
           ],
           "effect_id": null
@@ -3350,7 +3224,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "74e9c35e496c3768": {
+    "6fd930f2a8d209b3": {
       "turn_player": 0,
       "players": [
         {
@@ -3382,8 +3256,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -3403,8 +3276,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
+              "moved_this_turn": 1
             },
             {
               "card_id": "ogn-211-298",
@@ -3415,8 +3287,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2,
-              "might_bonus": 0
+              "moved_this_turn": 2
             }
           ],
           "effect_id": null
@@ -3429,7 +3300,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "3ea1bd0f3fca994e": {
+    "abf2237fd92c8671": {
       "turn_player": 0,
       "players": [
         {
@@ -3443,8 +3314,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2,
-              "might_bonus": 0
+              "moved_this_turn": 2
             }
           ],
           "hand": [],
@@ -3474,8 +3344,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0,
-              "might_bonus": 0
+              "moved_this_turn": 0
             }
           ],
           "effect_id": null
@@ -3495,8 +3364,7 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1,
-              "might_bonus": 0
+              "moved_this_turn": 1
             }
           ],
           "effect_id": null
@@ -3511,7 +3379,7 @@
     }
   },
   "edges": {
-    "a8ff745776df226d": [
+    "f68a8855ac286775": [
       {
         "action": {
           "id": "a1",
@@ -3526,7 +3394,7 @@
           "instance_id": 1
         },
         "to": [
-          "8892e1cceb3a62af"
+          "7bc2f4553ae8abf5"
         ],
         "adversarial": false
       },
@@ -3544,7 +3412,7 @@
           "instance_id": 1
         },
         "to": [
-          "7e6f31bddc5eabdb"
+          "8db8e6971837609c"
         ],
         "adversarial": false
       },
@@ -3560,7 +3428,7 @@
           "instance_id": null
         },
         "to": [
-          "f4779f86a21d9dcd"
+          "85e07dff7c881385"
         ],
         "adversarial": false
       },
@@ -3576,7 +3444,7 @@
           "instance_id": null
         },
         "to": [
-          "8e813cee5bbec659"
+          "e351eda509cbf3d5"
         ],
         "adversarial": false
       },
@@ -3592,7 +3460,7 @@
           "instance_id": null
         },
         "to": [
-          "bcc990cdfa3671a8"
+          "17e71bbef502d235"
         ],
         "adversarial": false
       },
@@ -3608,7 +3476,7 @@
           "instance_id": null
         },
         "to": [
-          "b4724d6178f2acb0"
+          "1216a805828e91cf"
         ],
         "adversarial": false
       },
@@ -3624,7 +3492,7 @@
           "instance_id": null
         },
         "to": [
-          "9f146615a48d911c"
+          "dcc3594f1ad4226e"
         ],
         "adversarial": false
       },
@@ -3640,12 +3508,12 @@
           "instance_id": null
         },
         "to": [
-          "40624c64f7ee0104"
+          "df1aa413ab5c3f25"
         ],
         "adversarial": false
       }
     ],
-    "8892e1cceb3a62af": [
+    "7bc2f4553ae8abf5": [
       {
         "action": {
           "id": "a9",
@@ -3658,7 +3526,7 @@
           "instance_id": null
         },
         "to": [
-          "97948415b782a2b9"
+          "21b40d73cfdad1ba"
         ],
         "adversarial": false
       },
@@ -3674,7 +3542,7 @@
           "instance_id": null
         },
         "to": [
-          "18a54d00d2387282"
+          "0505cacbfa9b4be5"
         ],
         "adversarial": false
       },
@@ -3690,7 +3558,7 @@
           "instance_id": null
         },
         "to": [
-          "bb6978f1ba3b60c2"
+          "5589a82d82f0d4ee"
         ],
         "adversarial": false
       },
@@ -3706,7 +3574,7 @@
           "instance_id": null
         },
         "to": [
-          "ff469d4bde56ec67"
+          "312c9fe6f9c920e7"
         ],
         "adversarial": false
       },
@@ -3722,7 +3590,7 @@
           "instance_id": null
         },
         "to": [
-          "a42b374bfead1413"
+          "512b6b827e1ce11d"
         ],
         "adversarial": false
       },
@@ -3738,12 +3606,12 @@
           "instance_id": null
         },
         "to": [
-          "8df3de721e025f67"
+          "fab1df55863cdfbc"
         ],
         "adversarial": false
       }
     ],
-    "7e6f31bddc5eabdb": [
+    "8db8e6971837609c": [
       {
         "action": {
           "id": "a15",
@@ -3756,7 +3624,7 @@
           "instance_id": null
         },
         "to": [
-          "b15aace6206b040d"
+          "2e94117bc10cca2b"
         ],
         "adversarial": false
       },
@@ -3772,7 +3640,7 @@
           "instance_id": null
         },
         "to": [
-          "d1fbb60f9df298af"
+          "cdbd46843f498ea8"
         ],
         "adversarial": false
       },
@@ -3788,7 +3656,7 @@
           "instance_id": null
         },
         "to": [
-          "3949a7af78d01045"
+          "f6162189cb34c622"
         ],
         "adversarial": false
       },
@@ -3804,7 +3672,7 @@
           "instance_id": null
         },
         "to": [
-          "97948415b782a2b9"
+          "21b40d73cfdad1ba"
         ],
         "adversarial": false
       },
@@ -3820,7 +3688,7 @@
           "instance_id": null
         },
         "to": [
-          "4487d86d903e44dc"
+          "2fe8579443839230"
         ],
         "adversarial": false
       },
@@ -3836,12 +3704,12 @@
           "instance_id": null
         },
         "to": [
-          "90bfc38688856272"
+          "100d09ffd2f62b2b"
         ],
         "adversarial": false
       }
     ],
-    "f4779f86a21d9dcd": [
+    "85e07dff7c881385": [
       {
         "action": {
           "id": "a21",
@@ -3856,7 +3724,7 @@
           "instance_id": 1
         },
         "to": [
-          "91c7027d657ec548"
+          "42b99d953a0c8342"
         ],
         "adversarial": false
       },
@@ -3874,12 +3742,12 @@
           "instance_id": 1
         },
         "to": [
-          "303bbea1b1105c54"
+          "05538c3fccbf3e84"
         ],
         "adversarial": false
       }
     ],
-    "8e813cee5bbec659": [
+    "e351eda509cbf3d5": [
       {
         "action": {
           "id": "a23",
@@ -3894,7 +3762,7 @@
           "instance_id": 1
         },
         "to": [
-          "64dacea0cf45ccbe"
+          "8e5415fd317ddb85"
         ],
         "adversarial": false
       },
@@ -3912,12 +3780,12 @@
           "instance_id": 1
         },
         "to": [
-          "91c7027d657ec548"
+          "42b99d953a0c8342"
         ],
         "adversarial": false
       }
     ],
-    "bcc990cdfa3671a8": [
+    "17e71bbef502d235": [
       {
         "action": {
           "id": "a25",
@@ -3930,7 +3798,7 @@
           "instance_id": 2
         },
         "to": [
-          "ff083b380aad6c2a"
+          "855a126e6b157700"
         ],
         "adversarial": false
       },
@@ -3946,7 +3814,7 @@
           "instance_id": 2
         },
         "to": [
-          "57b9bb9663906d4b"
+          "9ff3a11f54eb6658"
         ],
         "adversarial": false
       },
@@ -3964,7 +3832,7 @@
           "instance_id": 1
         },
         "to": [
-          "bb6978f1ba3b60c2"
+          "5589a82d82f0d4ee"
         ],
         "adversarial": false
       },
@@ -3982,12 +3850,12 @@
           "instance_id": 1
         },
         "to": [
-          "b15aace6206b040d"
+          "2e94117bc10cca2b"
         ],
         "adversarial": false
       }
     ],
-    "b4724d6178f2acb0": [
+    "1216a805828e91cf": [
       {
         "action": {
           "id": "a29",
@@ -4002,7 +3870,7 @@
           "instance_id": 1
         },
         "to": [
-          "ff469d4bde56ec67"
+          "312c9fe6f9c920e7"
         ],
         "adversarial": false
       },
@@ -4020,7 +3888,7 @@
           "instance_id": 1
         },
         "to": [
-          "d1fbb60f9df298af"
+          "cdbd46843f498ea8"
         ],
         "adversarial": false
       },
@@ -4036,12 +3904,12 @@
           "instance_id": 2
         },
         "to": [
-          "d84a2fad65694c98"
+          "482b31c632bed367"
         ],
         "adversarial": false
       }
     ],
-    "9f146615a48d911c": [
+    "dcc3594f1ad4226e": [
       {
         "action": {
           "id": "a32",
@@ -4054,7 +3922,7 @@
           "instance_id": 3
         },
         "to": [
-          "56dacf99d8825a5f"
+          "55080513a8626c2c"
         ],
         "adversarial": false
       },
@@ -4070,7 +3938,7 @@
           "instance_id": 3
         },
         "to": [
-          "dcc193c3db492d38"
+          "97594071b26aba98"
         ],
         "adversarial": false
       },
@@ -4088,7 +3956,7 @@
           "instance_id": 1
         },
         "to": [
-          "a42b374bfead1413"
+          "512b6b827e1ce11d"
         ],
         "adversarial": false
       },
@@ -4106,12 +3974,12 @@
           "instance_id": 1
         },
         "to": [
-          "4487d86d903e44dc"
+          "2fe8579443839230"
         ],
         "adversarial": false
       }
     ],
-    "40624c64f7ee0104": [
+    "df1aa413ab5c3f25": [
       {
         "action": {
           "id": "a36",
@@ -4126,7 +3994,7 @@
           "instance_id": 1
         },
         "to": [
-          "8df3de721e025f67"
+          "fab1df55863cdfbc"
         ],
         "adversarial": false
       },
@@ -4144,7 +4012,7 @@
           "instance_id": 1
         },
         "to": [
-          "90bfc38688856272"
+          "100d09ffd2f62b2b"
         ],
         "adversarial": false
       },
@@ -4160,12 +4028,12 @@
           "instance_id": 3
         },
         "to": [
-          "62850b5e4445084a"
+          "8e2325b527219d02"
         ],
         "adversarial": false
       }
     ],
-    "97948415b782a2b9": [
+    "21b40d73cfdad1ba": [
       {
         "action": {
           "id": "a39",
@@ -4180,7 +4048,7 @@
           "instance_id": 1
         },
         "to": [
-          "ea42f1bbe407e45f"
+          "c3eb0b8dc70fd9c3"
         ],
         "adversarial": false
       },
@@ -4198,12 +4066,12 @@
           "instance_id": 1
         },
         "to": [
-          "361978a158686f4e"
+          "8d9776c1b393fe3f"
         ],
         "adversarial": false
       }
     ],
-    "18a54d00d2387282": [
+    "0505cacbfa9b4be5": [
       {
         "action": {
           "id": "a41",
@@ -4218,7 +4086,7 @@
           "instance_id": 1
         },
         "to": [
-          "ea42f1bbe407e45f"
+          "c3eb0b8dc70fd9c3"
         ],
         "adversarial": false
       },
@@ -4236,12 +4104,12 @@
           "instance_id": 1
         },
         "to": [
-          "7c7e5ed81609a4f1"
+          "cb4f53772e642533"
         ],
         "adversarial": false
       }
     ],
-    "bb6978f1ba3b60c2": [
+    "5589a82d82f0d4ee": [
       {
         "action": {
           "id": "a43",
@@ -4254,7 +4122,7 @@
           "instance_id": 2
         },
         "to": [
-          "a992d432d117fe2c"
+          "94ae04e6b76d2982"
         ],
         "adversarial": false
       },
@@ -4270,12 +4138,12 @@
           "instance_id": 2
         },
         "to": [
-          "3363f04f2efe66c8"
+          "15d86018b5622d31"
         ],
         "adversarial": false
       }
     ],
-    "ff469d4bde56ec67": [
+    "312c9fe6f9c920e7": [
       {
         "action": {
           "id": "a45",
@@ -4288,12 +4156,12 @@
           "instance_id": 2
         },
         "to": [
-          "b4d0a87942febb7a"
+          "a9d3d3fb3411bdf3"
         ],
         "adversarial": false
       }
     ],
-    "a42b374bfead1413": [
+    "512b6b827e1ce11d": [
       {
         "action": {
           "id": "a46",
@@ -4306,7 +4174,7 @@
           "instance_id": 3
         },
         "to": [
-          "6b17f49f365b2a79"
+          "2e98d814ed5eee46"
         ],
         "adversarial": false
       },
@@ -4322,12 +4190,12 @@
           "instance_id": 3
         },
         "to": [
-          "028386bbaa8b200d"
+          "dd9f2b2d61cb913e"
         ],
         "adversarial": false
       }
     ],
-    "8df3de721e025f67": [
+    "fab1df55863cdfbc": [
       {
         "action": {
           "id": "a48",
@@ -4340,12 +4208,12 @@
           "instance_id": 3
         },
         "to": [
-          "7e36514de409b3c4"
+          "459199290de0d53b"
         ],
         "adversarial": false
       }
     ],
-    "b15aace6206b040d": [
+    "2e94117bc10cca2b": [
       {
         "action": {
           "id": "a49",
@@ -4358,7 +4226,7 @@
           "instance_id": 2
         },
         "to": [
-          "6b7e75b88e5ca228"
+          "56a50378b7e7d471"
         ],
         "adversarial": false
       },
@@ -4374,12 +4242,12 @@
           "instance_id": 2
         },
         "to": [
-          "c04b653aef3ad5db"
+          "955d9d272df93568"
         ],
         "adversarial": false
       }
     ],
-    "d1fbb60f9df298af": [
+    "cdbd46843f498ea8": [
       {
         "action": {
           "id": "a51",
@@ -4392,12 +4260,12 @@
           "instance_id": 2
         },
         "to": [
-          "e2070fb1b99e68cb"
+          "26aa5f0d111e49e4"
         ],
         "adversarial": false
       }
     ],
-    "3949a7af78d01045": [
+    "f6162189cb34c622": [
       {
         "action": {
           "id": "a52",
@@ -4412,7 +4280,7 @@
           "instance_id": 1
         },
         "to": [
-          "7c7e5ed81609a4f1"
+          "cb4f53772e642533"
         ],
         "adversarial": false
       },
@@ -4430,12 +4298,12 @@
           "instance_id": 1
         },
         "to": [
-          "361978a158686f4e"
+          "8d9776c1b393fe3f"
         ],
         "adversarial": false
       }
     ],
-    "4487d86d903e44dc": [
+    "2fe8579443839230": [
       {
         "action": {
           "id": "a54",
@@ -4448,7 +4316,7 @@
           "instance_id": 3
         },
         "to": [
-          "a9499e3ea534a6e2"
+          "6a13f7f47ba85f22"
         ],
         "adversarial": false
       },
@@ -4464,12 +4332,12 @@
           "instance_id": 3
         },
         "to": [
-          "74e9c35e496c3768"
+          "6fd930f2a8d209b3"
         ],
         "adversarial": false
       }
     ],
-    "90bfc38688856272": [
+    "100d09ffd2f62b2b": [
       {
         "action": {
           "id": "a56",
@@ -4482,12 +4350,12 @@
           "instance_id": 3
         },
         "to": [
-          "3ea1bd0f3fca994e"
+          "abf2237fd92c8671"
         ],
         "adversarial": false
       }
     ],
-    "ff083b380aad6c2a": [
+    "855a126e6b157700": [
       {
         "action": {
           "id": "a57",
@@ -4502,7 +4370,7 @@
           "instance_id": 1
         },
         "to": [
-          "a992d432d117fe2c"
+          "94ae04e6b76d2982"
         ],
         "adversarial": false
       },
@@ -4520,12 +4388,12 @@
           "instance_id": 1
         },
         "to": [
-          "6b7e75b88e5ca228"
+          "56a50378b7e7d471"
         ],
         "adversarial": false
       }
     ],
-    "57b9bb9663906d4b": [
+    "9ff3a11f54eb6658": [
       {
         "action": {
           "id": "a59",
@@ -4540,7 +4408,7 @@
           "instance_id": 1
         },
         "to": [
-          "3363f04f2efe66c8"
+          "15d86018b5622d31"
         ],
         "adversarial": false
       },
@@ -4558,12 +4426,12 @@
           "instance_id": 1
         },
         "to": [
-          "c04b653aef3ad5db"
+          "955d9d272df93568"
         ],
         "adversarial": false
       }
     ],
-    "d84a2fad65694c98": [
+    "482b31c632bed367": [
       {
         "action": {
           "id": "a61",
@@ -4578,7 +4446,7 @@
           "instance_id": 1
         },
         "to": [
-          "b4d0a87942febb7a"
+          "a9d3d3fb3411bdf3"
         ],
         "adversarial": false
       },
@@ -4596,12 +4464,12 @@
           "instance_id": 1
         },
         "to": [
-          "e2070fb1b99e68cb"
+          "26aa5f0d111e49e4"
         ],
         "adversarial": false
       }
     ],
-    "56dacf99d8825a5f": [
+    "55080513a8626c2c": [
       {
         "action": {
           "id": "a63",
@@ -4616,7 +4484,7 @@
           "instance_id": 1
         },
         "to": [
-          "6b17f49f365b2a79"
+          "2e98d814ed5eee46"
         ],
         "adversarial": false
       },
@@ -4634,12 +4502,12 @@
           "instance_id": 1
         },
         "to": [
-          "a9499e3ea534a6e2"
+          "6a13f7f47ba85f22"
         ],
         "adversarial": false
       }
     ],
-    "dcc193c3db492d38": [
+    "97594071b26aba98": [
       {
         "action": {
           "id": "a65",
@@ -4654,7 +4522,7 @@
           "instance_id": 1
         },
         "to": [
-          "028386bbaa8b200d"
+          "dd9f2b2d61cb913e"
         ],
         "adversarial": false
       },
@@ -4672,12 +4540,12 @@
           "instance_id": 1
         },
         "to": [
-          "74e9c35e496c3768"
+          "6fd930f2a8d209b3"
         ],
         "adversarial": false
       }
     ],
-    "62850b5e4445084a": [
+    "8e2325b527219d02": [
       {
         "action": {
           "id": "a67",
@@ -4692,7 +4560,7 @@
           "instance_id": 1
         },
         "to": [
-          "7e36514de409b3c4"
+          "459199290de0d53b"
         ],
         "adversarial": false
       },
@@ -4710,30 +4578,30 @@
           "instance_id": 1
         },
         "to": [
-          "3ea1bd0f3fca994e"
+          "abf2237fd92c8671"
         ],
         "adversarial": false
       }
     ]
   },
   "terminal": {
-    "91c7027d657ec548": "dead_end",
-    "303bbea1b1105c54": "dead_end",
-    "64dacea0cf45ccbe": "dead_end",
-    "ea42f1bbe407e45f": "win",
-    "361978a158686f4e": "win",
-    "7c7e5ed81609a4f1": "win",
-    "a992d432d117fe2c": "dead_end",
-    "3363f04f2efe66c8": "dead_end",
-    "b4d0a87942febb7a": "dead_end",
-    "6b17f49f365b2a79": "dead_end",
-    "028386bbaa8b200d": "dead_end",
-    "7e36514de409b3c4": "dead_end",
-    "6b7e75b88e5ca228": "dead_end",
-    "c04b653aef3ad5db": "dead_end",
-    "e2070fb1b99e68cb": "dead_end",
-    "a9499e3ea534a6e2": "dead_end",
-    "74e9c35e496c3768": "dead_end",
-    "3ea1bd0f3fca994e": "dead_end"
+    "42b99d953a0c8342": "dead_end",
+    "05538c3fccbf3e84": "dead_end",
+    "8e5415fd317ddb85": "dead_end",
+    "c3eb0b8dc70fd9c3": "win",
+    "8d9776c1b393fe3f": "win",
+    "cb4f53772e642533": "win",
+    "94ae04e6b76d2982": "dead_end",
+    "15d86018b5622d31": "dead_end",
+    "a9d3d3fb3411bdf3": "dead_end",
+    "2e98d814ed5eee46": "dead_end",
+    "dd9f2b2d61cb913e": "dead_end",
+    "459199290de0d53b": "dead_end",
+    "56a50378b7e7d471": "dead_end",
+    "955d9d272df93568": "dead_end",
+    "26aa5f0d111e49e4": "dead_end",
+    "6a13f7f47ba85f22": "dead_end",
+    "6fd930f2a8d209b3": "dead_end",
+    "abf2237fd92c8671": "dead_end"
   }
 }
