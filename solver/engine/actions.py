@@ -12,10 +12,13 @@ solver's job.
 `PlaySpell`'s cost/hand bookkeeping lives here (apply_play_spell), but its
 actual game effect is per-card and lives in abilities.py's registry —
 added one spell at a time as puzzles need them, not a general effect
-engine. `PlayGear`/`ActivateAbility` apply() bodies are still deliberately
-out of scope (same reasoning, just not needed by any puzzle yet), as is
-`MoveUnit`/relocate_unit onto a battlefield that already has enemy units
-present (combat resolution doesn't exist yet).
+engine. `PlayGear` now has cost/hand bookkeeping here with its per-card
+effects in engine/gear.py, following the same split; it is not yet
+emitted by action generation, so no line plays Gear until that is wired.
+`ActivateAbility`'s apply() body remains out of scope (same reasoning,
+just not needed yet), as is `MoveUnit`/relocate_unit onto a battlefield
+that already has enemy units present (combat resolution doesn't exist
+there).
 """
 
 from __future__ import annotations
