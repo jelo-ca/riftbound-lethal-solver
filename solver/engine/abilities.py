@@ -496,6 +496,7 @@ def _blitzcrank_candidates(state: GameState, base_action: PlayUnit, card: CardDe
 FAITHFUL_MANUFACTOR = "ogn-211-298"  # When you play me, play a 1 Might Recruit unit token here.
 VANGUARD_CAPTAIN = "ogn-218-298"  # [Legion] When you play me, play two 1 Might Recruit unit tokens
 # here. (Get the effect if you've played another card this turn.)
+WHITEFLAME_PROTECTOR = "ogn-082-298"  # "When you play me, give a unit +8 Might this turn."
 RECRUIT_TOKEN = "ogn-271-298"  # one of three same-stat printings (see card_pool.py); this one
 # picked as the canonical id for tokens minted by card effects.
 RECRUIT_TOKEN_CARD = CardDef(card_id=RECRUIT_TOKEN, card_type="Unit", energy_cost=0,
@@ -507,7 +508,7 @@ RECRUIT_TOKEN_CARD = CardDef(card_id=RECRUIT_TOKEN, card_type="Unit", energy_cos
 # the token" as a separate legal move would be wrong, since the card's own
 # text isn't optional. Contrast with Blitzcrank/Zaunite Bouncer, where
 # trigger_params=() legitimately means "decline."
-MANDATORY_PLAY_TRIGGERS = frozenset({FAITHFUL_MANUFACTOR, VANGUARD_CAPTAIN})
+MANDATORY_PLAY_TRIGGERS = frozenset({FAITHFUL_MANUFACTOR, VANGUARD_CAPTAIN, WHITEFLAME_PROTECTOR})
 
 
 def _charm_deflect_targets(state: GameState, params: tuple) -> list[tuple]:
@@ -591,6 +592,36 @@ def _vanguard_captain_candidates(state: GameState, base_action: PlayUnit, card: 
     return [("mint",)]
 
 
+def _whiteflame_is_legal(state: GameState, action: PlayUnit, card: CardDef) -> bool:
+    """trigger_params = (target_instance_id,). Mandatory — no "you may" —
+    but unlike Faithful Manufactor it still CHOOSES, so it can't use the
+    parameterless sentinel. "A unit" is unrestricted: either player's,
+    anywhere, same as Primal Strength's identical wording.
+
+    The target has to be resolved against the board as it will be AFTER
+    this card is placed, since Whiteflame itself is a legal target for its
+    own buff."""
+    if len(action.trigger_params) != 1:
+        return False
+    state_after_play = apply_play_unit(state, dataclasses.replace(
+        action, trigger_params=(), trigger_payment=None), card)
+    return find_unit_anywhere(state_after_play, action.trigger_params[0]) is not None
+
+
+def _whiteflame_effect(state_after_play: GameState, action: PlayUnit) -> list[GameState]:
+    return [_grant_might(state_after_play, action.trigger_params[0], 8)]
+
+
+def _whiteflame_candidates(state: GameState, base_action: PlayUnit, card: CardDef) -> list[tuple]:
+    state_after_play = apply_play_unit(state, base_action, card)
+    candidates = []
+    for player in state_after_play.players:
+        candidates += [(u.instance_id,) for u in sorted(player.base_units, key=lambda u: u.instance_id)]
+    for bf in state_after_play.battlefields:
+        candidates += [(u.instance_id,) for u in sorted(bf.units, key=lambda u: u.instance_id)]
+    return candidates
+
+
 ZAUNITE_BOUNCER = "ogn-188-298"  # When you play me, return another unit at a battlefield to its owner's hand.
 
 
@@ -649,6 +680,7 @@ UNIT_PLAY_TRIGGERS: dict[str, tuple[
     FAITHFUL_MANUFACTOR: (_faithful_manufactor_is_legal, _faithful_manufactor_effect,
                            _faithful_manufactor_candidates),
     VANGUARD_CAPTAIN: (_vanguard_captain_is_legal, _vanguard_captain_effect, _vanguard_captain_candidates),
+    WHITEFLAME_PROTECTOR: (_whiteflame_is_legal, _whiteflame_effect, _whiteflame_candidates),
 }
 
 

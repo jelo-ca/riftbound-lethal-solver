@@ -67,6 +67,7 @@ TRAIT_REGISTRY: dict[str, TraitDef] = {
 }
 
 TARIC_PROTECTOR = "ogn-074-298"  # "Other friendly units here have [Shield]."
+CAPTAIN_FARRON = "ogn-015-298"  # "Other friendly units here have [Assault]."
 
 
 @dataclasses.dataclass(frozen=True)
@@ -79,6 +80,10 @@ class AuraDef:
 
 AURA_SOURCES: dict[str, AuraDef] = {
     TARIC_PROTECTOR: AuraDef(grants=frozenset({"Shield"})),
+    # Identical shape to Taric, different trait — the whole point of
+    # resolving auras from board state rather than storing them is that a
+    # second card like this costs one line.
+    CAPTAIN_FARRON: AuraDef(grants=frozenset({"Assault"})),
 }
 
 

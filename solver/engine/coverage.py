@@ -88,6 +88,16 @@ HANDLED: dict[str, str] = {
     "ogn-142-298": "Mountain Drake — no printed text",
     "ogn-175-298": "Shipyard Skulker — no printed text",
     "ogn-219-298": "Vanguard Sergeant — no printed text",
+    "ogn-015-298": "Captain Farron — \"other friendly units here have [Assault]\" via "
+                   "traits.AURA_SOURCES, the same shape as Taric",
+    "ogn-082-298": "Whiteflame Protector — mandatory \"when you play me, give a unit "
+                   "+8 Might\" via UNIT_PLAY_TRIGGERS; unlike the token-minting "
+                   "triggers it still chooses a target, so it carries real params "
+                   "rather than the parameterless sentinel",
+    # The other two Recruit printings. Identical 1-Might colorless tokens to
+    # the one already cleared; which art a token carries is not a rules fact.
+    "ogn-272-298": "Recruit (NX) — same token as ogn-271-298",
+    "ogn-273-298": "Recruit (ZN) — same token as ogn-271-298",
 }
 
 
@@ -125,6 +135,17 @@ INERT_FOR_LETHAL: dict[str, str] = {
     "ogn-289-298": "Targon's Peak — \"when you conquer here, ready 2 runes AT THE "
                    "END OF THIS TURN\". Same: the readying lands after every action "
                    "that could have used it.",
+    # The six Rune cards. Runes are modelled as domains in RunePool, not as
+    # cards in a zone, and the Beginning Phase that channels them is
+    # already resolved before the question is asked — so a Rune card can
+    # never appear in a position the engine is asked about. They also print
+    # no text, so there would be nothing to model even if one did.
+    "ogn-007-298": "Fury Rune — runes are RunePool domains, not cards; no printed text",
+    "ogn-042-298": "Calm Rune — as above",
+    "ogn-089-298": "Mind Rune — as above",
+    "ogn-126-298": "Body Rune — as above",
+    "ogn-166-298": "Chaos Rune — as above",
+    "ogn-214-298": "Order Rune — as above",
 }
 
 

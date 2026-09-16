@@ -40,12 +40,16 @@ def test_generated_card_defs_match_the_hand_written_pool():
     assert not mismatches, "hand-written pool disagrees with the cache:\n" + "\n".join(mismatches)
 
 
-def test_the_only_pool_card_the_cache_cannot_describe_is_the_token():
+def test_the_only_pool_cards_the_cache_cannot_describe_are_tokens():
     """Tokens are minted by effects and never paid for, so there is no
     printed cost to read. Pinned explicitly so a future refusal of some
-    OTHER pool card can't hide inside a silent skip."""
-    refused = [cid for cid in CARD_POOL if try_build_card_def(cid) is None]
-    assert refused == [RECRUIT_TOKEN]
+    OTHER pool card can't hide inside a silent skip.
+
+    All three Recruit printings are the same 1-Might colorless token; they
+    carry hand-written entries precisely because the cache cannot supply
+    what a token does not print."""
+    refused = sorted(cid for cid in CARD_POOL if try_build_card_def(cid) is None)
+    assert refused == sorted([RECRUIT_TOKEN, "ogn-272-298", "ogn-273-298"])
 
 
 # --- keyword normalisation ---

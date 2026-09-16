@@ -11,6 +11,7 @@ Everything that needs a CardDef imports it from here instead.
 
 from __future__ import annotations
 
+import dataclasses
 from typing import Optional
 
 from . import card_data
@@ -92,6 +93,12 @@ CARD_POOL: dict[str, CardDef] = {
                               power_cost=1, power_domain="Calm", might=4,
                               keywords=frozenset({"Shield", "Tank"})),
     RECRUIT_TOKEN: RECRUIT_TOKEN_CARD,
+    # The other two Recruit printings. Identical 1-Might colorless tokens;
+    # which art a token carries is not a rules fact. They need entries
+    # because card_data refuses tokens outright — a token has no printed
+    # cost to read, being minted by an effect rather than played.
+    "ogn-272-298": dataclasses.replace(RECRUIT_TOKEN_CARD, card_id="ogn-272-298"),
+    "ogn-273-298": dataclasses.replace(RECRUIT_TOKEN_CARD, card_id="ogn-273-298"),
     RIDE_THE_WIND: CardDef(card_id=RIDE_THE_WIND, card_type="Spell", energy_cost=2,
                             power_cost=1, power_domain="Chaos", keywords=frozenset(),
                             speed="Action"),
