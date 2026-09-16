@@ -11,6 +11,9 @@ Everything that needs a CardDef imports it from here instead.
 
 from __future__ import annotations
 
+from typing import Optional
+
+from . import card_data
 from .abilities import (
     BLITZCRANK_IMPASSIVE,
     CAITLYN_PATROLLING,
@@ -106,3 +109,46 @@ def cards_for(*card_ids: str) -> dict[str, CardDef]:
     """The `cards` mapping a puzzle needs, for the cards it actually
     uses — what author scripts pass to export_puzzle."""
     return {card_id: CARD_POOL[card_id] for card_id in card_ids}
+
+
+def card_def(card_id: str) -> Optional[CardDef]:
+    """Stats for a card: the hand-written entry if there is one, otherwise
+    derived from the card cache (engine/card_data.py). None when neither
+    can describe it.
+
+    The hand-written table wins where both exist, but only as a matter of
+    precedence, not trust — test_card_data cross-checks every entry here
+    against the cache field for field, so a divergence fails loudly
+    instead of one silently shadowing the other.
+
+    STATS ONLY. Having a CardDef says nothing about whether the engine
+    understands the card's TEXT; engine/coverage.py is the sole authority
+    on that, and it defaults to blocking. Keeping the two apart is what
+    stops "we can read its Might" from being mistaken for "we can reason
+    about it" — the Faithful Manufactor failure, which sat in CARD_POOL
+    with a CardDef and a trigger that did nothing.
+    """
+    hand_written = CARD_POOL.get(card_id)
+    if hand_written is not None:
+        return hand_written
+    return card_data.try_build_card_def(card_id)
+
+
+def cards_for_board(state) -> dict[str, CardDef]:
+    """Stats for every card the board references — units anywhere, both
+    hands, battlefield effects, Legends. Cards nothing can describe are
+    simply absent, which leaves them unplayable; coverage.blocking_cards
+    is what refuses the board outright, and it runs first.
+
+    This is what lets a caller ask the lethal question about a position
+    without hand-assembling a card table, which previously meant a card in
+    hand with no CardDef was silently skipped by action generation — a
+    missed line that looked exactly like no line existing.
+    """
+    from . import coverage
+    found = {}
+    for card_id in coverage.card_ids_present(state):
+        described = card_def(card_id)
+        if described is not None:
+            found[card_id] = described
+    return found

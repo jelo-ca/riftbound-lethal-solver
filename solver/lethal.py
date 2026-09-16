@@ -20,7 +20,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Literal, Optional
 
-from .engine import coverage
+from .engine import card_pool, coverage
 from .engine.cards import CardDef
 from .engine.state import GameState
 from .search import Strategy, solve
@@ -42,10 +42,18 @@ class LethalAnswer:
         return self.outcome == "lethal"
 
 
-def find_lethal(state: GameState, cards: dict[str, CardDef], max_depth: int = 6,
-                 ignore_unmodelled: bool = False) -> LethalAnswer:
+def find_lethal(state: GameState, cards: Optional[dict[str, CardDef]] = None,
+                 max_depth: int = 6, ignore_unmodelled: bool = False) -> LethalAnswer:
     """Answer the lethal question for `state`, refusing rather than
     guessing when the board contains cards the engine can't model.
+
+    `cards` defaults to stats for everything the board references
+    (card_pool.cards_for_board), so asking about a position doesn't
+    require hand-assembling a card table. That default matters for
+    correctness, not just convenience: a card sitting in hand with no
+    CardDef is silently skipped by action generation, so the line that
+    plays it is never considered and the result looks identical to no
+    such line existing.
 
     `ignore_unmodelled=True` forces a search anyway, for the cases where
     the caller genuinely knows the unmodelled text can't matter — the
@@ -56,6 +64,9 @@ def find_lethal(state: GameState, cards: dict[str, CardDef], max_depth: int = 6,
         blocking = coverage.blocking_cards(state)
         if blocking:
             return LethalAnswer(outcome="unanswerable", blocking=tuple(blocking))
+
+    if cards is None:
+        cards = card_pool.cards_for_board(state)
 
     strategy = solve(state, cards, max_depth=max_depth)
     if strategy is None:

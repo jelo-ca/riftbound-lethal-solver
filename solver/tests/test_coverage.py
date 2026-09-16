@@ -10,7 +10,7 @@ right ones.
 import json
 
 from solver.engine import card_names, coverage
-from solver.engine.card_pool import CARD_POOL
+from solver.engine.card_pool import CARD_POOL, card_def
 from solver.engine.state import (
     BattlefieldState,
     GameState,
@@ -54,7 +54,7 @@ def test_every_ledger_entry_is_a_real_printing():
     which is worse than not clearing it at all."""
     cache = json.loads(coverage.card_names.CACHE_PATH.read_text(encoding="utf-8"))
     listed = (list(coverage.HANDLED) + list(coverage.INERT_FOR_LETHAL)
-              + list(coverage.CONDITIONALLY_INERT))
+              + list(coverage.CONDITIONALLY_CLEARED))
     for card_id in listed:
         assert card_id in cache, f"{card_id} is in the ledger but not in the card cache"
 
@@ -119,11 +119,40 @@ def test_being_in_card_pool_does_not_clear_a_card(monkeypatch):
     assert coverage.classify(victim) == "blocking"
 
 
-def test_handled_cards_really_are_in_the_pool():
+def test_every_handled_card_has_stats_available():
     """Nothing should be cleared as handled that the engine has no stats
-    for — that would be a different flavour of the same lie."""
+    for — that's a different flavour of the same lie. A card in HAND with
+    no CardDef is silently skipped by action generation, so the line that
+    plays it is never considered and the result is indistinguishable from
+    no such line existing.
+
+    Stats may come from the hand-written pool OR be derived from the card
+    cache; what matters is that something can describe it."""
     for card_id in coverage.HANDLED:
-        assert card_id in CARD_POOL, f"{card_id} cleared as handled but absent from CARD_POOL"
+        assert card_def(card_id) is not None, \
+            f"{card_id} cleared as handled but nothing can supply its stats"
+
+
+def test_find_lethal_builds_its_own_card_table():
+    """Correctness, not convenience: a card in hand with no CardDef is
+    silently skipped by action generation, so the line that plays it is
+    never considered and the answer looks identical to no line existing.
+    Asking about a board must not require hand-assembling stats."""
+    from solver.engine.card_pool import cards_for_board
+
+    blazing_scorcher = "ogn-001-298"  # cleared, but NOT in the hand-written pool
+    state = make_state(hand=(blazing_scorcher,))
+    assert blazing_scorcher not in CARD_POOL
+    assert blazing_scorcher in cards_for_board(state)
+    assert find_lethal(state).outcome == "no_lethal"  # answered, not refused
+
+
+def test_a_generated_card_def_does_not_clear_the_card():
+    """Stats and understanding are separate. Volibear's numbers derive
+    cleanly from the cache, and he still refuses — otherwise the wiring
+    would have quietly turned the whole set 'handled'."""
+    assert card_def(VOLIBEAR) is not None
+    assert coverage.classify(VOLIBEAR) == "blocking"
 
 
 # --- what the board scan sees ---

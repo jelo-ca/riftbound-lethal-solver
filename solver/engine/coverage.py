@@ -20,7 +20,7 @@ covered, not something derived from the registries.
 
 Two ways a card is cleared:
 
-  HANDLED          — every line of its printed text is implemented.
+  HANDLED               — every line of its printed text is implemented.
   INERT_FOR_LETHAL — it has text, but that text provably cannot change
                      whether lethal exists this turn. Single-turn puzzles
                      never reach a next Beginning Phase, never draw, and
@@ -75,6 +75,19 @@ HANDLED: dict[str, str] = {
     "ogn-229-298": "Vengeance — abilities.SPELL_EFFECTS",
     "ogn-239-298": "Machine Evangel — [Deathknell] via deaths.DEATH_TRIGGERS",
     "ogn-271-298": "Recruit token — vanilla, no text to model",
+    # Cards whose entire text is keyword reminder text for keywords the
+    # engine implements, or which print no text at all. Cleared in bulk
+    # once [Tank] landed and card_data could supply stats without hand
+    # transcription — nothing here needed new mechanics, only the two
+    # things that were missing.
+    "ogn-001-298": "Blazing Scorcher — [Accelerate] only",
+    "ogn-054-298": "Sunlit Guardian — [Shield] and [Tank] only",
+    "ogn-215-298": "Petty Officer — [Assault] only",
+    "ogn-049-298": "Playful Phantom — no printed text",
+    "ogn-088-298": "Mega-Mech — no printed text",
+    "ogn-142-298": "Mountain Drake — no printed text",
+    "ogn-175-298": "Shipyard Skulker — no printed text",
+    "ogn-219-298": "Vanguard Sergeant — no printed text",
 }
 
 
@@ -130,10 +143,17 @@ def _vision_inert_unless_karma(present: set[str]) -> bool:
 
 
 # card_id -> (reason, predicate over the card ids present on the board).
-# Inert only while the predicate holds; blocking otherwise. Board-dependent
-# because some text is dead on its own and live next to one specific card.
-CONDITIONALLY_INERT: dict[str, tuple[str, "object"]] = {
+# Cleared only while the predicate holds; blocking otherwise.
+#
+# Named "cleared" rather than "inert" because the two are not the same:
+# Jeweled Colossus's [Shield] is genuinely implemented and does affect
+# combat — only its [Vision] clause is conditionally dead. What the
+# predicate decides is whether the engine understands the whole card, not
+# whether the card does nothing.
+CONDITIONALLY_CLEARED: dict[str, tuple[str, "object"]] = {
     "ogn-171-298": ("Mystic Poro — [Vision] only", _vision_inert_unless_karma),
+    "ogn-086-298": ("Jeweled Colossus — [Shield] implemented, [Vision] dead without Karma",
+                    _vision_inert_unless_karma),
 }
 
 
@@ -146,7 +166,7 @@ def classify(card_id: str, present: Optional[set[str]] = None) -> Classification
         return "handled"
     if card_id in INERT_FOR_LETHAL:
         return "inert"
-    rule = CONDITIONALLY_INERT.get(card_id)
+    rule = CONDITIONALLY_CLEARED.get(card_id)
     if rule is not None and present is not None:
         _, is_inert = rule
         if is_inert(present):
