@@ -168,7 +168,10 @@ def effective_might(state: GameState, unit: UnitInstance, zone: Zone,
     docstring) — which is what lets a battlefield that both grants
     [Shield] and pays [Shield] units +2 stack correctly."""
     traits = resolved_traits(state, unit, zone)
-    bonus = 0
+    # A buff is a flat, unconditional +1 — it doesn't care about attacking
+    # or defending, so it lands here rather than in TRAIT_REGISTRY, whose
+    # entries are all designation-gated or zero.
+    bonus = 1 if unit.buffed else 0
 
     effect_id = None if zone == "base" else (
         bf.effect_id if (bf := _battlefield(state, zone)) else None

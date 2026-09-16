@@ -98,6 +98,13 @@ HANDLED: dict[str, str] = {
     # the one already cleared; which art a token carries is not a rules fact.
     "ogn-272-298": "Recruit (NX) — same token as ogn-271-298",
     "ogn-273-298": "Recruit (ZN) — same token as ogn-271-298",
+    # Buff-on-play. A buff is binary and worth +1 Might (UnitInstance.buffed);
+    # abilities.apply_buff is the shared operation.
+    "ogn-136-298": "Pit Rookie — \"buff another friendly unit\" via UNIT_PLAY_TRIGGERS",
+    "ogn-217-298": "Trifarian Gloryseeker — [Legion]-gated self buff; the gate "
+                   "suppresses the whole effect rather than shrinking it",
+    "ogn-223-298": "Peak Guardian — self buff, then all other friendly units at the "
+                   "same battlefield, conditional on having landed at one",
 }
 
 

@@ -158,6 +158,42 @@ def _vengeance_candidates(state: GameState) -> list[tuple[int]]:
 PRIMAL_STRENGTH = "ogn-154-298"  # 4 Energy, 1 Body Power, [Action]: "Give a unit +7 Might this turn."
 
 
+def _replace_unit(state: GameState, unit, zone: str, updated) -> GameState:
+    """Swap one unit for an updated copy, wherever it stands."""
+    if zone == "base":
+        player = state.players[unit.controller]
+        new_units = (player.base_units - {unit}) | {updated}
+        return replace_player(state, unit.controller,
+                              dataclasses.replace(player, base_units=new_units))
+    bf = next(b for b in state.battlefields if b.battlefield_id == zone)
+    return replace_battlefield(state, dataclasses.replace(bf, units=(bf.units - {unit}) | {updated}))
+
+
+def apply_buff(state: GameState, instance_id: int) -> GameState:
+    """Give a unit a buff, worth +1 Might. Buffs don't stack — a unit
+    either carries one or it doesn't (see UnitInstance.buffed) — so
+    buffing an already-buffed unit is a deliberate no-op rather than a
+    second +1. That matters for search: it keeps the action from looking
+    like it changed the position when it didn't."""
+    located = find_unit_anywhere(state, instance_id)
+    assert located is not None
+    unit, zone = located
+    if unit.buffed:
+        return state
+    return _replace_unit(state, unit, zone, dataclasses.replace(unit, buffed=True))
+
+
+def spend_buff(state: GameState, instance_id: int) -> GameState:
+    """Remove a unit's buff, for the cards that pay them as a cost
+    ("spend any number of buffs")."""
+    located = find_unit_anywhere(state, instance_id)
+    assert located is not None
+    unit, zone = located
+    if not unit.buffed:
+        return state
+    return _replace_unit(state, unit, zone, dataclasses.replace(unit, buffed=False))
+
+
 def _grant_might(state: GameState, instance_id: int, amount: int) -> GameState:
     """Adds `amount` to a unit's `might` wherever it stands — unconditional
     Might raises are just Might (see engine/traits.py's module docstring).
@@ -497,6 +533,9 @@ FAITHFUL_MANUFACTOR = "ogn-211-298"  # When you play me, play a 1 Might Recruit 
 VANGUARD_CAPTAIN = "ogn-218-298"  # [Legion] When you play me, play two 1 Might Recruit unit tokens
 # here. (Get the effect if you've played another card this turn.)
 WHITEFLAME_PROTECTOR = "ogn-082-298"  # "When you play me, give a unit +8 Might this turn."
+PIT_ROOKIE = "ogn-136-298"  # "When you play me, buff another friendly unit."
+TRIFARIAN_GLORYSEEKER = "ogn-217-298"  # [Legion] "When you play me, buff me."
+PEAK_GUARDIAN = "ogn-223-298"  # "When you play me, buff me. Then, if I am at a battlefield, buff all other friendly units there."
 RECRUIT_TOKEN = "ogn-271-298"  # one of three same-stat printings (see card_pool.py); this one
 # picked as the canonical id for tokens minted by card effects.
 RECRUIT_TOKEN_CARD = CardDef(card_id=RECRUIT_TOKEN, card_type="Unit", energy_cost=0,
@@ -508,7 +547,8 @@ RECRUIT_TOKEN_CARD = CardDef(card_id=RECRUIT_TOKEN, card_type="Unit", energy_cos
 # the token" as a separate legal move would be wrong, since the card's own
 # text isn't optional. Contrast with Blitzcrank/Zaunite Bouncer, where
 # trigger_params=() legitimately means "decline."
-MANDATORY_PLAY_TRIGGERS = frozenset({FAITHFUL_MANUFACTOR, VANGUARD_CAPTAIN, WHITEFLAME_PROTECTOR})
+MANDATORY_PLAY_TRIGGERS = frozenset({FAITHFUL_MANUFACTOR, VANGUARD_CAPTAIN, WHITEFLAME_PROTECTOR,
+                                     PIT_ROOKIE, TRIFARIAN_GLORYSEEKER, PEAK_GUARDIAN})
 
 
 def _charm_deflect_targets(state: GameState, params: tuple) -> list[tuple]:
@@ -622,6 +662,80 @@ def _whiteflame_candidates(state: GameState, base_action: PlayUnit, card: CardDe
     return candidates
 
 
+# --- Buff-on-play triggers ------------------------------------------------
+#
+# All three are mandatory. Only Pit Rookie chooses; the other two name
+# their own target, so they take the parameterless ("buff",) sentinel for
+# the same reason the token minters do — the dispatch in search._dfs keys
+# off trigger_params being non-empty, so a genuinely choiceless mandatory
+# trigger still needs SOMETHING there to be routed at all.
+
+
+def _played_unit(state_after_play: GameState, action: PlayUnit):
+    """The unit this PlayUnit just created — the highest instance_id, since
+    next_instance_id hands them out in order."""
+    candidates = [u for p in state_after_play.players for u in p.base_units]
+    candidates += [u for bf in state_after_play.battlefields for u in bf.units]
+    return max(candidates, key=lambda u: u.instance_id)
+
+
+def _pit_rookie_is_legal(state: GameState, action: PlayUnit, card: CardDef) -> bool:
+    """trigger_params = (target_instance_id,). "Another friendly unit" —
+    ours, and not itself."""
+    if len(action.trigger_params) != 1:
+        return False
+    state_after_play = apply_play_unit(state, dataclasses.replace(
+        action, trigger_params=(), trigger_payment=None), card)
+    if action.trigger_params[0] == _played_unit(state_after_play, action).instance_id:
+        return False  # "another"
+    located = find_unit_anywhere(state_after_play, action.trigger_params[0])
+    return located is not None and located[0].controller == state.turn_player
+
+
+def _pit_rookie_effect(state_after_play: GameState, action: PlayUnit) -> list[GameState]:
+    return [apply_buff(state_after_play, action.trigger_params[0])]
+
+
+def _pit_rookie_candidates(state: GameState, base_action: PlayUnit, card: CardDef) -> list[tuple]:
+    state_after_play = apply_play_unit(state, base_action, card)
+    played = _played_unit(state_after_play, base_action).instance_id
+    ours = [u for u in state_after_play.players[state.turn_player].base_units]
+    ours += [u for bf in state_after_play.battlefields for u in bf.units
+             if u.controller == state.turn_player]
+    return [(u.instance_id,) for u in sorted(ours, key=lambda u: u.instance_id)
+            if u.instance_id != played]
+
+
+def _self_buff_is_legal(state: GameState, action: PlayUnit, card: CardDef) -> bool:
+    return action.trigger_params == ("buff",)
+
+
+def _self_buff_candidates(state: GameState, base_action: PlayUnit, card: CardDef) -> list[tuple]:
+    return [("buff",)]
+
+
+def _gloryseeker_effect(state_after_play: GameState, action: PlayUnit) -> list[GameState]:
+    """[Legion] gates the whole effect — no buff at all when the condition
+    fails, rather than a smaller one."""
+    if not legion_condition_met(state_after_play):
+        return [state_after_play]
+    return [apply_buff(state_after_play, _played_unit(state_after_play, action).instance_id)]
+
+
+def _peak_guardian_effect(state_after_play: GameState, action: PlayUnit) -> list[GameState]:
+    """"Buff me. Then, if I am at a battlefield, buff all other friendly
+    units there." The second half is conditional on where it landed, so a
+    Peak Guardian played to Base buffs only itself."""
+    me = _played_unit(state_after_play, action)
+    state = apply_buff(state_after_play, me.instance_id)
+    if action.target_zone != "base":
+        bf = next(b for b in state.battlefields if b.battlefield_id == action.target_zone)
+        for unit in sorted(bf.units, key=lambda u: u.instance_id):
+            if unit.controller == me.controller and unit.instance_id != me.instance_id:
+                state = apply_buff(state, unit.instance_id)
+    return [state]
+
+
 ZAUNITE_BOUNCER = "ogn-188-298"  # When you play me, return another unit at a battlefield to its owner's hand.
 
 
@@ -681,6 +795,9 @@ UNIT_PLAY_TRIGGERS: dict[str, tuple[
                            _faithful_manufactor_candidates),
     VANGUARD_CAPTAIN: (_vanguard_captain_is_legal, _vanguard_captain_effect, _vanguard_captain_candidates),
     WHITEFLAME_PROTECTOR: (_whiteflame_is_legal, _whiteflame_effect, _whiteflame_candidates),
+    PIT_ROOKIE: (_pit_rookie_is_legal, _pit_rookie_effect, _pit_rookie_candidates),
+    TRIFARIAN_GLORYSEEKER: (_self_buff_is_legal, _gloryseeker_effect, _self_buff_candidates),
+    PEAK_GUARDIAN: (_self_buff_is_legal, _peak_guardian_effect, _self_buff_candidates),
 }
 
 

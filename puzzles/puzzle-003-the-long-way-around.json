@@ -1,14 +1,14 @@
 {
   "schema_version": 2,
   "puzzle_id": "puzzle-003-the-long-way-around",
-  "root": "16a4736e89440221",
+  "root": "f1ceb2a60a600b34",
   "solution": {
-    "ab21154bbae3f2d0": "a39",
-    "e0fc6fea8456bb90": "a9",
-    "16a4736e89440221": "a1"
+    "5587b36ac6b35bc6": "a39",
+    "dd5b32898babe9d5": "a9",
+    "f1ceb2a60a600b34": "a1"
   },
   "nodes": {
-    "16a4736e89440221": {
+    "f1ceb2a60a600b34": {
       "turn_player": 0,
       "players": [
         {
@@ -24,7 +24,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 7,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -33,7 +34,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -52,7 +54,8 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             },
             {
               "card_id": "ogn-010-298",
@@ -63,7 +66,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -81,7 +85,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -94,7 +99,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "e0fc6fea8456bb90": {
+    "dd5b32898babe9d5": {
       "turn_player": 0,
       "players": [
         {
@@ -110,7 +115,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1
+              "moved_this_turn": 1,
+              "buffed": false
             }
           ],
           "hand": [
@@ -124,7 +130,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 7,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -133,7 +140,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -150,7 +158,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -168,7 +177,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -181,7 +191,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "5dfe9cc17e29f837": {
+    "7248adeeea2687ee": {
       "turn_player": 0,
       "players": [
         {
@@ -197,7 +207,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 7,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -206,7 +217,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -223,7 +235,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -243,7 +256,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1
+              "moved_this_turn": 1,
+              "buffed": false
             },
             {
               "card_id": "ogn-211-298",
@@ -254,7 +268,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -267,7 +282,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "283841a81d06f5bd": {
+    "615e5737137ed101": {
       "turn_player": 0,
       "players": [
         {
@@ -283,7 +298,8 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1
+              "moved_this_turn": 1,
+              "buffed": false
             }
           ],
           "hand": [],
@@ -297,7 +313,8 @@
             "Chaos"
           ],
           "score": 7,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -306,7 +323,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -323,7 +341,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -341,7 +360,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -354,7 +374,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "019c595391a7d0b0": {
+    "42cbed58f5b03a6c": {
       "turn_player": 0,
       "players": [
         {
@@ -370,7 +390,8 @@
             "Chaos"
           ],
           "score": 7,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -379,7 +400,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -396,7 +418,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -416,7 +439,8 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1
+              "moved_this_turn": 1,
+              "buffed": false
             },
             {
               "card_id": "ogn-211-298",
@@ -427,7 +451,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -440,7 +465,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "18939b1655717e6c": {
+    "9ed451da0b44842b": {
       "turn_player": 0,
       "players": [
         {
@@ -454,7 +479,8 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1
+              "moved_this_turn": 1,
+              "buffed": false
             }
           ],
           "hand": [],
@@ -468,7 +494,8 @@
             "Chaos"
           ],
           "score": 7,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -477,7 +504,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -496,7 +524,8 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -514,7 +543,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -527,7 +557,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "14fdbc7eee838a04": {
+    "1572e3d2ff11bcca": {
       "turn_player": 0,
       "players": [
         {
@@ -543,7 +573,8 @@
             "Chaos"
           ],
           "score": 7,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -552,7 +583,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -571,7 +603,8 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -589,7 +622,8 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1
+              "moved_this_turn": 1,
+              "buffed": false
             },
             {
               "card_id": "ogn-211-298",
@@ -600,7 +634,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -613,7 +648,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "8d7fbf4b80b3526b": {
+    "01df0193a632d0dd": {
       "turn_player": 0,
       "players": [
         {
@@ -627,7 +662,8 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1
+              "moved_this_turn": 1,
+              "buffed": false
             }
           ],
           "hand": [],
@@ -641,7 +677,8 @@
             "Chaos"
           ],
           "score": 7,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -650,7 +687,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -669,7 +707,8 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             },
             {
               "card_id": "ogn-010-298",
@@ -680,7 +719,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -699,7 +739,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "5426f6e86faaa021": {
+    "584ce58b727c54cc": {
       "turn_player": 0,
       "players": [
         {
@@ -715,7 +755,8 @@
             "Chaos"
           ],
           "score": 7,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -724,7 +765,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -743,7 +785,8 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             },
             {
               "card_id": "ogn-010-298",
@@ -754,7 +797,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             },
             {
               "card_id": "ogn-211-298",
@@ -765,7 +809,8 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1
+              "moved_this_turn": 1,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -784,7 +829,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "ab21154bbae3f2d0": {
+    "5587b36ac6b35bc6": {
       "turn_player": 0,
       "players": [
         {
@@ -800,7 +845,8 @@
             "Chaos"
           ],
           "score": 7,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -809,7 +855,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -828,7 +875,8 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2
+              "moved_this_turn": 2,
+              "buffed": false
             },
             {
               "card_id": "ogn-010-298",
@@ -839,7 +887,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -857,7 +906,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -870,7 +920,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "848591b5cf9b8104": {
+    "7efedddb93f613a3": {
       "turn_player": 0,
       "players": [
         {
@@ -886,7 +936,8 @@
             "Chaos"
           ],
           "score": 7,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -895,7 +946,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -912,7 +964,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -932,7 +985,8 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2
+              "moved_this_turn": 2,
+              "buffed": false
             },
             {
               "card_id": "ogn-211-298",
@@ -943,7 +997,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -956,7 +1011,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "9dd5050fe23a8beb": {
+    "488a1d3cfe29e2aa": {
       "turn_player": 0,
       "players": [
         {
@@ -972,7 +1027,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1
+              "moved_this_turn": 1,
+              "buffed": false
             },
             {
               "card_id": "ogn-010-298",
@@ -983,7 +1039,8 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1
+              "moved_this_turn": 1,
+              "buffed": false
             }
           ],
           "hand": [],
@@ -997,7 +1054,8 @@
             "Chaos"
           ],
           "score": 7,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -1006,7 +1064,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -1029,7 +1088,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -1042,7 +1102,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "6dd85672c104742a": {
+    "0d5b2edf7d256854": {
       "turn_player": 0,
       "players": [
         {
@@ -1058,7 +1118,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1
+              "moved_this_turn": 1,
+              "buffed": false
             }
           ],
           "hand": [],
@@ -1072,7 +1133,8 @@
             "Chaos"
           ],
           "score": 7,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -1081,7 +1143,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -1104,7 +1167,8 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1
+              "moved_this_turn": 1,
+              "buffed": false
             },
             {
               "card_id": "ogn-211-298",
@@ -1115,7 +1179,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -1128,7 +1193,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "9174278325dcefe7": {
+    "6f8b79740b1ce973": {
       "turn_player": 0,
       "players": [
         {
@@ -1144,7 +1209,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1
+              "moved_this_turn": 1,
+              "buffed": false
             },
             {
               "card_id": "ogn-211-298",
@@ -1155,7 +1221,8 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1
+              "moved_this_turn": 1,
+              "buffed": false
             }
           ],
           "hand": [],
@@ -1169,7 +1236,8 @@
             "Chaos"
           ],
           "score": 7,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -1178,7 +1246,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -1195,7 +1264,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -1214,7 +1284,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "77c6d3effdb89df7": {
+    "68656b31b6095ca2": {
       "turn_player": 0,
       "players": [
         {
@@ -1230,7 +1300,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1
+              "moved_this_turn": 1,
+              "buffed": false
             }
           ],
           "hand": [],
@@ -1244,7 +1315,8 @@
             "Chaos"
           ],
           "score": 7,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -1253,7 +1325,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -1270,7 +1343,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             },
             {
               "card_id": "ogn-211-298",
@@ -1281,7 +1355,8 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1
+              "moved_this_turn": 1,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -1300,7 +1375,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "131e29f3f193a001": {
+    "81a21ca8e44623cc": {
       "turn_player": 0,
       "players": [
         {
@@ -1314,7 +1389,8 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1
+              "moved_this_turn": 1,
+              "buffed": false
             }
           ],
           "hand": [],
@@ -1328,7 +1404,8 @@
             "Chaos"
           ],
           "score": 7,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -1337,81 +1414,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
-        }
-      ],
-      "battlefields": [
-        {
-          "battlefield_id": "left",
-          "controller": null,
-          "units": [],
-          "effect_id": null
-        },
-        {
-          "battlefield_id": "right",
-          "controller": 0,
-          "units": [
-            {
-              "card_id": "ogn-205-298",
-              "instance_id": 1,
-              "controller": 0,
-              "might": 4,
-              "keywords": [
-                "Ganking"
-              ],
-              "exhausted": true,
-              "damage": 0,
-              "is_token": false,
-              "moved_this_turn": 1
-            },
-            {
-              "card_id": "ogn-211-298",
-              "instance_id": 3,
-              "controller": 0,
-              "might": 1,
-              "keywords": [],
-              "exhausted": true,
-              "damage": 0,
-              "is_token": false,
-              "moved_this_turn": 0
-            }
-          ],
-          "effect_id": null
-        }
-      ],
-      "scored_this_turn": [
-        "left",
-        "right"
-      ],
-      "cards_played_this_turn": 1,
-      "showdown": null
-    },
-    "86132b03f9adcb48": {
-      "turn_player": 0,
-      "players": [
-        {
-          "base_units": [],
-          "hand": [],
-          "runes": [
-            "Chaos",
-            "Fury",
-            "Fury"
-          ],
-          "runes_energy_spent": 2,
-          "runes_power_spent": [
-            "Chaos"
-          ],
-          "score": 7,
-          "legend": null
-        },
-        {
-          "base_units": [],
-          "hand": [],
-          "runes": [],
-          "runes_energy_spent": 0,
-          "runes_power_spent": [],
-          "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -1436,18 +1440,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1
-            },
-            {
-              "card_id": "ogn-010-298",
-              "instance_id": 2,
-              "controller": 0,
-              "might": 1,
-              "keywords": [],
-              "exhausted": false,
-              "damage": 0,
-              "is_token": false,
-              "moved_this_turn": 1
+              "moved_this_turn": 1,
+              "buffed": false
             },
             {
               "card_id": "ogn-211-298",
@@ -1458,7 +1452,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -1471,7 +1466,97 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "b997f3df5863bfcd": {
+    "1810cd63995c676f": {
+      "turn_player": 0,
+      "players": [
+        {
+          "base_units": [],
+          "hand": [],
+          "runes": [
+            "Chaos",
+            "Fury",
+            "Fury"
+          ],
+          "runes_energy_spent": 2,
+          "runes_power_spent": [
+            "Chaos"
+          ],
+          "score": 7,
+          "legend": null,
+          "gear": []
+        },
+        {
+          "base_units": [],
+          "hand": [],
+          "runes": [],
+          "runes_energy_spent": 0,
+          "runes_power_spent": [],
+          "score": 0,
+          "legend": null,
+          "gear": []
+        }
+      ],
+      "battlefields": [
+        {
+          "battlefield_id": "left",
+          "controller": null,
+          "units": [],
+          "effect_id": null
+        },
+        {
+          "battlefield_id": "right",
+          "controller": 0,
+          "units": [
+            {
+              "card_id": "ogn-205-298",
+              "instance_id": 1,
+              "controller": 0,
+              "might": 4,
+              "keywords": [
+                "Ganking"
+              ],
+              "exhausted": true,
+              "damage": 0,
+              "is_token": false,
+              "moved_this_turn": 1,
+              "buffed": false
+            },
+            {
+              "card_id": "ogn-010-298",
+              "instance_id": 2,
+              "controller": 0,
+              "might": 1,
+              "keywords": [],
+              "exhausted": false,
+              "damage": 0,
+              "is_token": false,
+              "moved_this_turn": 1,
+              "buffed": false
+            },
+            {
+              "card_id": "ogn-211-298",
+              "instance_id": 3,
+              "controller": 0,
+              "might": 1,
+              "keywords": [],
+              "exhausted": true,
+              "damage": 0,
+              "is_token": false,
+              "moved_this_turn": 0,
+              "buffed": false
+            }
+          ],
+          "effect_id": null
+        }
+      ],
+      "scored_this_turn": [
+        "left",
+        "right"
+      ],
+      "cards_played_this_turn": 1,
+      "showdown": null
+    },
+    "c5a63bf127698f15": {
       "turn_player": 0,
       "players": [
         {
@@ -1487,7 +1572,8 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2
+              "moved_this_turn": 2,
+              "buffed": false
             }
           ],
           "hand": [],
@@ -1501,7 +1587,8 @@
             "Chaos"
           ],
           "score": 7,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -1510,7 +1597,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -1527,7 +1615,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -1545,7 +1634,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -1558,7 +1648,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "c98d6f5b0ad5052a": {
+    "12f59cde601f1184": {
       "turn_player": 0,
       "players": [
         {
@@ -1572,7 +1662,8 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1
+              "moved_this_turn": 1,
+              "buffed": false
             }
           ],
           "hand": [],
@@ -1586,7 +1677,8 @@
             "Chaos"
           ],
           "score": 7,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -1595,7 +1687,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -1612,7 +1705,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -1632,7 +1726,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1
+              "moved_this_turn": 1,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -1645,7 +1740,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "9b08ce8859a099e1": {
+    "460b96eeb0e5b7cc": {
       "turn_player": 0,
       "players": [
         {
@@ -1661,7 +1756,8 @@
             "Chaos"
           ],
           "score": 7,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -1670,7 +1766,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -1687,7 +1784,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             },
             {
               "card_id": "ogn-211-298",
@@ -1698,7 +1796,8 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1
+              "moved_this_turn": 1,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -1718,7 +1817,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1
+              "moved_this_turn": 1,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -1731,7 +1831,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "241f187f21b29557": {
+    "09820f8fb172457b": {
       "turn_player": 0,
       "players": [
         {
@@ -1747,7 +1847,8 @@
             "Chaos"
           ],
           "score": 7,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -1756,7 +1857,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -1775,7 +1877,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2
+              "moved_this_turn": 2,
+              "buffed": false
             },
             {
               "card_id": "ogn-010-298",
@@ -1786,7 +1889,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -1804,7 +1908,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -1817,7 +1922,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "fba1b3f9ef9c027e": {
+    "34dfbe70dd5634e8": {
       "turn_player": 0,
       "players": [
         {
@@ -1833,7 +1938,8 @@
             "Chaos"
           ],
           "score": 7,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -1842,7 +1948,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -1859,7 +1966,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -1879,7 +1987,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2
+              "moved_this_turn": 2,
+              "buffed": false
             },
             {
               "card_id": "ogn-211-298",
@@ -1890,7 +1999,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -1903,7 +2013,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "4d91f5815fa67683": {
+    "c42c09dac3e18092": {
       "turn_player": 0,
       "players": [
         {
@@ -1919,7 +2029,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2
+              "moved_this_turn": 2,
+              "buffed": false
             }
           ],
           "hand": [],
@@ -1933,7 +2044,8 @@
             "Chaos"
           ],
           "score": 7,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -1942,7 +2054,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -1959,7 +2072,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -1977,7 +2091,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -1990,7 +2105,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "78bbd51729204a4b": {
+    "71cfaaf6622749d5": {
       "turn_player": 0,
       "players": [
         {
@@ -2006,7 +2121,8 @@
             "Chaos"
           ],
           "score": 7,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -2015,7 +2131,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -2034,7 +2151,8 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             },
             {
               "card_id": "ogn-010-298",
@@ -2045,7 +2163,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2
+              "moved_this_turn": 2,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -2063,7 +2182,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -2076,7 +2196,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "8824f7c31ca76905": {
+    "7d9631a3918dd6f6": {
       "turn_player": 0,
       "players": [
         {
@@ -2092,7 +2212,8 @@
             "Chaos"
           ],
           "score": 7,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -2101,7 +2222,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -2120,7 +2242,8 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -2138,7 +2261,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2
+              "moved_this_turn": 2,
+              "buffed": false
             },
             {
               "card_id": "ogn-211-298",
@@ -2149,7 +2273,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -2162,7 +2287,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "b848409a0d071b49": {
+    "4fcac4d19bf47983": {
       "turn_player": 0,
       "players": [
         {
@@ -2176,7 +2301,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2
+              "moved_this_turn": 2,
+              "buffed": false
             }
           ],
           "hand": [],
@@ -2190,7 +2316,8 @@
             "Chaos"
           ],
           "score": 7,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -2199,7 +2326,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -2218,7 +2346,8 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -2236,7 +2365,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -2249,7 +2379,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "52e37753412c3d50": {
+    "c203542632e903a5": {
       "turn_player": 0,
       "players": [
         {
@@ -2265,7 +2395,8 @@
             "Chaos"
           ],
           "score": 7,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -2274,7 +2405,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -2293,7 +2425,8 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             },
             {
               "card_id": "ogn-010-298",
@@ -2304,7 +2437,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             },
             {
               "card_id": "ogn-211-298",
@@ -2315,7 +2449,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2
+              "moved_this_turn": 2,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -2334,7 +2469,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "61ebbb36128eff81": {
+    "e0df5514c6483017": {
       "turn_player": 0,
       "players": [
         {
@@ -2350,7 +2485,8 @@
             "Chaos"
           ],
           "score": 7,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -2359,7 +2495,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -2378,7 +2515,8 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             },
             {
               "card_id": "ogn-010-298",
@@ -2389,7 +2527,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -2407,7 +2546,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2
+              "moved_this_turn": 2,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -2420,7 +2560,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "dcc62090b851d4d4": {
+    "98e3e6c356bd55c6": {
       "turn_player": 0,
       "players": [
         {
@@ -2434,7 +2574,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2
+              "moved_this_turn": 2,
+              "buffed": false
             }
           ],
           "hand": [],
@@ -2448,7 +2589,8 @@
             "Chaos"
           ],
           "score": 7,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -2457,7 +2599,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -2476,7 +2619,8 @@
               "exhausted": false,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             },
             {
               "card_id": "ogn-010-298",
@@ -2487,7 +2631,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -2506,7 +2651,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "a9aa5c3eb020dd1c": {
+    "d1cf3b84b98d8069": {
       "turn_player": 0,
       "players": [
         {
@@ -2522,7 +2667,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 3
+              "moved_this_turn": 3,
+              "buffed": false
             }
           ],
           "hand": [],
@@ -2536,7 +2682,8 @@
             "Chaos"
           ],
           "score": 8,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -2545,7 +2692,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -2562,7 +2710,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -2580,7 +2729,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -2593,7 +2743,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "fecf0e2966792bf2": {
+    "c7cc50cf5f626cba": {
       "turn_player": 0,
       "players": [
         {
@@ -2609,7 +2759,8 @@
             "Chaos"
           ],
           "score": 8,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -2618,7 +2769,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -2635,7 +2787,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -2655,7 +2808,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 3
+              "moved_this_turn": 3,
+              "buffed": false
             },
             {
               "card_id": "ogn-211-298",
@@ -2666,7 +2820,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -2679,7 +2834,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "39781a94113b7e70": {
+    "14bfd0542f60ba2f": {
       "turn_player": 0,
       "players": [
         {
@@ -2695,7 +2850,8 @@
             "Chaos"
           ],
           "score": 8,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -2704,7 +2860,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -2723,7 +2880,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 3
+              "moved_this_turn": 3,
+              "buffed": false
             },
             {
               "card_id": "ogn-010-298",
@@ -2734,7 +2892,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -2752,7 +2911,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -2765,7 +2925,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "5eb2c43e7597b3e4": {
+    "f352679e6fb53325": {
       "turn_player": 0,
       "players": [
         {
@@ -2781,7 +2941,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1
+              "moved_this_turn": 1,
+              "buffed": false
             }
           ],
           "hand": [],
@@ -2795,7 +2956,8 @@
             "Chaos"
           ],
           "score": 7,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -2804,7 +2966,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -2821,7 +2984,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2
+              "moved_this_turn": 2,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -2839,7 +3003,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -2852,7 +3017,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "f32c48465307872d": {
+    "d161235cc3722ba3": {
       "turn_player": 0,
       "players": [
         {
@@ -2868,7 +3033,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1
+              "moved_this_turn": 1,
+              "buffed": false
             }
           ],
           "hand": [],
@@ -2882,7 +3048,8 @@
             "Chaos"
           ],
           "score": 7,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -2891,7 +3058,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -2914,7 +3082,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2
+              "moved_this_turn": 2,
+              "buffed": false
             },
             {
               "card_id": "ogn-211-298",
@@ -2925,7 +3094,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -2938,7 +3108,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "afb20ea24ba42432": {
+    "fa778ad2fa0b2d93": {
       "turn_player": 0,
       "players": [
         {
@@ -2954,7 +3124,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1
+              "moved_this_turn": 1,
+              "buffed": false
             },
             {
               "card_id": "ogn-010-298",
@@ -2965,7 +3136,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2
+              "moved_this_turn": 2,
+              "buffed": false
             }
           ],
           "hand": [],
@@ -2979,7 +3151,8 @@
             "Chaos"
           ],
           "score": 7,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -2988,7 +3161,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -3011,7 +3185,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -3024,7 +3199,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "24dff1f51108b14a": {
+    "888fd8478c068360": {
       "turn_player": 0,
       "players": [
         {
@@ -3040,7 +3215,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1
+              "moved_this_turn": 1,
+              "buffed": false
             }
           ],
           "hand": [],
@@ -3054,7 +3230,8 @@
             "Chaos"
           ],
           "score": 7,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -3063,7 +3240,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -3080,7 +3258,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             },
             {
               "card_id": "ogn-211-298",
@@ -3091,7 +3270,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2
+              "moved_this_turn": 2,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -3110,7 +3290,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "d81eb00ddf6f0df1": {
+    "59e4c57fe56ab468": {
       "turn_player": 0,
       "players": [
         {
@@ -3126,7 +3306,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1
+              "moved_this_turn": 1,
+              "buffed": false
             }
           ],
           "hand": [],
@@ -3140,7 +3321,8 @@
             "Chaos"
           ],
           "score": 7,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -3149,7 +3331,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -3166,7 +3349,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -3184,7 +3368,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2
+              "moved_this_turn": 2,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -3197,7 +3382,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "84f2b185044c979c": {
+    "25e4e751f8379609": {
       "turn_player": 0,
       "players": [
         {
@@ -3213,7 +3398,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1
+              "moved_this_turn": 1,
+              "buffed": false
             },
             {
               "card_id": "ogn-211-298",
@@ -3224,7 +3410,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2
+              "moved_this_turn": 2,
+              "buffed": false
             }
           ],
           "hand": [],
@@ -3238,7 +3425,8 @@
             "Chaos"
           ],
           "score": 7,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -3247,7 +3435,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -3264,7 +3453,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -3283,7 +3473,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "5af55cbc2cc13060": {
+    "f583f8452131fa8a": {
       "turn_player": 0,
       "players": [
         {
@@ -3299,7 +3489,8 @@
             "Chaos"
           ],
           "score": 7,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -3308,7 +3499,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -3325,7 +3517,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2
+              "moved_this_turn": 2,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -3345,7 +3538,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1
+              "moved_this_turn": 1,
+              "buffed": false
             },
             {
               "card_id": "ogn-211-298",
@@ -3356,7 +3550,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -3369,7 +3564,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "9c6b3e297cdc1f2f": {
+    "b98cada6ef5f96e4": {
       "turn_player": 0,
       "players": [
         {
@@ -3385,7 +3580,8 @@
             "Chaos"
           ],
           "score": 7,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -3394,104 +3590,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
-        }
-      ],
-      "battlefields": [
-        {
-          "battlefield_id": "left",
-          "controller": null,
-          "units": [],
-          "effect_id": null
-        },
-        {
-          "battlefield_id": "right",
-          "controller": 0,
-          "units": [
-            {
-              "card_id": "ogn-205-298",
-              "instance_id": 1,
-              "controller": 0,
-              "might": 4,
-              "keywords": [
-                "Ganking"
-              ],
-              "exhausted": true,
-              "damage": 0,
-              "is_token": false,
-              "moved_this_turn": 1
-            },
-            {
-              "card_id": "ogn-010-298",
-              "instance_id": 2,
-              "controller": 0,
-              "might": 1,
-              "keywords": [],
-              "exhausted": true,
-              "damage": 0,
-              "is_token": false,
-              "moved_this_turn": 2
-            },
-            {
-              "card_id": "ogn-211-298",
-              "instance_id": 3,
-              "controller": 0,
-              "might": 1,
-              "keywords": [],
-              "exhausted": true,
-              "damage": 0,
-              "is_token": false,
-              "moved_this_turn": 0
-            }
-          ],
-          "effect_id": null
-        }
-      ],
-      "scored_this_turn": [
-        "left",
-        "right"
-      ],
-      "cards_played_this_turn": 1,
-      "showdown": null
-    },
-    "a7c346f610104ece": {
-      "turn_player": 0,
-      "players": [
-        {
-          "base_units": [
-            {
-              "card_id": "ogn-010-298",
-              "instance_id": 2,
-              "controller": 0,
-              "might": 1,
-              "keywords": [],
-              "exhausted": true,
-              "damage": 0,
-              "is_token": false,
-              "moved_this_turn": 2
-            }
-          ],
-          "hand": [],
-          "runes": [
-            "Chaos",
-            "Fury",
-            "Fury"
-          ],
-          "runes_energy_spent": 2,
-          "runes_power_spent": [
-            "Chaos"
-          ],
-          "score": 7,
-          "legend": null
-        },
-        {
-          "base_units": [],
-          "hand": [],
-          "runes": [],
-          "runes_energy_spent": 0,
-          "runes_power_spent": [],
-          "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -3516,7 +3616,20 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1
+              "moved_this_turn": 1,
+              "buffed": false
+            },
+            {
+              "card_id": "ogn-010-298",
+              "instance_id": 2,
+              "controller": 0,
+              "might": 1,
+              "keywords": [],
+              "exhausted": true,
+              "damage": 0,
+              "is_token": false,
+              "moved_this_turn": 2,
+              "buffed": false
             },
             {
               "card_id": "ogn-211-298",
@@ -3527,7 +3640,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -3540,7 +3654,98 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "7989dbe17397537f": {
+    "10b49c0a64ca4712": {
+      "turn_player": 0,
+      "players": [
+        {
+          "base_units": [
+            {
+              "card_id": "ogn-010-298",
+              "instance_id": 2,
+              "controller": 0,
+              "might": 1,
+              "keywords": [],
+              "exhausted": true,
+              "damage": 0,
+              "is_token": false,
+              "moved_this_turn": 2,
+              "buffed": false
+            }
+          ],
+          "hand": [],
+          "runes": [
+            "Chaos",
+            "Fury",
+            "Fury"
+          ],
+          "runes_energy_spent": 2,
+          "runes_power_spent": [
+            "Chaos"
+          ],
+          "score": 7,
+          "legend": null,
+          "gear": []
+        },
+        {
+          "base_units": [],
+          "hand": [],
+          "runes": [],
+          "runes_energy_spent": 0,
+          "runes_power_spent": [],
+          "score": 0,
+          "legend": null,
+          "gear": []
+        }
+      ],
+      "battlefields": [
+        {
+          "battlefield_id": "left",
+          "controller": null,
+          "units": [],
+          "effect_id": null
+        },
+        {
+          "battlefield_id": "right",
+          "controller": 0,
+          "units": [
+            {
+              "card_id": "ogn-205-298",
+              "instance_id": 1,
+              "controller": 0,
+              "might": 4,
+              "keywords": [
+                "Ganking"
+              ],
+              "exhausted": true,
+              "damage": 0,
+              "is_token": false,
+              "moved_this_turn": 1,
+              "buffed": false
+            },
+            {
+              "card_id": "ogn-211-298",
+              "instance_id": 3,
+              "controller": 0,
+              "might": 1,
+              "keywords": [],
+              "exhausted": true,
+              "damage": 0,
+              "is_token": false,
+              "moved_this_turn": 0,
+              "buffed": false
+            }
+          ],
+          "effect_id": null
+        }
+      ],
+      "scored_this_turn": [
+        "left",
+        "right"
+      ],
+      "cards_played_this_turn": 1,
+      "showdown": null
+    },
+    "cf18442e02fac602": {
       "turn_player": 0,
       "players": [
         {
@@ -3556,7 +3761,8 @@
             "Chaos"
           ],
           "score": 7,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -3565,7 +3771,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -3582,7 +3789,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             },
             {
               "card_id": "ogn-211-298",
@@ -3593,7 +3801,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2
+              "moved_this_turn": 2,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -3613,7 +3822,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1
+              "moved_this_turn": 1,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -3626,7 +3836,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "b7364856ad6d0d46": {
+    "bae2e31e770736a2": {
       "turn_player": 0,
       "players": [
         {
@@ -3642,7 +3852,8 @@
             "Chaos"
           ],
           "score": 7,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -3651,7 +3862,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -3668,7 +3880,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -3688,7 +3901,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1
+              "moved_this_turn": 1,
+              "buffed": false
             },
             {
               "card_id": "ogn-211-298",
@@ -3699,7 +3913,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2
+              "moved_this_turn": 2,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -3712,7 +3927,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "37e39412e84e0549": {
+    "d0ee9192a398c1a1": {
       "turn_player": 0,
       "players": [
         {
@@ -3726,7 +3941,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 2
+              "moved_this_turn": 2,
+              "buffed": false
             }
           ],
           "hand": [],
@@ -3740,7 +3956,8 @@
             "Chaos"
           ],
           "score": 7,
-          "legend": null
+          "legend": null,
+          "gear": []
         },
         {
           "base_units": [],
@@ -3749,7 +3966,8 @@
           "runes_energy_spent": 0,
           "runes_power_spent": [],
           "score": 0,
-          "legend": null
+          "legend": null,
+          "gear": []
         }
       ],
       "battlefields": [
@@ -3766,7 +3984,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 0
+              "moved_this_turn": 0,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -3786,7 +4005,8 @@
               "exhausted": true,
               "damage": 0,
               "is_token": false,
-              "moved_this_turn": 1
+              "moved_this_turn": 1,
+              "buffed": false
             }
           ],
           "effect_id": null
@@ -3801,7 +4021,7 @@
     }
   },
   "edges": {
-    "16a4736e89440221": [
+    "f1ceb2a60a600b34": [
       {
         "action": {
           "id": "a1",
@@ -3816,7 +4036,7 @@
           "instance_id": 1
         },
         "to": [
-          "e0fc6fea8456bb90"
+          "dd5b32898babe9d5"
         ],
         "adversarial": false
       },
@@ -3834,7 +4054,7 @@
           "instance_id": 1
         },
         "to": [
-          "5dfe9cc17e29f837"
+          "7248adeeea2687ee"
         ],
         "adversarial": false
       },
@@ -3850,7 +4070,7 @@
           "instance_id": null
         },
         "to": [
-          "283841a81d06f5bd"
+          "615e5737137ed101"
         ],
         "adversarial": false
       },
@@ -3866,7 +4086,7 @@
           "instance_id": null
         },
         "to": [
-          "019c595391a7d0b0"
+          "42cbed58f5b03a6c"
         ],
         "adversarial": false
       },
@@ -3882,7 +4102,7 @@
           "instance_id": null
         },
         "to": [
-          "18939b1655717e6c"
+          "9ed451da0b44842b"
         ],
         "adversarial": false
       },
@@ -3898,7 +4118,7 @@
           "instance_id": null
         },
         "to": [
-          "14fdbc7eee838a04"
+          "1572e3d2ff11bcca"
         ],
         "adversarial": false
       },
@@ -3914,7 +4134,7 @@
           "instance_id": null
         },
         "to": [
-          "8d7fbf4b80b3526b"
+          "01df0193a632d0dd"
         ],
         "adversarial": false
       },
@@ -3930,12 +4150,12 @@
           "instance_id": null
         },
         "to": [
-          "5426f6e86faaa021"
+          "584ce58b727c54cc"
         ],
         "adversarial": false
       }
     ],
-    "e0fc6fea8456bb90": [
+    "dd5b32898babe9d5": [
       {
         "action": {
           "id": "a9",
@@ -3948,7 +4168,7 @@
           "instance_id": null
         },
         "to": [
-          "ab21154bbae3f2d0"
+          "5587b36ac6b35bc6"
         ],
         "adversarial": false
       },
@@ -3964,7 +4184,7 @@
           "instance_id": null
         },
         "to": [
-          "848591b5cf9b8104"
+          "7efedddb93f613a3"
         ],
         "adversarial": false
       },
@@ -3980,7 +4200,7 @@
           "instance_id": null
         },
         "to": [
-          "9dd5050fe23a8beb"
+          "488a1d3cfe29e2aa"
         ],
         "adversarial": false
       },
@@ -3996,7 +4216,7 @@
           "instance_id": null
         },
         "to": [
-          "6dd85672c104742a"
+          "0d5b2edf7d256854"
         ],
         "adversarial": false
       },
@@ -4012,7 +4232,7 @@
           "instance_id": null
         },
         "to": [
-          "9174278325dcefe7"
+          "6f8b79740b1ce973"
         ],
         "adversarial": false
       },
@@ -4028,12 +4248,12 @@
           "instance_id": null
         },
         "to": [
-          "77c6d3effdb89df7"
+          "68656b31b6095ca2"
         ],
         "adversarial": false
       }
     ],
-    "5dfe9cc17e29f837": [
+    "7248adeeea2687ee": [
       {
         "action": {
           "id": "a15",
@@ -4046,7 +4266,7 @@
           "instance_id": null
         },
         "to": [
-          "131e29f3f193a001"
+          "81a21ca8e44623cc"
         ],
         "adversarial": false
       },
@@ -4062,7 +4282,7 @@
           "instance_id": null
         },
         "to": [
-          "86132b03f9adcb48"
+          "1810cd63995c676f"
         ],
         "adversarial": false
       },
@@ -4078,7 +4298,7 @@
           "instance_id": null
         },
         "to": [
-          "b997f3df5863bfcd"
+          "c5a63bf127698f15"
         ],
         "adversarial": false
       },
@@ -4094,7 +4314,7 @@
           "instance_id": null
         },
         "to": [
-          "ab21154bbae3f2d0"
+          "5587b36ac6b35bc6"
         ],
         "adversarial": false
       },
@@ -4110,7 +4330,7 @@
           "instance_id": null
         },
         "to": [
-          "c98d6f5b0ad5052a"
+          "12f59cde601f1184"
         ],
         "adversarial": false
       },
@@ -4126,12 +4346,12 @@
           "instance_id": null
         },
         "to": [
-          "9b08ce8859a099e1"
+          "460b96eeb0e5b7cc"
         ],
         "adversarial": false
       }
     ],
-    "283841a81d06f5bd": [
+    "615e5737137ed101": [
       {
         "action": {
           "id": "a21",
@@ -4146,7 +4366,7 @@
           "instance_id": 1
         },
         "to": [
-          "241f187f21b29557"
+          "09820f8fb172457b"
         ],
         "adversarial": false
       },
@@ -4164,12 +4384,12 @@
           "instance_id": 1
         },
         "to": [
-          "fba1b3f9ef9c027e"
+          "34dfbe70dd5634e8"
         ],
         "adversarial": false
       }
     ],
-    "019c595391a7d0b0": [
+    "42cbed58f5b03a6c": [
       {
         "action": {
           "id": "a23",
@@ -4184,7 +4404,7 @@
           "instance_id": 1
         },
         "to": [
-          "4d91f5815fa67683"
+          "c42c09dac3e18092"
         ],
         "adversarial": false
       },
@@ -4202,12 +4422,12 @@
           "instance_id": 1
         },
         "to": [
-          "241f187f21b29557"
+          "09820f8fb172457b"
         ],
         "adversarial": false
       }
     ],
-    "18939b1655717e6c": [
+    "9ed451da0b44842b": [
       {
         "action": {
           "id": "a25",
@@ -4220,7 +4440,7 @@
           "instance_id": 2
         },
         "to": [
-          "78bbd51729204a4b"
+          "71cfaaf6622749d5"
         ],
         "adversarial": false
       },
@@ -4236,7 +4456,7 @@
           "instance_id": 2
         },
         "to": [
-          "8824f7c31ca76905"
+          "7d9631a3918dd6f6"
         ],
         "adversarial": false
       },
@@ -4254,7 +4474,7 @@
           "instance_id": 1
         },
         "to": [
-          "9dd5050fe23a8beb"
+          "488a1d3cfe29e2aa"
         ],
         "adversarial": false
       },
@@ -4272,12 +4492,12 @@
           "instance_id": 1
         },
         "to": [
-          "131e29f3f193a001"
+          "81a21ca8e44623cc"
         ],
         "adversarial": false
       }
     ],
-    "14fdbc7eee838a04": [
+    "1572e3d2ff11bcca": [
       {
         "action": {
           "id": "a29",
@@ -4292,7 +4512,7 @@
           "instance_id": 1
         },
         "to": [
-          "6dd85672c104742a"
+          "0d5b2edf7d256854"
         ],
         "adversarial": false
       },
@@ -4310,7 +4530,7 @@
           "instance_id": 1
         },
         "to": [
-          "86132b03f9adcb48"
+          "1810cd63995c676f"
         ],
         "adversarial": false
       },
@@ -4326,12 +4546,12 @@
           "instance_id": 2
         },
         "to": [
-          "b848409a0d071b49"
+          "4fcac4d19bf47983"
         ],
         "adversarial": false
       }
     ],
-    "8d7fbf4b80b3526b": [
+    "01df0193a632d0dd": [
       {
         "action": {
           "id": "a32",
@@ -4344,7 +4564,7 @@
           "instance_id": 3
         },
         "to": [
-          "52e37753412c3d50"
+          "c203542632e903a5"
         ],
         "adversarial": false
       },
@@ -4360,7 +4580,7 @@
           "instance_id": 3
         },
         "to": [
-          "61ebbb36128eff81"
+          "e0df5514c6483017"
         ],
         "adversarial": false
       },
@@ -4378,7 +4598,7 @@
           "instance_id": 1
         },
         "to": [
-          "9174278325dcefe7"
+          "6f8b79740b1ce973"
         ],
         "adversarial": false
       },
@@ -4396,12 +4616,12 @@
           "instance_id": 1
         },
         "to": [
-          "c98d6f5b0ad5052a"
+          "12f59cde601f1184"
         ],
         "adversarial": false
       }
     ],
-    "5426f6e86faaa021": [
+    "584ce58b727c54cc": [
       {
         "action": {
           "id": "a36",
@@ -4416,7 +4636,7 @@
           "instance_id": 1
         },
         "to": [
-          "77c6d3effdb89df7"
+          "68656b31b6095ca2"
         ],
         "adversarial": false
       },
@@ -4434,7 +4654,7 @@
           "instance_id": 1
         },
         "to": [
-          "9b08ce8859a099e1"
+          "460b96eeb0e5b7cc"
         ],
         "adversarial": false
       },
@@ -4450,12 +4670,12 @@
           "instance_id": 3
         },
         "to": [
-          "dcc62090b851d4d4"
+          "98e3e6c356bd55c6"
         ],
         "adversarial": false
       }
     ],
-    "ab21154bbae3f2d0": [
+    "5587b36ac6b35bc6": [
       {
         "action": {
           "id": "a39",
@@ -4470,7 +4690,7 @@
           "instance_id": 1
         },
         "to": [
-          "a9aa5c3eb020dd1c"
+          "d1cf3b84b98d8069"
         ],
         "adversarial": false
       },
@@ -4488,12 +4708,12 @@
           "instance_id": 1
         },
         "to": [
-          "fecf0e2966792bf2"
+          "c7cc50cf5f626cba"
         ],
         "adversarial": false
       }
     ],
-    "848591b5cf9b8104": [
+    "7efedddb93f613a3": [
       {
         "action": {
           "id": "a41",
@@ -4508,7 +4728,7 @@
           "instance_id": 1
         },
         "to": [
-          "a9aa5c3eb020dd1c"
+          "d1cf3b84b98d8069"
         ],
         "adversarial": false
       },
@@ -4526,12 +4746,12 @@
           "instance_id": 1
         },
         "to": [
-          "39781a94113b7e70"
+          "14bfd0542f60ba2f"
         ],
         "adversarial": false
       }
     ],
-    "9dd5050fe23a8beb": [
+    "488a1d3cfe29e2aa": [
       {
         "action": {
           "id": "a43",
@@ -4544,7 +4764,7 @@
           "instance_id": 2
         },
         "to": [
-          "5eb2c43e7597b3e4"
+          "f352679e6fb53325"
         ],
         "adversarial": false
       },
@@ -4560,12 +4780,12 @@
           "instance_id": 2
         },
         "to": [
-          "f32c48465307872d"
+          "d161235cc3722ba3"
         ],
         "adversarial": false
       }
     ],
-    "6dd85672c104742a": [
+    "0d5b2edf7d256854": [
       {
         "action": {
           "id": "a45",
@@ -4578,12 +4798,12 @@
           "instance_id": 2
         },
         "to": [
-          "afb20ea24ba42432"
+          "fa778ad2fa0b2d93"
         ],
         "adversarial": false
       }
     ],
-    "9174278325dcefe7": [
+    "6f8b79740b1ce973": [
       {
         "action": {
           "id": "a46",
@@ -4596,7 +4816,7 @@
           "instance_id": 3
         },
         "to": [
-          "24dff1f51108b14a"
+          "888fd8478c068360"
         ],
         "adversarial": false
       },
@@ -4612,12 +4832,12 @@
           "instance_id": 3
         },
         "to": [
-          "d81eb00ddf6f0df1"
+          "59e4c57fe56ab468"
         ],
         "adversarial": false
       }
     ],
-    "77c6d3effdb89df7": [
+    "68656b31b6095ca2": [
       {
         "action": {
           "id": "a48",
@@ -4630,12 +4850,12 @@
           "instance_id": 3
         },
         "to": [
-          "84f2b185044c979c"
+          "25e4e751f8379609"
         ],
         "adversarial": false
       }
     ],
-    "131e29f3f193a001": [
+    "81a21ca8e44623cc": [
       {
         "action": {
           "id": "a49",
@@ -4648,7 +4868,7 @@
           "instance_id": 2
         },
         "to": [
-          "5af55cbc2cc13060"
+          "f583f8452131fa8a"
         ],
         "adversarial": false
       },
@@ -4664,12 +4884,12 @@
           "instance_id": 2
         },
         "to": [
-          "9c6b3e297cdc1f2f"
+          "b98cada6ef5f96e4"
         ],
         "adversarial": false
       }
     ],
-    "86132b03f9adcb48": [
+    "1810cd63995c676f": [
       {
         "action": {
           "id": "a51",
@@ -4682,12 +4902,12 @@
           "instance_id": 2
         },
         "to": [
-          "a7c346f610104ece"
+          "10b49c0a64ca4712"
         ],
         "adversarial": false
       }
     ],
-    "b997f3df5863bfcd": [
+    "c5a63bf127698f15": [
       {
         "action": {
           "id": "a52",
@@ -4702,7 +4922,7 @@
           "instance_id": 1
         },
         "to": [
-          "39781a94113b7e70"
+          "14bfd0542f60ba2f"
         ],
         "adversarial": false
       },
@@ -4720,12 +4940,12 @@
           "instance_id": 1
         },
         "to": [
-          "fecf0e2966792bf2"
+          "c7cc50cf5f626cba"
         ],
         "adversarial": false
       }
     ],
-    "c98d6f5b0ad5052a": [
+    "12f59cde601f1184": [
       {
         "action": {
           "id": "a54",
@@ -4738,7 +4958,7 @@
           "instance_id": 3
         },
         "to": [
-          "7989dbe17397537f"
+          "cf18442e02fac602"
         ],
         "adversarial": false
       },
@@ -4754,12 +4974,12 @@
           "instance_id": 3
         },
         "to": [
-          "b7364856ad6d0d46"
+          "bae2e31e770736a2"
         ],
         "adversarial": false
       }
     ],
-    "9b08ce8859a099e1": [
+    "460b96eeb0e5b7cc": [
       {
         "action": {
           "id": "a56",
@@ -4772,12 +4992,12 @@
           "instance_id": 3
         },
         "to": [
-          "37e39412e84e0549"
+          "d0ee9192a398c1a1"
         ],
         "adversarial": false
       }
     ],
-    "78bbd51729204a4b": [
+    "71cfaaf6622749d5": [
       {
         "action": {
           "id": "a57",
@@ -4792,7 +5012,7 @@
           "instance_id": 1
         },
         "to": [
-          "5eb2c43e7597b3e4"
+          "f352679e6fb53325"
         ],
         "adversarial": false
       },
@@ -4810,12 +5030,12 @@
           "instance_id": 1
         },
         "to": [
-          "5af55cbc2cc13060"
+          "f583f8452131fa8a"
         ],
         "adversarial": false
       }
     ],
-    "8824f7c31ca76905": [
+    "7d9631a3918dd6f6": [
       {
         "action": {
           "id": "a59",
@@ -4830,7 +5050,7 @@
           "instance_id": 1
         },
         "to": [
-          "f32c48465307872d"
+          "d161235cc3722ba3"
         ],
         "adversarial": false
       },
@@ -4848,12 +5068,12 @@
           "instance_id": 1
         },
         "to": [
-          "9c6b3e297cdc1f2f"
+          "b98cada6ef5f96e4"
         ],
         "adversarial": false
       }
     ],
-    "b848409a0d071b49": [
+    "4fcac4d19bf47983": [
       {
         "action": {
           "id": "a61",
@@ -4868,7 +5088,7 @@
           "instance_id": 1
         },
         "to": [
-          "afb20ea24ba42432"
+          "fa778ad2fa0b2d93"
         ],
         "adversarial": false
       },
@@ -4886,12 +5106,12 @@
           "instance_id": 1
         },
         "to": [
-          "a7c346f610104ece"
+          "10b49c0a64ca4712"
         ],
         "adversarial": false
       }
     ],
-    "52e37753412c3d50": [
+    "c203542632e903a5": [
       {
         "action": {
           "id": "a63",
@@ -4906,7 +5126,7 @@
           "instance_id": 1
         },
         "to": [
-          "24dff1f51108b14a"
+          "888fd8478c068360"
         ],
         "adversarial": false
       },
@@ -4924,12 +5144,12 @@
           "instance_id": 1
         },
         "to": [
-          "7989dbe17397537f"
+          "cf18442e02fac602"
         ],
         "adversarial": false
       }
     ],
-    "61ebbb36128eff81": [
+    "e0df5514c6483017": [
       {
         "action": {
           "id": "a65",
@@ -4944,7 +5164,7 @@
           "instance_id": 1
         },
         "to": [
-          "d81eb00ddf6f0df1"
+          "59e4c57fe56ab468"
         ],
         "adversarial": false
       },
@@ -4962,12 +5182,12 @@
           "instance_id": 1
         },
         "to": [
-          "b7364856ad6d0d46"
+          "bae2e31e770736a2"
         ],
         "adversarial": false
       }
     ],
-    "dcc62090b851d4d4": [
+    "98e3e6c356bd55c6": [
       {
         "action": {
           "id": "a67",
@@ -4982,7 +5202,7 @@
           "instance_id": 1
         },
         "to": [
-          "84f2b185044c979c"
+          "25e4e751f8379609"
         ],
         "adversarial": false
       },
@@ -5000,30 +5220,30 @@
           "instance_id": 1
         },
         "to": [
-          "37e39412e84e0549"
+          "d0ee9192a398c1a1"
         ],
         "adversarial": false
       }
     ]
   },
   "terminal": {
-    "241f187f21b29557": "dead_end",
-    "fba1b3f9ef9c027e": "dead_end",
-    "4d91f5815fa67683": "dead_end",
-    "a9aa5c3eb020dd1c": "win",
-    "fecf0e2966792bf2": "win",
-    "39781a94113b7e70": "win",
-    "5eb2c43e7597b3e4": "dead_end",
-    "f32c48465307872d": "dead_end",
-    "afb20ea24ba42432": "dead_end",
-    "24dff1f51108b14a": "dead_end",
-    "d81eb00ddf6f0df1": "dead_end",
-    "84f2b185044c979c": "dead_end",
-    "5af55cbc2cc13060": "dead_end",
-    "9c6b3e297cdc1f2f": "dead_end",
-    "a7c346f610104ece": "dead_end",
-    "7989dbe17397537f": "dead_end",
-    "b7364856ad6d0d46": "dead_end",
-    "37e39412e84e0549": "dead_end"
+    "09820f8fb172457b": "dead_end",
+    "34dfbe70dd5634e8": "dead_end",
+    "c42c09dac3e18092": "dead_end",
+    "d1cf3b84b98d8069": "win",
+    "c7cc50cf5f626cba": "win",
+    "14bfd0542f60ba2f": "win",
+    "f352679e6fb53325": "dead_end",
+    "d161235cc3722ba3": "dead_end",
+    "fa778ad2fa0b2d93": "dead_end",
+    "888fd8478c068360": "dead_end",
+    "59e4c57fe56ab468": "dead_end",
+    "25e4e751f8379609": "dead_end",
+    "f583f8452131fa8a": "dead_end",
+    "b98cada6ef5f96e4": "dead_end",
+    "10b49c0a64ca4712": "dead_end",
+    "cf18442e02fac602": "dead_end",
+    "bae2e31e770736a2": "dead_end",
+    "d0ee9192a398c1a1": "dead_end"
   }
 }

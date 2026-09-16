@@ -31,6 +31,17 @@ class UnitInstance:
     # "The third time I move in a turn, you score 1 point") - default 0
     # since most units never reference it.
     moved_this_turn: int = 0
+    # A buff is BINARY, not a counter: a unit either carries one or it
+    # doesn't, it is worth +1 Might, and buffing an already-buffed unit
+    # does nothing. Karma, Channeler's reminder text spells the rule out —
+    # "if it doesn't have a buff, it gets a +1 Might buff".
+    #
+    # Kept as state rather than folded into `might` (which is where
+    # unconditional Might changes normally go — see engine/traits.py)
+    # because cards READ it: "while I'm buffed, I have an additional
+    # +1 Might", "spend any number of buffs". A buff that had been added
+    # straight to Might would be invisible to both.
+    buffed: bool = False
 
 
 @dataclass(frozen=True)
@@ -196,6 +207,7 @@ def _canonical_unit(unit: UnitInstance) -> tuple:
         unit.damage,
         unit.is_token,
         unit.moved_this_turn,
+        unit.buffed,
     )
 
 
