@@ -182,6 +182,7 @@ def test_evaluate_candidate_rejects_an_already_seen_signature(permissive_generat
     assert second is None
 
 
+@pytest.mark.slow
 def test_pool_and_inline_evaluation_agree_per_attempt():
     """Parallelism is only safe because attempt N evaluates to the same
     thing wherever it runs — that's what lets the parent reconcile dedup
@@ -248,6 +249,7 @@ def test_runes_left_over_true_when_a_spare_rune_goes_unused():
     assert generate._runes_left_over(root_with_spare, cards, strategy) is True
 
 
+@pytest.mark.slow
 def test_generate_survivors_all_satisfy_the_filters():
     survivors, attempts = generate(count=2, seed=42, attempt_multiplier=500)
     assert attempts > 0
@@ -258,6 +260,7 @@ def test_generate_survivors_all_satisfy_the_filters():
         assert result["root"] in result["nodes"]
 
 
+@pytest.mark.slow
 def test_generate_is_reproducible_with_a_seed():
     survivors_a, attempts_a = generate(count=2, seed=7, attempt_multiplier=500)
     survivors_b, attempts_b = generate(count=2, seed=7, attempt_multiplier=500)

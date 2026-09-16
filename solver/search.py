@@ -1,11 +1,20 @@
 """IDDFS solver. See design/05-dfs-solver.md and design/09-combat-resolution.md.
 
-Scope note: pruning here is just the depth cap + transposition table (no
-separate "no path to score" dead-end heuristic yet). Branching is still
-small enough that full search at each depth is cheap, and writing a
-speculative pruning rule against action types not yet exercised by a real
-puzzle risks encoding wrong logic no test can meaningfully check. Revisit
-once the action space is richer.
+Scope note: pruning here is the depth cap plus a transposition table that
+records, per state, the largest budget it has been proven unwinnable
+with — failing with more actions in hand implies failing with fewer, so
+one entry answers every smaller budget, which is what makes it pay across
+iterative deepening.
+
+There is still no "no path to score" dead-end heuristic. Measured
+2026-09-16, search cost grows roughly 2-4x per additional unit on the
+board: 1.1s at three units a side, 4.5s at four, 7.9s at five, at depth
+five. Hand-authored puzzles are far smaller than that, but an arbitrary
+Origins board is not, so this is the next thing to look at if the MVP
+starts meeting real positions. Any such heuristic has to be ADMISSIBLE —
+it may never prune a branch that could still win, or the engine starts
+missing lethals, which is the one failure mode the whole coverage ledger
+exists to prevent.
 
 `legal_actions()` here composes actions.py's board-only legality
 (legal_board_actions — PlayUnit/MoveUnit/ResolveCombat) with abilities.py's
@@ -292,7 +301,7 @@ def solve(root: GameState, cards: dict[str, CardDef], max_depth: int = 12) -> Op
     opponent's forced combat-assignment branch) to the one action to take
     from there.
     """
-    transposition_table: dict[tuple, bool] = {}
+    transposition_table: dict[tuple, int] = {}
     for depth_limit in range(1, max_depth + 1):
         result = _dfs(root, depth_limit, cards, transposition_table)
         if result is not None:
@@ -301,7 +310,7 @@ def solve(root: GameState, cards: dict[str, CardDef], max_depth: int = 12) -> Op
 
 
 def _dfs(state: GameState, remaining: int, cards: dict[str, CardDef],
-         ttable: dict[tuple, bool]) -> Optional[Strategy]:
+         ttable: dict[tuple, int]) -> Optional[Strategy]:
     if scoring.is_winning(state):
         return {}
 
@@ -309,8 +318,14 @@ def _dfs(state: GameState, remaining: int, cards: dict[str, CardDef],
         return None
 
     key = canonical_key(state)
-    ttable_key = (key, remaining)
-    if ttable.get(ttable_key):
+    # The table records, per state, the LARGEST action budget it has been
+    # proven unwinnable with. Failing with more actions in hand implies
+    # failing with fewer, so that one entry answers every smaller budget
+    # too — which is what makes it useful across iterative deepening,
+    # where the same states are revisited over and over with different
+    # budgets. Keying on (state, remaining) instead, as this did, meant a
+    # state proven dead at 5 was searched again from scratch at 4, 3, 2.
+    if ttable.get(key, -1) >= remaining:
         return None
 
     for action in legal_actions(state, cards):
@@ -344,12 +359,12 @@ def _dfs(state: GameState, remaining: int, cards: dict[str, CardDef],
         if result is not None:
             return result
 
-    ttable[ttable_key] = True
+    ttable[key] = max(ttable.get(key, -1), remaining)
     return None
 
 
 def _resolve_combat_search(state: GameState, action: ResolveCombat, remaining: int,
-                            cards: dict[str, CardDef], ttable: dict[tuple, bool]) -> Optional[Strategy]:
+                            cards: dict[str, CardDef], ttable: dict[tuple, int]) -> Optional[Strategy]:
     """Thin wrapper: computes ResolveCombat's outcomes, then defers to the
     shared _and_or_search."""
     outcomes = resolve_combat_outcomes(state, action)
@@ -463,7 +478,7 @@ def _count_solutions(state: GameState, remaining: int, cards: dict[str, CardDef]
 
 
 def _and_or_search(state: GameState, action: Action, outcomes: list[GameState], remaining: int,
-                    cards: dict[str, CardDef], ttable: dict[tuple, bool]) -> Optional[Strategy]:
+                    cards: dict[str, CardDef], ttable: dict[tuple, int]) -> Optional[Strategy]:
     """The AND-node: `action` already bakes in our own choice (a specific
     damage assignment, tried in `legal_actions`'s outer OR-loop via
     `_dfs`); `outcomes` is every possible way the adversary's response can
