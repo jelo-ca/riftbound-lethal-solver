@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import dataclasses
 
+from . import conquer
 from .state import GameState, replace_player
 
 VICTORY_SCORE = 8  # rule 198.1. v0 puzzles don't use battlefield effects
@@ -115,7 +116,10 @@ def resolve_control_change(state: GameState, new_state: GameState, battlefield_i
     new_bf = next(bf for bf in new_state.battlefields if bf.battlefield_id == battlefield_id)
     if new_bf.controller != turn_player:
         return new_state
-    return resolve_conquer(new_state, battlefield_id)
+    conquered_state = resolve_conquer(new_state, battlefield_id)
+    # "When I conquer" — engine/conquer.py. Fired after the point (if any)
+    # is granted, so a trigger reading score sees it already there.
+    return conquer.fire_conquer_triggers(state, conquered_state, battlefield_id, turn_player)
 
 
 def grant_card_effect_point(state: GameState) -> GameState:

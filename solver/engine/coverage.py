@@ -168,6 +168,14 @@ HANDLED: dict[str, str] = {
     "ogn-125-298": "Bilgewater Bully — \"while I'm buffed, I have [Ganking]\" via "
                    "traits.SELF_CONDITIONALS; the grant reaches movement legality "
                    "because effective_keywords now delegates to resolved_traits",
+    # [Conquer] triggers — engine/conquer.py, hooked into
+    # scoring.resolve_control_change.
+    "ogn-164-298": "Sett, Brawler — \"when I'm played and when I conquer, buff me\" "
+                   "via UNIT_PLAY_TRIGGERS and conquer.CONQUER_TRIGGERS (both share "
+                   "abilities.apply_buff, so a Sett who is already buffed correctly "
+                   "gets nothing from the second trigger), \"spend my buff: give me "
+                   "+4 Might\" via ABILITY_EFFECTS",
+    "ogn-164a-298": "Sett, Brawler — same card as ogn-164-298, alternate art",
 }
 
 
