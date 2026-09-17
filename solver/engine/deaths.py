@@ -13,15 +13,27 @@ of units on the board. Triggers fire in instance_id order when several
 units die at once, which only matters if one effect changes what another
 sees.
 
-KNOWN GAP — the [Reaction] window. Each Deathknell resolution is a point
-where the rules let a player respond with a [Reaction]-speed card, the
-same way a showdown opens a window for [Action]/[Reaction] plays. That
-window is NOT modelled here: no card in CARD_POOL has speed="Reaction",
-so it can never be observed, and building a priority system with nothing
-to exercise it would be dead machinery (search.py already folds away
-showdown windows on exactly this reasoning). A tripwire in
-tests/test_deathknell.py fails the moment a Reaction-speed card enters
-the pool, so this stops being silent the instant it stops being true.
+KNOWN GAP — the [Reaction] window, now live rather than hypothetical.
+Each Deathknell resolution is a point where the rules let a player
+respond with a [Reaction]-speed card, and Reaction cards are now
+implemented (Flurry of Blades, Gust, Smoke Screen). No window is offered
+here, so a line like "Kog'Maw's blast is about to kill my unit, buff it
+in response" cannot be found.
+
+Scope of the gap, measured rather than assumed. Reaction cards ARE
+playable inside showdowns — search._showdown_actions admits both
+[Action] and [Reaction], and a test pins it — and that is the larger of
+the two windows, since it is where combat is decided. What is missing is
+only the narrower trigger-resolution window.
+
+A full resolution stack is deliberately NOT built. Of the 21 Reaction
+cards in Origins, exactly three reference an unresolved spell (Defy and
+Wind Wall counter one, Mystic Reversal steals one) and only those need a
+stack at all. All three are inert here for an unrelated reason: the
+opponent never acts, so no opposing spell can exist to respond to, and
+countering your own is never better than not casting it. For the other
+eighteen, "respond to my own effect" resolves in the same order as
+playing it first, so a stack would add no expressible line.
 
 Imports of combat/actions are deliberately deferred into the effect
 bodies: combat.py imports THIS module to fire the hook, so importing it

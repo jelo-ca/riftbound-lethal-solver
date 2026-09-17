@@ -223,16 +223,58 @@ def test_a_cascade_that_clears_the_battlefield_leaves_it_uncontrolled():
 # --- tripwire ---
 
 
-def test_no_pool_card_has_reaction_speed():
-    """Each Deathknell resolution is a point where the rules allow a
-    [Reaction]-speed play, and engine/deaths.py does NOT model that
-    window — it resolves cascades atomically instead, because no card in
-    the pool has Reaction speed so the window can never be observed.
+def test_reaction_cards_are_reachable_so_the_deathknell_window_is_a_real_gap():
+    """This tripwire fired late, and the reason is worth recording.
 
-    This test is the tripwire on that assumption. If it fails, someone
-    added a Reaction card and the Deathknell window (and the showdown
-    handling around it) needs materialising for real — see deaths.py's
-    KNOWN GAP note. Do not just delete this test.
+    It used to assert no CARD_POOL entry had Reaction speed, and it passed
+    right up until Reaction cards were cleared — because by then cards no
+    longer came from CARD_POOL at all. card_pool.card_def falls back to
+    stats derived from the cache, so a Reaction card could be fully
+    playable while never appearing in the hand-written dict the tripwire
+    watched. The guard was silently defanged by an unrelated change, which
+    is the same drift it existed to catch.
+
+    It now checks what actually matters: whether any card the engine will
+    reason about is Reaction speed. Some are, so the gap deaths.py
+    documents is live rather than hypothetical — a Deathknell resolution
+    is a point where the rules permit a Reaction, and no window is offered
+    there. Reaction cards ARE playable inside showdowns (covered below),
+    which is the larger of the two windows.
     """
-    reaction_cards = [cid for cid, card in CARD_POOL.items() if card.speed == "Reaction"]
-    assert reaction_cards == []
+    from solver.engine import coverage
+    from solver.engine.card_pool import card_def
+
+    reachable = [cid for cid in coverage.HANDLED
+                 if (card_def(cid) is not None and card_def(cid).speed == "Reaction")]
+    assert reachable, "if this is empty again, the Deathknell window stopped mattering"
+
+
+def test_a_reaction_spell_is_playable_inside_a_showdown():
+    """The claim the Deathknell gap is scoped against: the showdown window
+    already admits Reaction-speed cards, and it is the window that matters
+    most, since that is where combat is decided."""
+    from solver.engine import combat as combat_module
+    from solver.engine.card_pool import card_def
+    from solver.search import _showdown_actions
+    from solver.engine.actions import PlaySpell
+
+    FLURRY = "ogn-133-298"
+    ours = make_unit(1, controller=0, might=3)
+    theirs = make_unit(2, controller=1, might=3)
+    state = GameState(
+        turn_player=0,
+        players=(
+            PlayerState(base_units=frozenset(), hand=(FLURRY,),
+                        runes=RunePool(available=("Body", "Body")), score=0),
+            PlayerState(base_units=frozenset(), hand=(), runes=RunePool(available=()), score=0),
+        ),
+        battlefields=(
+            BattlefieldState("left", 1, frozenset({theirs}), None),
+            BattlefieldState("right", None, frozenset(), None),
+        ),
+        scored_this_turn=frozenset(),
+        cards_played_this_turn=0,
+    )
+    opened = combat_module.open_showdown(state, ours, "base", "left")
+    actions = _showdown_actions(opened, {FLURRY: card_def(FLURRY)})
+    assert any(isinstance(a, PlaySpell) and a.card_id == FLURRY for a in actions)

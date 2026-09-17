@@ -107,6 +107,10 @@ HANDLED: dict[str, str] = {
                    "same battlefield, conditional on having landed at one",
     "ogn-065-298": "Wizened Elder — \"while I'm buffed, +1 Might\" via "
                    "traits.SELF_CONDITIONALS",
+    "ogn-133-298": "Flurry of Blades — [Reaction] \"deal 1 to all units at "
+                   "battlefields\" via combat.deal_damage_to_all_at",
+    "ogn-169-298": "Gust — [Reaction] bounce of a unit at 3 EFFECTIVE Might or less",
+    "ogn-093-298": "Smoke Screen — [Reaction] -4 Might with the printed floor of 1",
     "ogn-125-298": "Bilgewater Bully — \"while I'm buffed, I have [Ganking]\" via "
                    "traits.SELF_CONDITIONALS; the grant reaches movement legality "
                    "because effective_keywords now delegates to resolved_traits",
@@ -158,6 +162,15 @@ INERT_FOR_LETHAL: dict[str, str] = {
     "ogn-126-298": "Body Rune — as above",
     "ogn-166-298": "Chaos Rune — as above",
     "ogn-214-298": "Order Rune — as above",
+    # The three Reaction cards that reference an unresolved spell. They are
+    # the only cards in the set that would need a resolution stack, and
+    # they are dead here for a reason that has nothing to do with the
+    # stack: the opponent never acts, so there is never an opposing spell
+    # to counter or steal, and countering your own is never better than
+    # not casting it.
+    "ogn-045-298": "Defy — \"counter a spell\"; no opposing spell can ever exist",
+    "ogn-064-298": "Wind Wall — \"counter a spell\"; as above",
+    "ogn-080-298": "Mystic Reversal — \"gain control of a spell\"; as above",
 }
 
 

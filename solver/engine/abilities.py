@@ -232,6 +232,89 @@ def _primal_strength_candidates(state: GameState) -> list[tuple[int]]:
     return candidates
 
 
+# --- [Reaction] spells ----------------------------------------------------
+#
+# A Reaction is playable "any time, even before spells and abilities
+# resolve". In this engine the observable consequence is narrow: since the
+# opponent never acts, there is never an opposing effect to respond TO,
+# and for a single actor "respond to my own spell" resolves in the same
+# order as simply playing it first. So Reaction currently behaves like
+# [Action] — playable during a showdown, where Slow cards are not. The one
+# place the two genuinely differ is a window during trigger resolution,
+# which deaths.py documents as a known gap.
+
+FLURRY_OF_BLADES = "ogn-133-298"  # "Deal 1 to all units at battlefields."
+GUST = "ogn-169-298"  # "Return a unit at a battlefield with 3 Might or less to its owner's hand."
+SMOKE_SCREEN = "ogn-093-298"  # "Give a unit -4 Might this turn, to a minimum of 1 Might."
+
+
+def _flurry_is_legal(state: GameState, action: PlaySpell) -> bool:
+    return action.params == ()
+
+
+def _flurry_effect(state: GameState, action: PlaySpell) -> list[GameState]:
+    """"All units at battlefields" — both players', both battlefields, and
+    Base is untouched. Routed through combat.deal_damage_to_all_at so the
+    deaths it causes fire their own [Deathknell]s."""
+    for bf in state.battlefields:
+        state = combat.deal_damage_to_all_at(state, bf.battlefield_id, 1)
+    return [state]
+
+
+def _flurry_candidates(state: GameState) -> list[tuple]:
+    return [()]
+
+
+def _gust_is_legal(state: GameState, action: PlaySpell) -> bool:
+    """params = (target_instance_id,). "3 Might or less" is measured on
+    EFFECTIVE Might — a 3-Might unit standing on Trifarian War Camp is a
+    4-Might unit and out of range. designation=None: this is not combat,
+    so Assault and Shield don't apply."""
+    if len(action.params) != 1:
+        return False
+    located = find_unit_at_any_battlefield(state, action.params[0])
+    if located is None:
+        return False
+    unit, zone = located
+    return traits.effective_might(state, unit, zone, None) <= 3
+
+
+def _gust_effect(state: GameState, action: PlaySpell) -> list[GameState]:
+    _, bf_id = find_unit_at_any_battlefield(state, action.params[0])
+    return [return_unit_to_hand(state, bf_id, action.params[0])]
+
+
+def _gust_candidates(state: GameState) -> list[tuple]:
+    return [(u.instance_id,) for bf in state.battlefields
+            for u in sorted(bf.units, key=lambda u: u.instance_id)]
+
+
+def _smoke_screen_is_legal(state: GameState, action: PlaySpell) -> bool:
+    """"A unit" — either player's, anywhere, same as Primal Strength."""
+    if len(action.params) != 1:
+        return False
+    return find_unit_anywhere(state, action.params[0]) is not None
+
+
+def _smoke_screen_effect(state: GameState, action: PlaySpell) -> list[GameState]:
+    """-4 Might with a floor of 1. The floor is on the card, not a
+    modelling convenience: a unit reduced to 0 would die to any damage at
+    all, and "to a minimum of 1" exists precisely to stop that."""
+    located = find_unit_anywhere(state, action.params[0])
+    unit, _ = located
+    reduction = min(4, max(0, unit.might - 1))
+    return [_grant_might(state, action.params[0], -reduction)]
+
+
+def _smoke_screen_candidates(state: GameState) -> list[tuple]:
+    candidates = []
+    for player in state.players:
+        candidates += [(u.instance_id,) for u in sorted(player.base_units, key=lambda u: u.instance_id)]
+    for bf in state.battlefields:
+        candidates += [(u.instance_id,) for u in sorted(bf.units, key=lambda u: u.instance_id)]
+    return candidates
+
+
 CHARM = "ogn-043-298"  # 1 Energy, 1 Calm Power: "Move an enemy unit." (Slow speed —
 # can't be played during a showdown; the engine has no showdown/priority-
 # window concept yet, so nothing currently in the action space could even
@@ -337,6 +420,9 @@ SPELL_EFFECTS: dict[str, tuple[
     VENGEANCE: (_vengeance_is_legal, _vengeance_effect, _vengeance_candidates),
     CHARM: (_charm_is_legal, _charm_effect, _charm_candidates),
     PRIMAL_STRENGTH: (_primal_strength_is_legal, _primal_strength_effect, _primal_strength_candidates),
+    FLURRY_OF_BLADES: (_flurry_is_legal, _flurry_effect, _flurry_candidates),
+    GUST: (_gust_is_legal, _gust_effect, _gust_candidates),
+    SMOKE_SCREEN: (_smoke_screen_is_legal, _smoke_screen_effect, _smoke_screen_candidates),
 }
 
 
