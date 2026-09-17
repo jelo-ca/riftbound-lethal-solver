@@ -510,6 +510,109 @@ def _back_to_back_candidates(state: GameState) -> list[tuple]:
     return [(a, b) for i, a in enumerate(ours) for b in ours[i + 1:]]
 
 
+LAST_STAND = "ogn-069-298"  # [Action] "Double a friendly unit's Might this turn. Give it [Temporary]."
+UNCHECKED_POWER = "ogn-123-298"  # "Exhaust all friendly units, then deal 12 to ALL units at battlefields."
+CHALLENGE = "ogn-128-298"  # [Action] "Choose a friendly unit and an enemy unit. They deal damage equal to their Mights to each other."
+
+
+def _friendly_unit_is_legal(state: GameState, action: PlaySpell) -> bool:
+    if len(action.params) != 1:
+        return False
+    located = find_unit_anywhere(state, action.params[0])
+    return located is not None and located[0].controller == state.turn_player
+
+
+def _friendly_unit_candidates(state: GameState) -> list[tuple]:
+    out = [(u.instance_id,) for u in sorted(state.players[state.turn_player].base_units,
+                                             key=lambda u: u.instance_id)]
+    out += [(u.instance_id,) for bf in state.battlefields
+            for u in sorted(bf.units, key=lambda u: u.instance_id)
+            if u.controller == state.turn_player]
+    return out
+
+
+def _last_stand_effect(state: GameState, action: PlaySpell) -> list[GameState]:
+    """Doubling is computed off PRINTED Might, not effective Might: the
+    conditional and positional parts of effective Might (Shield, a
+    battlefield's bonus) aren't part of the unit's own Might to double.
+
+    [Temporary] is granted for fidelity even though it is inert here — it
+    kills at the start of a Beginning Phase a single turn never reaches.
+    Granting it is free and keeps the card honest if that ever changes."""
+    located = find_unit_anywhere(state, action.params[0])
+    unit, _ = located
+    state = _grant_might(state, action.params[0], unit.might)
+    return [grant_trait(state, action.params[0], "Temporary")]
+
+
+def _unchecked_power_is_legal(state: GameState, action: PlaySpell) -> bool:
+    return action.params == ()
+
+
+def _unchecked_power_effect(state: GameState, action: PlaySpell) -> list[GameState]:
+    """Exhausting our own units first is a real cost: it strips their
+    ability to move or fight afterwards, which can be what stops the line
+    the 12 damage opens up."""
+    for player_index, player in enumerate(state.players):
+        if player_index != state.turn_player:
+            continue
+        for unit in sorted(player.base_units, key=lambda u: u.instance_id):
+            state = _replace_unit(state, unit, "base", dataclasses.replace(unit, exhausted=True))
+    for bf in state.battlefields:
+        for unit in sorted(bf.units, key=lambda u: u.instance_id):
+            if unit.controller == state.turn_player:
+                current = find_unit_anywhere(state, unit.instance_id)
+                state = _replace_unit(state, current[0], current[1],
+                                      dataclasses.replace(current[0], exhausted=True))
+    for bf in state.battlefields:
+        state = combat.deal_damage_to_all_at(state, bf.battlefield_id, 12)
+    return [state]
+
+
+def _mutual_damage(state: GameState, first_id: int, second_id: int) -> GameState:
+    """Two units deal damage equal to their Mights to each other,
+    SIMULTANEOUSLY — both amounts are read before either is applied, so a
+    unit that dies still deals its damage. Reading them one at a time
+    would let the first kill silence the second."""
+    first = find_unit_anywhere(state, first_id)
+    second = find_unit_anywhere(state, second_id)
+    if first is None or second is None:
+        return state
+    first_might = traits.effective_might(state, first[0], first[1], None)
+    second_might = traits.effective_might(state, second[0], second[1], None)
+    for target_id, amount in ((first_id, second_might), (second_id, first_might)):
+        located = find_unit_at_any_battlefield(state, target_id)
+        if located is not None:
+            state = combat.deal_damage_to_unit(state, located[1], target_id, amount)
+    return state
+
+
+def _challenge_is_legal(state: GameState, action: PlaySpell) -> bool:
+    """params = (friendly_id, enemy_id), both at battlefields — damage
+    outside a battlefield has nowhere to resolve in this engine."""
+    if len(action.params) != 2:
+        return False
+    ours = find_unit_at_any_battlefield(state, action.params[0])
+    theirs = find_unit_at_any_battlefield(state, action.params[1])
+    return (ours is not None and theirs is not None
+            and ours[0].controller == state.turn_player
+            and theirs[0].controller != state.turn_player)
+
+
+def _challenge_effect(state: GameState, action: PlaySpell) -> list[GameState]:
+    return [_mutual_damage(state, action.params[0], action.params[1])]
+
+
+def _challenge_candidates(state: GameState) -> list[tuple]:
+    ours = [u.instance_id for bf in state.battlefields
+            for u in sorted(bf.units, key=lambda u: u.instance_id)
+            if u.controller == state.turn_player]
+    theirs = [u.instance_id for bf in state.battlefields
+              for u in sorted(bf.units, key=lambda u: u.instance_id)
+              if u.controller != state.turn_player]
+    return [(a, b) for a in ours for b in theirs]
+
+
 CHARM = "ogn-043-298"  # 1 Energy, 1 Calm Power: "Move an enemy unit." (Slow speed —
 # can't be played during a showdown; the engine has no showdown/priority-
 # window concept yet, so nothing currently in the action space could even
@@ -626,6 +729,9 @@ SPELL_EFFECTS: dict[str, tuple[
     CLEAVE: (_any_unit_is_legal, _cleave_effect, _any_unit_candidates),
     SINGULARITY: (_singularity_is_legal, _singularity_effect, _singularity_candidates),
     BACK_TO_BACK: (_back_to_back_is_legal, _back_to_back_effect, _back_to_back_candidates),
+    LAST_STAND: (_friendly_unit_is_legal, _last_stand_effect, _friendly_unit_candidates),
+    UNCHECKED_POWER: (_unchecked_power_is_legal, _unchecked_power_effect, lambda state: [()]),
+    CHALLENGE: (_challenge_is_legal, _challenge_effect, _challenge_candidates),
 }
 
 

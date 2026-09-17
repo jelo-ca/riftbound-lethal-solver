@@ -153,6 +153,13 @@ HANDLED: dict[str, str] = {
     "ogn-132-298": "First Mate — play trigger, ready another unit (not itself, which "
                    "is what stops it undoing its own entering exhausted)",
     "ogn-141-298": "Kinkou Monk — play trigger, buff up to two other friendly units",
+    "ogn-069-298": "Last Stand — double PRINTED Might (the conditional and positional "
+                   "parts of effective Might aren't the unit's own to double), and "
+                   "grant [Temporary], which is recorded even though inert",
+    "ogn-123-298": "Unchecked Power — exhaust all friendly units, then 12 to every "
+                   "unit at a battlefield; the self-exhaust is a real cost",
+    "ogn-128-298": "Challenge — SIMULTANEOUS mutual damage; both Mights are read "
+                   "before either lands, so a dying unit still deals its damage",
     "ogn-125-298": "Bilgewater Bully — \"while I'm buffed, I have [Ganking]\" via "
                    "traits.SELF_CONDITIONALS; the grant reaches movement legality "
                    "because effective_keywords now delegates to resolved_traits",

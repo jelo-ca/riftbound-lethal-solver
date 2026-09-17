@@ -242,3 +242,57 @@ def test_maddened_marauder_stays_unregistered_because_of_the_zone_model():
     from solver.engine import coverage
     assert MADDENED_MARAUDER not in UNIT_PLAY_TRIGGERS
     assert coverage.classify(MADDENED_MARAUDER) == "blocking"
+
+
+# --- doubling, mass effects, and simultaneous mutual damage ---
+
+from solver.engine.abilities import CHALLENGE, LAST_STAND, UNCHECKED_POWER  # noqa: E402
+
+
+def test_last_stand_doubles_printed_might():
+    st = state_with(left=frozenset({unit(1, might=4)}), hand=(LAST_STAND,))
+    out = cast(LAST_STAND, (1,), st)
+    assert next(u for u in out.battlefields[0].units if u.instance_id == 1).might == 8
+
+
+def test_last_stand_grants_temporary_even_though_it_is_inert():
+    """Granted for fidelity: [Temporary] kills at the start of a Beginning
+    Phase a single turn never reaches, so it does nothing here — but the
+    card says it, and recording it costs nothing."""
+    st = state_with(left=frozenset({unit(1, might=4)}), hand=(LAST_STAND,))
+    out = cast(LAST_STAND, (1,), st)
+    target = next(u for u in out.battlefields[0].units if u.instance_id == 1)
+    assert "Temporary" in resolved_traits(out, target, "left")
+
+
+def test_unchecked_power_exhausts_our_units_before_the_damage():
+    """Exhausting our own side is a real cost, not flavour — it can strip
+    the very unit that would have used the opening."""
+    survivor = unit(1, might=20)          # survives 12
+    enemy = unit(2, controller=1, might=6)  # does not
+    st = state_with(left=frozenset({survivor, enemy}), hand=(UNCHECKED_POWER,))
+    out = cast(UNCHECKED_POWER, (), st)
+    ours = next(u for u in out.battlefields[0].units if u.instance_id == 1)
+    assert ours.exhausted is True
+    assert 2 not in ids_at(out)
+
+
+def test_challenge_damage_is_simultaneous():
+    """Both Mights are read before either lands, so a unit that dies still
+    deals its damage. Resolving one at a time would let the first kill
+    silence the second — here that would wrongly leave our 5-Might unit
+    alive against a 5-Might enemy."""
+    ours, theirs = unit(1, might=5), unit(2, controller=1, might=5)
+    st = state_with(left=frozenset({ours, theirs}), hand=(CHALLENGE,))
+    out = cast(CHALLENGE, (1, 2), st)
+    assert ids_at(out) == set()  # both die
+
+
+def test_challenge_requires_one_of_each_side():
+    ours, theirs = unit(1, might=5), unit(2, controller=1, might=5)
+    st = state_with(left=frozenset({ours, theirs}), hand=(CHALLENGE,))
+    card = card_def(CHALLENGE)
+    payment = RunePayment(energy_runes=("Fury",) * card.energy_cost,
+                          power_runes=(card.power_domain,) * card.power_cost)
+    both_ours = PlaySpell(card_id=CHALLENGE, params=(1, 1), rune_payment=payment)
+    assert not abilities.is_legal_play_spell(st, both_ours, card)
