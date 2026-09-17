@@ -244,6 +244,41 @@ INERT_FOR_LETHAL: dict[str, str] = {
     "ogn-045-298": "Defy — \"counter a spell\"; no opposing spell can ever exist",
     "ogn-064-298": "Wind Wall — \"counter a spell\"; as above",
     "ogn-080-298": "Mystic Reversal — \"gain control of a spell\"; as above",
+    # Play-restriction cards: text that limits what the OPPONENT can do.
+    # The opponent never acts, so a restriction on their plays is already
+    # true before the card exists — nothing it forbids could have happened
+    # anyway. Each entry below is checked against its full printed text so
+    # a restriction bundled with a real effect doesn't get cleared for free.
+    "ogn-018-298": "Noxus Saboteur — \"Your opponents' [Hidden] cards can't be "
+                   "revealed here.\" A reveal happens only when the opponent plays "
+                   "their own hidden card as a Reaction, and the opponent never "
+                   "acts, so this can never be triggered regardless of the "
+                   "restriction. (Separately, Hidden is not modelled as a zone at "
+                   "all — design/00-overview.md: \"no hidden zones\" — so there is "
+                   "no reveal event in this engine for either player.)",
+    "ogn-026-298": "Brynhir Thundersong — \"When you play me, opponents can't play "
+                   "cards this turn.\" That is the entire text. The opponent never "
+                   "acts, so the restriction holds vacuously whether or not this "
+                   "card is played; the mandatory play trigger has no observable "
+                   "effect on the search.",
+    "ogn-070-298": "Mageseeker Warden — \"While I'm at a battlefield, opponents can "
+                   "only play units to their base\" is inert for the usual reason: "
+                   "opponents never play anything. Its second clause, \"spells and "
+                   "abilities can't ready enemy units and gear,\" is a real "
+                   "restriction on OUR actions, not the opponent's, and is checked "
+                   "on its own merits: no ability in this engine readies enemy "
+                   "gear (gear.py has no such effect, so that half is vacuous "
+                   "regardless), and the only ability that readies an enemy UNIT "
+                   "is First Mate's \"ready another unit\" "
+                   "(abilities._first_mate_effect / _first_mate_is_legal, which is "
+                   "explicitly unrestricted — \"Readying an ENEMY unit is legal and "
+                   "merely unwise\"). The only card that reads an enemy unit's "
+                   "ready state, Dune Drake (\"...+2 Might this turn if there is a "
+                   "ready enemy unit here\"), is itself BLOCKING (not in this "
+                   "ledger), so any board where First Mate readying an enemy unit "
+                   "could matter is already refused on Dune Drake independently of "
+                   "Mageseeker Warden. Revisit this entry if Dune Drake, or any "
+                   "future enemy-gear-readying effect, is ever implemented.",
 }
 
 
