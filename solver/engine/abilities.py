@@ -315,6 +315,94 @@ def _smoke_screen_candidates(state: GameState) -> list[tuple]:
     return candidates
 
 
+# --- Direct-damage and removal spells -------------------------------------
+#
+# All of these are the same two shapes with different numbers, so they
+# share candidate generators rather than repeating them per card.
+
+HEXTECH_RAY = "ogn-009-298"  # [Action] "Deal 3 to a unit at a battlefield."
+FALLING_COMET = "ogn-085-298"  # [Action] "Deal 6 to a unit at a battlefield."
+FALLING_STAR = "ogn-029-298"  # "Deal 3 to a unit. Deal 3 to a unit."
+REBUKE = "ogn-172-298"  # [Action] "Return a unit at a battlefield to its owner's hand."
+GRAND_STRATEGEM = "ogn-233-298"  # [Action] "Give friendly units +5 Might this turn."
+
+# card_id -> damage dealt to a single unit at a battlefield.
+FLAT_DAMAGE_SPELLS: dict[str, int] = {HEXTECH_RAY: 3, FALLING_COMET: 6}
+
+
+def _units_at_battlefields(state: GameState) -> list[tuple]:
+    return [(u.instance_id,) for bf in state.battlefields
+            for u in sorted(bf.units, key=lambda u: u.instance_id)]
+
+
+def _single_battlefield_target_is_legal(state: GameState, action: PlaySpell) -> bool:
+    return (len(action.params) == 1
+            and find_unit_at_any_battlefield(state, action.params[0]) is not None)
+
+
+def _flat_damage_effect(state: GameState, action: PlaySpell) -> list[GameState]:
+    """Effect damage, not combat damage — designation is None inside
+    deal_damage_to_unit, so Shield and Assault don't soften it, and any
+    death it causes fires that unit's [Deathknell]."""
+    amount = FLAT_DAMAGE_SPELLS[action.card_id]
+    _, bf_id = find_unit_at_any_battlefield(state, action.params[0])
+    return [combat.deal_damage_to_unit(state, bf_id, action.params[0], amount)]
+
+
+def _falling_star_is_legal(state: GameState, action: PlaySpell) -> bool:
+    """params = (first_target, second_target). "Deal 3 to a unit. Deal 3 to
+    a unit." is two separate instances, so the same unit may legally be
+    chosen twice — that is how the card kills a 6-Might body."""
+    if len(action.params) != 2:
+        return False
+    return all(find_unit_anywhere(state, target) is not None for target in action.params)
+
+
+def _falling_star_effect(state: GameState, action: PlaySpell) -> list[GameState]:
+    """Resolved one instance at a time: the first 3 can kill the target,
+    in which case the second instance simply finds nothing there. Aiming
+    both at one unit is a real choice, so it must not be collapsed into a
+    single 6."""
+    for target in action.params:
+        located = find_unit_at_any_battlefield(state, target)
+        if located is None:
+            continue  # already dead, or at Base where this can still be aimed
+        state = combat.deal_damage_to_unit(state, located[1], target, 3)
+    return [state]
+
+
+def _falling_star_candidates(state: GameState) -> list[tuple]:
+    ids = [u.instance_id for bf in state.battlefields
+           for u in sorted(bf.units, key=lambda u: u.instance_id)]
+    return [(a, b) for a in ids for b in ids]
+
+
+def _rebuke_effect(state: GameState, action: PlaySpell) -> list[GameState]:
+    """"A unit" — either player's. Bouncing our own is occasionally right,
+    so it isn't restricted to enemies."""
+    _, bf_id = find_unit_at_any_battlefield(state, action.params[0])
+    return [return_unit_to_hand(state, bf_id, action.params[0])]
+
+
+def _grand_strategem_is_legal(state: GameState, action: PlaySpell) -> bool:
+    return action.params == ()
+
+
+def _grand_strategem_effect(state: GameState, action: PlaySpell) -> list[GameState]:
+    """"Friendly units" — ours everywhere, Base included, with no target
+    choice at all."""
+    for player_index, player in enumerate(state.players):
+        if player_index != state.turn_player:
+            continue
+        for unit in sorted(player.base_units, key=lambda u: u.instance_id):
+            state = _grant_might(state, unit.instance_id, 5)
+    for bf in state.battlefields:
+        for unit in sorted(bf.units, key=lambda u: u.instance_id):
+            if unit.controller == state.turn_player:
+                state = _grant_might(state, unit.instance_id, 5)
+    return [state]
+
+
 CHARM = "ogn-043-298"  # 1 Energy, 1 Calm Power: "Move an enemy unit." (Slow speed —
 # can't be played during a showdown; the engine has no showdown/priority-
 # window concept yet, so nothing currently in the action space could even
@@ -423,6 +511,11 @@ SPELL_EFFECTS: dict[str, tuple[
     FLURRY_OF_BLADES: (_flurry_is_legal, _flurry_effect, _flurry_candidates),
     GUST: (_gust_is_legal, _gust_effect, _gust_candidates),
     SMOKE_SCREEN: (_smoke_screen_is_legal, _smoke_screen_effect, _smoke_screen_candidates),
+    HEXTECH_RAY: (_single_battlefield_target_is_legal, _flat_damage_effect, _units_at_battlefields),
+    FALLING_COMET: (_single_battlefield_target_is_legal, _flat_damage_effect, _units_at_battlefields),
+    FALLING_STAR: (_falling_star_is_legal, _falling_star_effect, _falling_star_candidates),
+    REBUKE: (_single_battlefield_target_is_legal, _rebuke_effect, _units_at_battlefields),
+    GRAND_STRATEGEM: (_grand_strategem_is_legal, _grand_strategem_effect, lambda state: [()]),
 }
 
 
@@ -619,6 +712,8 @@ FAITHFUL_MANUFACTOR = "ogn-211-298"  # When you play me, play a 1 Might Recruit 
 VANGUARD_CAPTAIN = "ogn-218-298"  # [Legion] When you play me, play two 1 Might Recruit unit tokens
 # here. (Get the effect if you've played another card this turn.)
 WHITEFLAME_PROTECTOR = "ogn-082-298"  # "When you play me, give a unit +8 Might this turn."
+RIPTIDE_REX = "ogn-092-298"  # "When you play me, deal 6 to an enemy unit at a battlefield."
+HARNESSED_DRAGON = "ogn-234-298"  # "When you play me, kill an enemy unit."
 PIT_ROOKIE = "ogn-136-298"  # "When you play me, buff another friendly unit."
 TRIFARIAN_GLORYSEEKER = "ogn-217-298"  # [Legion] "When you play me, buff me."
 PEAK_GUARDIAN = "ogn-223-298"  # "When you play me, buff me. Then, if I am at a battlefield, buff all other friendly units there."
@@ -634,7 +729,8 @@ RECRUIT_TOKEN_CARD = CardDef(card_id=RECRUIT_TOKEN, card_type="Unit", energy_cos
 # text isn't optional. Contrast with Blitzcrank/Zaunite Bouncer, where
 # trigger_params=() legitimately means "decline."
 MANDATORY_PLAY_TRIGGERS = frozenset({FAITHFUL_MANUFACTOR, VANGUARD_CAPTAIN, WHITEFLAME_PROTECTOR,
-                                     PIT_ROOKIE, TRIFARIAN_GLORYSEEKER, PEAK_GUARDIAN})
+                                     PIT_ROOKIE, TRIFARIAN_GLORYSEEKER, PEAK_GUARDIAN,
+                                     RIPTIDE_REX, HARNESSED_DRAGON})
 
 
 def _charm_deflect_targets(state: GameState, params: tuple) -> list[tuple]:
@@ -822,6 +918,34 @@ def _peak_guardian_effect(state_after_play: GameState, action: PlayUnit) -> list
     return [state]
 
 
+def _enemy_at_battlefield_is_legal(state: GameState, action: PlayUnit, card: CardDef) -> bool:
+    """Shared by both: a mandatory trigger choosing one ENEMY unit at a
+    battlefield, resolved against the board as it will be after this card
+    lands."""
+    if len(action.trigger_params) != 1:
+        return False
+    state_after_play = apply_play_unit(state, dataclasses.replace(
+        action, trigger_params=(), trigger_payment=None), card)
+    located = find_unit_at_any_battlefield(state_after_play, action.trigger_params[0])
+    return located is not None and located[0].controller != state.turn_player
+
+
+def _enemy_at_battlefield_candidates(state: GameState, base_action: PlayUnit, card: CardDef) -> list[tuple]:
+    state_after_play = apply_play_unit(state, base_action, card)
+    return [(u.instance_id,) for bf in state_after_play.battlefields
+            for u in sorted(bf.units, key=lambda u: u.instance_id)
+            if u.controller != state.turn_player]
+
+
+def _riptide_rex_effect(state_after_play: GameState, action: PlayUnit) -> list[GameState]:
+    _, bf_id = find_unit_at_any_battlefield(state_after_play, action.trigger_params[0])
+    return [combat.deal_damage_to_unit(state_after_play, bf_id, action.trigger_params[0], 6)]
+
+
+def _harnessed_dragon_effect(state_after_play: GameState, action: PlayUnit) -> list[GameState]:
+    return [kill_unit(state_after_play, action.trigger_params[0])]
+
+
 ZAUNITE_BOUNCER = "ogn-188-298"  # When you play me, return another unit at a battlefield to its owner's hand.
 
 
@@ -884,6 +1008,9 @@ UNIT_PLAY_TRIGGERS: dict[str, tuple[
     PIT_ROOKIE: (_pit_rookie_is_legal, _pit_rookie_effect, _pit_rookie_candidates),
     TRIFARIAN_GLORYSEEKER: (_self_buff_is_legal, _gloryseeker_effect, _self_buff_candidates),
     PEAK_GUARDIAN: (_self_buff_is_legal, _peak_guardian_effect, _self_buff_candidates),
+    RIPTIDE_REX: (_enemy_at_battlefield_is_legal, _riptide_rex_effect, _enemy_at_battlefield_candidates),
+    HARNESSED_DRAGON: (_enemy_at_battlefield_is_legal, _harnessed_dragon_effect,
+                        _enemy_at_battlefield_candidates),
 }
 
 

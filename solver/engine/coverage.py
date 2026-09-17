@@ -116,6 +116,17 @@ HANDLED: dict[str, str] = {
     "ogn-090-298": "Orb of Regret — Gear, \"Exhaust: give a unit -1 Might\"",
     "ogn-184-298": "The Syren — Gear, \"1 Energy, Exhaust: move a friendly unit at a "
                    "battlefield to your base\"",
+    "ogn-009-298": "Hextech Ray — [Action] deal 3 to a unit at a battlefield",
+    "ogn-085-298": "Falling Comet — [Action] deal 6 to a unit at a battlefield",
+    "ogn-029-298": "Falling Star — two separate 3-damage instances, so both may be "
+                   "aimed at the same unit",
+    "ogn-172-298": "Rebuke — [Action] bounce a unit at a battlefield, either player's",
+    "ogn-233-298": "Grand Strategem — [Action] +5 Might to every friendly unit, Base "
+                   "included, with no target choice",
+    "ogn-092-298": "Riptide Rex — mandatory play trigger, deal 6 to an enemy unit at a "
+                   "battlefield",
+    "ogn-234-298": "Harnessed Dragon — mandatory play trigger, kill an ENEMY unit "
+                   "(narrower than Vengeance, which is unrestricted)",
     "ogn-125-298": "Bilgewater Bully — \"while I'm buffed, I have [Ganking]\" via "
                    "traits.SELF_CONDITIONALS; the grant reaches movement legality "
                    "because effective_keywords now delegates to resolved_traits",
@@ -173,6 +184,25 @@ INERT_FOR_LETHAL: dict[str, str] = {
     # stack: the opponent never acts, so there is never an opposing spell
     # to counter or steal, and countering your own is never better than
     # not casting it.
+    # "When you hold here" / "when I hold". Hold points are seeded into the
+    # starting position and never scored live (the Beginning Phase is
+    # resolved before the question is asked), so no Hold occurs during the
+    # Action Phase being searched and these triggers cannot fire. Same
+    # argument already accepted for Blitzcrank's third clause. Each card
+    # below is ENTIRELY a hold trigger, so nothing else of theirs is left
+    # unmodelled.
+    "ogn-066-298": "Ahri, Alluring — \"when I hold, you score 1 point\"; no Hold "
+                   "occurs during the turn being searched",
+    "ogn-275-298": "Altar to Unity — hold trigger only",
+    "ogn-280-298": "Grove of the God-Willow — hold trigger only",
+    "ogn-281-298": "Hallowed Tomb — hold trigger only",
+    "ogn-283-298": "Navori Fighting Pit — hold trigger only",
+    "ogn-286-298": "Reckoner's Arena — hold trigger only",
+    "ogn-288-298": "Startipped Peak — hold trigger only",
+    "ogn-293-298": "The Grand Plaza — hold trigger only. Note this is an ALTERNATE "
+                   "WIN CONDITION (\"if you have 7+ units here, you win the game\"); "
+                   "it is inert only because the trigger cannot fire, so if Hold ever "
+                   "becomes a live event this entry must be revisited first.",
     "ogn-045-298": "Defy — \"counter a spell\"; no opposing spell can ever exist",
     "ogn-064-298": "Wind Wall — \"counter a spell\"; as above",
     "ogn-080-298": "Mystic Reversal — \"gain control of a spell\"; as above",
