@@ -59,6 +59,29 @@ def test_every_ledger_entry_is_a_real_printing():
         assert card_id in cache, f"{card_id} is in the ledger but not in the card cache"
 
 
+# --- conquer-trigger cluster: no-Main-Deck / never-beneficial-option cards ---
+
+
+def test_kaisa_survivor_conquer_draw_is_inert():
+    """"When I conquer, draw 1." No Main Deck, so nothing arrives."""
+    state = make_state(base_units=frozenset({make_unit("ogn-039-298", 1)}))
+    assert coverage.blocking_cards(state) == []
+
+
+def test_candlelit_sanctum_conquer_trigger_is_inert():
+    """"Look at the top two cards of your Main Deck..." — nothing to look
+    at with no Main Deck."""
+    state = make_state(left_effect="ogn-291-298")
+    assert coverage.blocking_cards(state) == []
+
+
+def test_monastery_of_hirana_conquer_trigger_is_inert():
+    """"You may spend a buff to draw 1" — a real cost for an empty draw,
+    so a solver would never take the option; declining is always legal."""
+    state = make_state(left_effect="ogn-282-298")
+    assert coverage.blocking_cards(state) == []
+
+
 # --- board-conditional inertness ---
 
 

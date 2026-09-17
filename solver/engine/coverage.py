@@ -252,6 +252,20 @@ INERT_FOR_LETHAL: dict[str, str] = {
     "ogn-045-298": "Defy — \"counter a spell\"; no opposing spell can ever exist",
     "ogn-064-298": "Wind Wall — \"counter a spell\"; as above",
     "ogn-080-298": "Mystic Reversal — \"gain control of a spell\"; as above",
+    # [Conquer] triggers whose text needs no new subsystem — see
+    # engine/conquer.py for the ones that do.
+    "ogn-039-298": "Kai'Sa, Survivor — [Accelerate], and \"when I conquer, draw 1\". "
+                   "No Main Deck, so the draw has no content.",
+    "ogn-039a-298": "Kai'Sa, Survivor — same card as ogn-039-298, alternate art",
+    "ogn-291-298": "The Candlelit Sanctum — \"when you conquer here, look at the top "
+                   "two cards of your Main Deck. You may recycle one or both.\" No "
+                   "Main Deck, so there is nothing to look at and nothing to recycle.",
+    "ogn-282-298": "Monastery of Hirana — \"when you conquer here, you may spend a "
+                   "buff to draw 1.\" Spending a buff is a real cost (a genuine "
+                   "-1 Might) for a draw that does nothing with no Main Deck, so a "
+                   "solver would never take the option; it's optional (\"you may\"), "
+                   "so declining it is always legal, and the option can never help "
+                   "find a lethal that declining it wouldn't also find.",
 }
 
 
