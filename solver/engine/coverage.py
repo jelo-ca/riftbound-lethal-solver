@@ -43,6 +43,24 @@ from .state import GameState
 Classification = Literal["handled", "inert", "blocking"]
 
 
+# OUT OF SCOPE BY DECISION (2026-09-17), not merely unimplemented.
+#
+# Zone is "base" or a battlefield id, with no way to express WHOSE base,
+# so a card that sends an ENEMY unit to its own base has nowhere to put
+# it. Extending Zone to name both bases would touch the whole state model
+# and was weighed against what it buys: the only movement toward an
+# enemy base comes from movement spells and abilities the player casts,
+# which is a narrow slice.
+#
+# Cards in this class stay BLOCKING, so a board containing one is refused
+# rather than mis-solved. "Friendly unit to YOUR base" is unaffected and
+# works today (The Syren, Machine Evangel).
+ZONE_MODEL_OUT_OF_SCOPE: dict[str, str] = {
+    "ogn-191-298": "Maddened Marauder — \"move a unit from a battlefield to its "
+                   "base\" is unrepresentable when the unit is the opponent's",
+}
+
+
 # card_id -> how the text is covered. Only cards whose text is FULLY
 # implemented belong here; partial coverage is blocking, since a half-read
 # card is exactly as dangerous as an unread one.

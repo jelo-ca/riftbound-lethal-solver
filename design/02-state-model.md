@@ -145,3 +145,24 @@ classDiagram
 ```
 
 Source: [`diagrams/02-state-model.mmd`](diagrams/02-state-model.mmd)
+
+
+## Zone: whose base? (decided 2026-09-17 — out of scope)
+
+`Zone` is `"base"` or a battlefield id. It cannot express **whose** base,
+so a unit can only ever be sent to "the base", implicitly the acting
+player's.
+
+That is a real limitation, not an oversight, and it is deliberately not
+being fixed. It blocks exactly one class of card: text that sends an
+**enemy** unit to its own base (Maddened Marauder). `Charm` scoped itself
+to battlefield-to-battlefield for the same reason before that card was
+attempted.
+
+Weighed and rejected: extending `Zone` to name both bases would reach the
+whole state model — `canonical_key`, the export schema, every movement
+legality check — to buy a narrow slice, since the only movement toward an
+enemy base comes from movement spells and abilities the player casts.
+
+Cards in this class stay BLOCKING in `engine/coverage.py`, so a board
+containing one is refused rather than quietly mis-solved.
