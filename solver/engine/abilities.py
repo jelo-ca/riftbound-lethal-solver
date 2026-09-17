@@ -613,6 +613,33 @@ def _challenge_candidates(state: GameState) -> list[tuple]:
     return [(a, b) for a in ours for b in theirs]
 
 
+EN_GARDE = "ogn-046-298"  # [Reaction] "+1 Might, then an additional +1 if it is the only unit you control there."
+
+
+def _en_garde_effect(state: GameState, action: PlaySpell) -> list[GameState]:
+    """"The only unit you control THERE" — counted per zone, and counted
+    BEFORE the buff lands (the buff changes no unit's location). A unit at
+    Base counts the Base crowd; nothing about this is battlefield-only."""
+    target_id = action.params[0]
+    unit, zone = find_unit_anywhere(state, target_id)
+    if zone == "base":
+        companions = state.players[unit.controller].base_units
+    else:
+        companions = next(b for b in state.battlefields if b.battlefield_id == zone).units
+    alone = sum(1 for u in companions if u.controller == unit.controller) == 1
+    return [_grant_might(state, target_id, 2 if alone else 1)]
+
+
+CARNIVOROUS_SNAPVINE = "ogn-149-298"  # "When you play me, choose an enemy unit at a battlefield. We deal damage equal to our Mights to each other."
+
+
+def _snapvine_effect(state_after_play: GameState, action: PlayUnit) -> list[GameState]:
+    """Same simultaneous exchange as Challenge, with the Snapvine itself as
+    one side — so it can trade itself for a bigger body."""
+    me = _played_unit(state_after_play, action)
+    return [_mutual_damage(state_after_play, me.instance_id, action.trigger_params[0])]
+
+
 CHARM = "ogn-043-298"  # 1 Energy, 1 Calm Power: "Move an enemy unit." (Slow speed —
 # can't be played during a showdown; the engine has no showdown/priority-
 # window concept yet, so nothing currently in the action space could even
@@ -732,6 +759,7 @@ SPELL_EFFECTS: dict[str, tuple[
     LAST_STAND: (_friendly_unit_is_legal, _last_stand_effect, _friendly_unit_candidates),
     UNCHECKED_POWER: (_unchecked_power_is_legal, _unchecked_power_effect, lambda state: [()]),
     CHALLENGE: (_challenge_is_legal, _challenge_effect, _challenge_candidates),
+    EN_GARDE: (_friendly_unit_is_legal, _en_garde_effect, _friendly_unit_candidates),
 }
 
 
@@ -951,7 +979,7 @@ RECRUIT_TOKEN_CARD = CardDef(card_id=RECRUIT_TOKEN, card_type="Unit", energy_cos
 MANDATORY_PLAY_TRIGGERS = frozenset({FAITHFUL_MANUFACTOR, VANGUARD_CAPTAIN, WHITEFLAME_PROTECTOR,
                                      PIT_ROOKIE, TRIFARIAN_GLORYSEEKER, PEAK_GUARDIAN,
                                      RIPTIDE_REX, HARNESSED_DRAGON, DANGEROUS_DUO,
-                                     FIRST_MATE, KINKOU_MONK})
+                                     FIRST_MATE, KINKOU_MONK, CARNIVOROUS_SNAPVINE})
 
 
 def _charm_deflect_targets(state: GameState, params: tuple) -> list[tuple]:
@@ -1340,6 +1368,8 @@ UNIT_PLAY_TRIGGERS: dict[str, tuple[
     DANGEROUS_DUO: (_whiteflame_is_legal, _dangerous_duo_effect, _whiteflame_candidates),
     FIRST_MATE: (_first_mate_is_legal, _first_mate_effect, _other_unit_candidates),
     KINKOU_MONK: (_kinkou_monk_is_legal, _kinkou_monk_effect, _kinkou_monk_candidates),
+    CARNIVOROUS_SNAPVINE: (_enemy_at_battlefield_is_legal, _snapvine_effect,
+                            _enemy_at_battlefield_candidates),
 }
 
 

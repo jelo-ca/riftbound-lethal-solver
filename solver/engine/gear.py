@@ -53,6 +53,7 @@ from .state import Domain, GameState, replace_player
 
 IRON_BALLISTA = "ogn-017-298"  # "This enters exhausted. Exhaust: Deal 2 to a unit at a battlefield."
 ORB_OF_REGRET = "ogn-090-298"  # "Exhaust: Give a unit -1 Might this turn, to a minimum of 1 Might."
+ARENA_BAR = "ogn-124-298"  # "Exhaust: Buff an exhausted friendly unit."
 THE_SYREN = "ogn-184-298"  # "1 Energy, Exhaust: Move a friendly unit at a battlefield to your base."
 
 # card_id -> (energy, power, power_domain) charged by the ability ON TOP of
@@ -194,6 +195,32 @@ def _syren_candidates(state: GameState) -> list[tuple]:
 # in later is a routing change rather than a new shape. Effects are
 # deterministic — no Gear here forces a combat or an opponent choice — so
 # a single GameState is returned rather than a list.
+def _arena_bar_is_legal(state: GameState, action: ActivateAbility) -> bool:
+    """"Buff an EXHAUSTED friendly unit" — the exhausted requirement is the
+    whole restriction, and it points the card at bodies that have already
+    acted this turn."""
+    if not _source_is_usable(state, action) or len(action.params) != 1:
+        return False
+    from .actions import find_unit_anywhere
+    located = find_unit_anywhere(state, action.params[0])
+    return (located is not None and located[0].controller == state.turn_player
+            and located[0].exhausted)
+
+
+def _arena_bar_effect(state: GameState, action: ActivateAbility) -> GameState:
+    from .abilities import apply_buff
+    return apply_buff(_exhaust_source(state, action), action.params[0])
+
+
+def _arena_bar_candidates(state: GameState) -> list[tuple]:
+    out = [(u.instance_id,) for u in sorted(state.players[state.turn_player].base_units,
+                                             key=lambda u: u.instance_id) if u.exhausted]
+    out += [(u.instance_id,) for bf in state.battlefields
+            for u in sorted(bf.units, key=lambda u: u.instance_id)
+            if u.controller == state.turn_player and u.exhausted]
+    return out
+
+
 GEAR_ABILITIES: dict[str, tuple[
     Callable[[GameState, ActivateAbility], bool],
     Callable[[GameState, ActivateAbility], GameState],
@@ -202,6 +229,7 @@ GEAR_ABILITIES: dict[str, tuple[
     IRON_BALLISTA: (_ballista_is_legal, _ballista_effect, _ballista_candidates),
     ORB_OF_REGRET: (_orb_is_legal, _orb_effect, _orb_candidates),
     THE_SYREN: (_syren_is_legal, _syren_effect, _syren_candidates),
+    ARENA_BAR: (_arena_bar_is_legal, _arena_bar_effect, _arena_bar_candidates),
 }
 
 

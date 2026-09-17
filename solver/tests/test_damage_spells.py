@@ -296,3 +296,74 @@ def test_challenge_requires_one_of_each_side():
                           power_runes=(card.power_domain,) * card.power_cost)
     both_ours = PlaySpell(card_id=CHALLENGE, params=(1, 1), rune_payment=payment)
     assert not abilities.is_legal_play_spell(st, both_ours, card)
+
+
+# --- board-conditional buff, gear buff, and the Snapvine trade ---
+
+from solver.engine.abilities import CARNIVOROUS_SNAPVINE, EN_GARDE  # noqa: E402
+
+
+def test_en_garde_pays_double_when_the_unit_stands_alone():
+    solo = unit(1, might=3)
+    st = state_with(left=frozenset({solo}), hand=(EN_GARDE,), runes=("Fury",))
+    out = cast(EN_GARDE, (1,), st)
+    assert next(u for u in out.battlefields[0].units if u.instance_id == 1).might == 5  # +2
+
+
+def test_en_garde_pays_single_with_a_friend_present():
+    """"The only unit you control there" counts OUR units in that zone —
+    so a companion halves the payoff."""
+    st = state_with(left=frozenset({unit(1, might=3), unit(2, might=3)}),
+                     hand=(EN_GARDE,), runes=("Fury",))
+    out = cast(EN_GARDE, (1,), st)
+    assert next(u for u in out.battlefields[0].units if u.instance_id == 1).might == 4  # +1
+
+
+def test_en_garde_ignores_enemy_units_when_counting_alone():
+    st = state_with(left=frozenset({unit(1, might=3), unit(2, controller=1, might=3)}),
+                     hand=(EN_GARDE,), runes=("Fury",))
+    out = cast(EN_GARDE, (1,), st)
+    assert next(u for u in out.battlefields[0].units if u.instance_id == 1).might == 5
+
+
+def test_snapvine_loses_the_exchange_to_a_bigger_body():
+    """The Snapvine is one side of its own exchange, so the trade is
+    decided by Mights. At 6 against a 7, it deals 6 (not lethal) and takes
+    7 (lethal) — it dies and the enemy walks away damaged."""
+    from solver.engine.abilities import resolve_unit_play_trigger_outcomes
+    big = unit(2, controller=1, might=7)
+    st = state_with(left=frozenset({unit(1), big}), hand=(CARNIVOROUS_SNAPVINE,))
+    card, action = play_unit(CARNIVOROUS_SNAPVINE, "left", (2,), st)
+    out = resolve_unit_play_trigger_outcomes(st, action, card)[0]
+    survivor = next(u for u in out.battlefields[0].units if u.instance_id == 2)
+    assert survivor.damage == 6
+    assert not any(u.card_id == CARNIVOROUS_SNAPVINE for u in out.battlefields[0].units)
+
+
+def test_snapvine_kills_anything_its_own_size_or_smaller():
+    from solver.engine.abilities import resolve_unit_play_trigger_outcomes
+    same_size = unit(2, controller=1, might=6)
+    st = state_with(left=frozenset({unit(1), same_size}), hand=(CARNIVOROUS_SNAPVINE,))
+    card, action = play_unit(CARNIVOROUS_SNAPVINE, "left", (2,), st)
+    out = resolve_unit_play_trigger_outcomes(st, action, card)[0]
+    assert 2 not in ids_at(out)  # both die — simultaneous, so it still deals its 6
+
+
+def test_arena_bar_only_buffs_an_exhausted_unit():
+    """The exhausted requirement is the card's whole restriction."""
+    from solver.engine import gear
+    from solver.engine.actions import ActivateAbility
+    from solver.engine.state import GearInstance
+
+    ready = unit(1, might=3)
+    tired = UnitInstance(card_id="u", instance_id=2, controller=0, might=3,
+                          keywords=frozenset(), exhausted=True, damage=0, is_token=False)
+    st = state_with(left=frozenset({ready, tired}))
+    st = st.__class__(**{**st.__dict__, "players": (
+        st.players[0].__class__(**{**st.players[0].__dict__,
+                                   "gear": frozenset({GearInstance(card_id="ogn-124-298", instance_id=9)})}),
+        st.players[1])})
+    assert not gear.is_legal_gear_ability(
+        st, ActivateAbility(source_id=9, ability_id="ogn-124-298", params=(1,), rune_payment=None))
+    assert gear.is_legal_gear_ability(
+        st, ActivateAbility(source_id=9, ability_id="ogn-124-298", params=(2,), rune_payment=None))

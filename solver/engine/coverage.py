@@ -160,6 +160,11 @@ HANDLED: dict[str, str] = {
                    "unit at a battlefield; the self-exhaust is a real cost",
     "ogn-128-298": "Challenge — SIMULTANEOUS mutual damage; both Mights are read "
                    "before either lands, so a dying unit still deals its damage",
+    "ogn-046-298": "En Garde — [Reaction] +1 Might, doubled when the target is the "
+                   "only unit WE control in its zone (enemies there don't count)",
+    "ogn-149-298": "Carnivorous Snapvine — play trigger, simultaneous mutual damage "
+                   "with itself as one side, so it can trade itself for a bigger body",
+    "ogn-124-298": "Arena Bar — Gear, \"Exhaust: buff an EXHAUSTED friendly unit\"",
     "ogn-125-298": "Bilgewater Bully — \"while I'm buffed, I have [Ganking]\" via "
                    "traits.SELF_CONDITIONALS; the grant reaches movement legality "
                    "because effective_keywords now delegates to resolved_traits",
