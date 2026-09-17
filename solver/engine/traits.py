@@ -78,6 +78,38 @@ class AuraDef:
     grants: frozenset[str]
 
 
+@dataclasses.dataclass(frozen=True)
+class SelfConditional:
+    """Text of the form "while <condition>, I have <something>" — a card
+    granting itself traits or Might only while some fact about it holds.
+
+    THE CONDITION MAY NOT READ MIGHT. The module's non-circularity
+    invariant is that grants are computed from board state and never from
+    Might, because Might is computed FROM the resolved grants. A condition
+    like "while I'm buffed" is fine — `buffed` is plain state. Fiora,
+    Victorious's "while I'm [Mighty]" (5+ Might) is exactly the case that
+    isn't, since Shield could push her over her own threshold, and she
+    stays unmodelled for that reason rather than by oversight.
+    """
+    condition: "object"  # (state, unit, zone) -> bool
+    grants: frozenset[str] = frozenset()
+    might_delta: int = 0
+
+
+WIZENED_ELDER = "ogn-065-298"  # "While I'm buffed, I have an additional +1 Might."
+BILGEWATER_BULLY = "ogn-125-298"  # "While I'm buffed, I have [Ganking]."
+
+
+def _is_buffed(state: GameState, unit: UnitInstance, zone: Zone) -> bool:
+    return unit.buffed
+
+
+SELF_CONDITIONALS: dict[str, SelfConditional] = {
+    WIZENED_ELDER: SelfConditional(condition=_is_buffed, might_delta=1),
+    BILGEWATER_BULLY: SelfConditional(condition=_is_buffed, grants=frozenset({"Ganking"})),
+}
+
+
 AURA_SOURCES: dict[str, AuraDef] = {
     TARIC_PROTECTOR: AuraDef(grants=frozenset({"Shield"})),
     # Identical shape to Taric, different trait — the whole point of
@@ -110,6 +142,11 @@ def resolved_traits(state: GameState, unit: UnitInstance, zone: Zone) -> frozens
     battlefield granting [Shield] went invisible to damage math before
     this module existed."""
     traits = set(unit.keywords)
+
+    own = SELF_CONDITIONALS.get(unit.card_id)
+    if own is not None and own.condition(state, unit, zone):
+        traits |= own.grants
+
     if zone == "base":
         return frozenset(traits)
 
@@ -172,6 +209,10 @@ def effective_might(state: GameState, unit: UnitInstance, zone: Zone,
     # or defending, so it lands here rather than in TRAIT_REGISTRY, whose
     # entries are all designation-gated or zero.
     bonus = 1 if unit.buffed else 0
+
+    own = SELF_CONDITIONALS.get(unit.card_id)
+    if own is not None and own.condition(state, unit, zone):
+        bonus += own.might_delta
 
     effect_id = None if zone == "base" else (
         bf.effect_id if (bf := _battlefield(state, zone)) else None

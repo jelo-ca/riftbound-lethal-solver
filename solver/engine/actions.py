@@ -27,7 +27,7 @@ import dataclasses
 from dataclasses import dataclass
 from typing import Optional
 
-from . import battlefields, combat, deaths
+from . import battlefields, combat, deaths, traits
 from .cards import CardDef
 from .combat import Assignment
 from .state import (
@@ -637,11 +637,21 @@ def battlefield_effect_id(state: GameState, zone: Zone) -> Optional[str]:
 
 
 def effective_keywords(state: GameState, unit: UnitInstance, zone: Zone) -> frozenset[str]:
-    """A unit's own keywords plus any its current battlefield grants it
-    (e.g. Windswept Hillock: "Units here have [Ganking]") — always ask
-    for these rather than reading `unit.keywords` directly wherever the
-    unit's location could matter."""
-    return unit.keywords | battlefields.granted_keywords(battlefield_effect_id(state, zone))
+    """Every trait the unit actually has right now — always ask for these
+    rather than reading `unit.keywords`, wherever the unit's location or
+    board context could matter.
+
+    Delegates to traits.resolved_traits rather than reimplementing it.
+    This function used to union `unit.keywords` with the battlefield's
+    grants and nothing else, which quietly made it a SECOND, weaker trait
+    resolver: it knew about Windswept Hillock but not about auras or
+    "while I'm buffed" self-grants. So a Bilgewater Bully that had earned
+    [Ganking] could not actually use it to move — the Might half of the
+    same grant worked, because that path goes through the real resolver.
+    Exactly the two-sources-of-truth defect that made a battlefield-granted
+    [Shield] invisible to damage maths before traits.py existed.
+    """
+    return traits.resolved_traits(state, unit, zone)
 
 
 def is_legal_destination(state: GameState, unit: UnitInstance, from_zone: Zone, to_zone: Zone) -> bool:

@@ -105,6 +105,11 @@ HANDLED: dict[str, str] = {
                    "suppresses the whole effect rather than shrinking it",
     "ogn-223-298": "Peak Guardian — self buff, then all other friendly units at the "
                    "same battlefield, conditional on having landed at one",
+    "ogn-065-298": "Wizened Elder — \"while I'm buffed, +1 Might\" via "
+                   "traits.SELF_CONDITIONALS",
+    "ogn-125-298": "Bilgewater Bully — \"while I'm buffed, I have [Ganking]\" via "
+                   "traits.SELF_CONDITIONALS; the grant reaches movement legality "
+                   "because effective_keywords now delegates to resolved_traits",
 }
 
 

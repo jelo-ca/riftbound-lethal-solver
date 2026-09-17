@@ -202,3 +202,50 @@ def test_peak_guardian_played_to_base_buffs_only_itself():
     result = resolve_unit_play_trigger_outcomes(state, action, card)[0]
     assert unit_at(result, 5).buffed is False
     assert any(u.buffed for u in result.players[0].base_units)
+
+
+# --- "while I'm buffed, I have X" ---
+
+from solver.engine.traits import BILGEWATER_BULLY, WIZENED_ELDER, resolved_traits  # noqa: E402
+
+
+def buffed_unit(card_id, instance_id=1, might=4, buffed=False):
+    return UnitInstance(card_id=card_id, instance_id=instance_id, controller=0, might=might,
+                         keywords=frozenset(), exhausted=False, damage=0, is_token=False,
+                         buffed=buffed)
+
+
+def test_wizened_elder_gains_an_extra_might_only_while_buffed():
+    """+1 from the buff itself, +1 more from its own text, so a buff is
+    worth two Might on this card specifically."""
+    plain = make_state(frozenset({buffed_unit(WIZENED_ELDER, might=4)}))
+    assert combat.effective_might(plain, unit_at(plain), "left") == 4
+
+    buffed = apply_buff(plain, 1)
+    assert combat.effective_might(buffed, unit_at(buffed), "left") == 6
+
+
+def test_bilgewater_bully_gains_ganking_only_while_buffed():
+    plain = make_state(frozenset({buffed_unit(BILGEWATER_BULLY, might=6)}))
+    assert "Ganking" not in resolved_traits(plain, unit_at(plain), "left")
+
+    buffed = apply_buff(plain, 1)
+    assert "Ganking" in resolved_traits(buffed, unit_at(buffed), "left")
+
+
+def test_a_conditional_grant_unlocks_a_move_that_was_illegal():
+    """The point of the conditional being real rather than cosmetic:
+    battlefield-to-battlefield movement needs [Ganking] (rule 810), so
+    buffing the Bully changes what it may legally do."""
+    from solver.engine.actions import is_legal_destination
+
+    plain = make_state(frozenset({buffed_unit(BILGEWATER_BULLY, might=6)}))
+    assert not is_legal_destination(plain, unit_at(plain), "left", "right")
+
+    buffed = apply_buff(plain, 1)
+    assert is_legal_destination(buffed, unit_at(buffed), "left", "right")
+
+
+def test_an_unbuffed_card_without_a_conditional_is_unaffected():
+    plain = make_state(frozenset({buffed_unit("u", might=4)}))
+    assert combat.effective_might(plain, unit_at(plain), "left") == 4
