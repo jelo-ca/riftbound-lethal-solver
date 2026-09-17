@@ -111,6 +111,11 @@ HANDLED: dict[str, str] = {
                    "battlefields\" via combat.deal_damage_to_all_at",
     "ogn-169-298": "Gust — [Reaction] bounce of a unit at 3 EFFECTIVE Might or less",
     "ogn-093-298": "Smoke Screen — [Reaction] -4 Might with the printed floor of 1",
+    "ogn-017-298": "Iron Ballista — Gear, \"this enters exhausted; Exhaust: deal 2 "
+                   "to a unit at a battlefield\" via engine/gear.py",
+    "ogn-090-298": "Orb of Regret — Gear, \"Exhaust: give a unit -1 Might\"",
+    "ogn-184-298": "The Syren — Gear, \"1 Energy, Exhaust: move a friendly unit at a "
+                   "battlefield to your base\"",
     "ogn-125-298": "Bilgewater Bully — \"while I'm buffed, I have [Ganking]\" via "
                    "traits.SELF_CONDITIONALS; the grant reaches movement legality "
                    "because effective_keywords now delegates to resolved_traits",

@@ -39,12 +39,13 @@ from __future__ import annotations
 import dataclasses
 from typing import Optional
 
-from .engine import abilities, combat, legends, scoring
+from .engine import abilities, combat, gear, legends, scoring
 from .engine.actions import (
     Action,
     ActivateAbility,
     EnterShowdown,
     MoveUnit,
+    PlayGear,
     PlaySpell,
     PlayUnit,
     ResolveCombat,
@@ -52,8 +53,10 @@ from .engine.actions import (
     apply_move_unit,
     apply_play_unit,
     consume_runes,
+    apply_play_gear,
     find_unit,
     generate_rune_payments,
+    is_legal_play_gear,
     legal_board_actions,
 )
 from .engine.cards import CardDef
@@ -153,6 +156,37 @@ def legal_actions(state: GameState, cards: dict[str, CardDef]) -> list[Action]:
                                                    rainbow_cost=tax):
                 action = PlaySpell(card_id=card_id, params=params, rune_payment=payment)
                 if abilities.is_legal_play_spell(state, action, card):
+                    result.append(action)
+
+    # PlayGear: Gear has no target and no placement choice, so the only
+    # variable is how its cost is paid (engine/gear.py).
+    for card_id in sorted(set(player.hand)):
+        card = cards.get(card_id)
+        if card is None or card.card_type != "Gear":
+            continue
+        for payment in generate_rune_payments(player.runes, card.energy_cost,
+                                               card.power_cost, card.power_domain):
+            action = PlayGear(card_id=card_id, rune_payment=payment)
+            if is_legal_play_gear(state, action, card):
+                result.append(action)
+
+    # Gear abilities: same ActivateAbility action as a unit's, sourced from
+    # the player's gear rather than a body on the board. Costs come from
+    # gear.ability_cost, since several charge runes on top of the Exhaust.
+    for gear_piece in sorted(player.gear, key=lambda g: g.instance_id):
+        entry = gear.GEAR_ABILITIES.get(gear_piece.card_id)
+        if entry is None:
+            continue
+        _, _, generate_candidates = entry
+        energy_cost, power_cost, power_domain = gear.ability_cost(gear_piece.card_id)
+        payments = (generate_rune_payments(player.runes, energy_cost, power_cost, power_domain)
+                    if (energy_cost or power_cost) else [None])
+        for payment in payments:
+            for params in generate_candidates(state):
+                action = ActivateAbility(source_id=gear_piece.instance_id,
+                                          ability_id=gear_piece.card_id,
+                                          params=params, rune_payment=payment)
+                if gear.is_legal_gear_ability(state, action):
                     result.append(action)
 
     # ActivateAbility candidates: one registry per unit currently on the
@@ -277,7 +311,14 @@ def apply(state: GameState, action: Action, cards: dict[str, CardDef]) -> GameSt
             "abilities.resolve_spell_outcomes()"
         )
 
+    if isinstance(action, PlayGear):
+        # Gear has no target and enters nobody's battlefield, so playing it
+        # can't change control or trigger combat — no scoring to resolve.
+        return apply_play_gear(state, action, cards[action.card_id])
+
     if isinstance(action, ActivateAbility):
+        if gear.is_legal_gear_ability(state, action):
+            return gear.apply_gear_ability(state, action)
         if legends.is_legend_ability(action.ability_id):
             outcomes = legends.resolve_legend_ability_outcomes(state, action)
             if len(outcomes) != 1:

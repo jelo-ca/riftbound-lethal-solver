@@ -238,3 +238,63 @@ def test_gear_survives_the_death_of_a_unit():
 def test_an_unregistered_gear_ability_is_refused():
     state = make_state(gear_pieces=frozenset({ready_gear("ogn-021-298")}))
     assert not gear.is_legal_gear_ability(state, _activate("ogn-021-298", (1,)))
+
+
+# --- reachable through real action generation ---
+
+def test_gear_can_actually_be_played_from_hand():
+    """The subsystem shipped unwired: complete and tested, but no line
+    could ever play a Gear because generation never emitted PlayGear.
+    This is the end-to-end proof that it is reachable now."""
+    from solver.engine.actions import PlayGear
+    from solver.engine.card_pool import card_def
+    from solver.search import legal_actions
+
+    ballista = "ogn-017-298"
+    card = card_def(ballista)
+    state = GameState(
+        turn_player=0,
+        players=(
+            PlayerState(base_units=frozenset(), hand=(ballista,),
+                        runes=RunePool(available=("Fury",) * 6), score=0),
+            PlayerState(base_units=frozenset(), hand=(), runes=RunePool(available=()), score=0),
+        ),
+        battlefields=(
+            BattlefieldState("left", None, frozenset(), None),
+            BattlefieldState("right", None, frozenset(), None),
+        ),
+        scored_this_turn=frozenset(),
+        cards_played_this_turn=0,
+    )
+    plays = [a for a in legal_actions(state, {ballista: card}) if isinstance(a, PlayGear)]
+    assert plays, "PlayGear is not being generated"
+
+
+def test_a_gear_ability_is_generated_once_the_gear_is_on_the_board():
+    """Iron Ballista enters exhausted, so its own ability is unusable the
+    turn it lands — the Orb is the one that can act immediately."""
+    from solver.engine.actions import ActivateAbility
+    from solver.engine.card_pool import card_def
+    from solver.engine.state import GearInstance
+    from solver.search import legal_actions
+
+    orb = "ogn-090-298"
+    target = UnitInstance(card_id="u", instance_id=1, controller=1, might=4,
+                           keywords=frozenset(), exhausted=False, damage=0, is_token=False)
+    state = GameState(
+        turn_player=0,
+        players=(
+            PlayerState(base_units=frozenset(), hand=(), runes=RunePool(available=()), score=0,
+                        gear=frozenset({GearInstance(card_id=orb, instance_id=9)})),
+            PlayerState(base_units=frozenset(), hand=(), runes=RunePool(available=()), score=0),
+        ),
+        battlefields=(
+            BattlefieldState("left", 1, frozenset({target}), None),
+            BattlefieldState("right", None, frozenset(), None),
+        ),
+        scored_this_turn=frozenset(),
+        cards_played_this_turn=0,
+    )
+    acts = [a for a in legal_actions(state, {orb: card_def(orb)})
+            if isinstance(a, ActivateAbility) and a.ability_id == orb]
+    assert acts, "gear abilities are not being generated"
