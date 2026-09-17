@@ -132,3 +132,113 @@ def test_harnessed_dragon_cannot_kill_a_friendly_unit():
     action = PlayUnit(card_id=HARNESSED_DRAGON, target_zone="left", rune_payment=payment,
                        trigger_params=(1,))
     assert not abilities.is_legal_unit_play_trigger(st, action, card)
+
+
+# --- trait grants, readying, and multi-target choices ---
+
+from solver.engine.abilities import (  # noqa: E402
+    BACK_TO_BACK,
+    CLEAVE,
+    DANGEROUS_DUO,
+    FIRST_MATE,
+    KINKOU_MONK,
+    MADDENED_MARAUDER,
+    SINGULARITY,
+    is_legal_unit_play_trigger,
+    resolve_unit_play_trigger_outcomes,
+)
+from solver.engine.traits import resolved_traits  # noqa: E402
+
+
+def play_unit(card_id, zone, trigger_params, st):
+    card = card_def(card_id)
+    payment = RunePayment(energy_runes=("Fury",) * card.energy_cost,
+                          power_runes=(card.power_domain,) * card.power_cost)
+    action = PlayUnit(card_id=card_id, target_zone=zone, rune_payment=payment,
+                       trigger_params=trigger_params)
+    return card, action
+
+
+def test_cleave_grants_assault_which_only_counts_while_attacking():
+    """[Assault 3] is a trait, not flat Might — it must be worth nothing on
+    defence, which is why it can't just be added to `might`."""
+    from solver.engine import combat
+    st = state_with(left=frozenset({unit(1, might=3)}), hand=(CLEAVE,), runes=("Fury",))
+    out = cast(CLEAVE, (1,), st)
+    target = next(u for u in out.battlefields[0].units if u.instance_id == 1)
+    assert "Assault 3" in resolved_traits(out, target, "left")
+    assert combat.effective_might(out, target, "left", "attacker") == 6
+    assert combat.effective_might(out, target, "left", "defender") == 3
+
+
+def test_singularity_targets_must_be_distinct():
+    """"Each of up to two units" — unlike Falling Star, which is two
+    separate instances and may double up."""
+    st = state_with(left=frozenset({unit(1, might=6)}), hand=(SINGULARITY,))
+    card = card_def(SINGULARITY)
+    payment = RunePayment(energy_runes=("Fury",) * card.energy_cost,
+                          power_runes=(card.power_domain,) * card.power_cost)
+    doubled = PlaySpell(card_id=SINGULARITY, params=(1, 1), rune_payment=payment)
+    assert not abilities.is_legal_play_spell(st, doubled, card)
+
+
+def test_singularity_may_hit_nobody():
+    st = state_with(left=frozenset({unit(1, might=6)}), hand=(SINGULARITY,))
+    assert ids_at(cast(SINGULARITY, (), st)) == {1}
+
+
+def test_back_to_back_needs_two_distinct_friendly_units():
+    ours, theirs = unit(1), unit(2, controller=1)
+    st = state_with(left=frozenset({ours, theirs}), hand=(BACK_TO_BACK,))
+    card = card_def(BACK_TO_BACK)
+    payment = RunePayment(energy_runes=("Fury",) * card.energy_cost, power_runes=())
+    assert not abilities.is_legal_play_spell(
+        st, PlaySpell(card_id=BACK_TO_BACK, params=(1, 2), rune_payment=payment), card)  # enemy
+    assert not abilities.is_legal_play_spell(
+        st, PlaySpell(card_id=BACK_TO_BACK, params=(1, 1), rune_payment=payment), card)  # same twice
+
+
+def test_first_mate_readies_another_unit():
+    exhausted = UnitInstance(card_id="u", instance_id=1, controller=0, might=3,
+                              keywords=frozenset(), exhausted=True, damage=0, is_token=False)
+    st = state_with(left=frozenset({exhausted}), hand=(FIRST_MATE,))
+    card, action = play_unit(FIRST_MATE, "left", (1,), st)
+    out = resolve_unit_play_trigger_outcomes(st, action, card)[0]
+    assert next(u for u in out.battlefields[0].units if u.instance_id == 1).exhausted is False
+
+
+def test_first_mate_cannot_ready_itself():
+    """It enters exhausted, so 'another unit' is what stops it undoing
+    that — the loophole worth closing explicitly."""
+    from solver.engine.actions import next_instance_id
+    st = state_with(left=frozenset({unit(1)}), hand=(FIRST_MATE,))
+    card, _ = play_unit(FIRST_MATE, "left", (), st)
+    own = next_instance_id(st)
+    _, self_target = play_unit(FIRST_MATE, "left", (own,), st)
+    assert not is_legal_unit_play_trigger(st, self_target, card)
+
+
+def test_kinkou_monk_may_buff_zero_one_or_two():
+    a, b = unit(1), unit(2)
+    st = state_with(left=frozenset({a, b}), hand=(KINKOU_MONK,))
+    card, action = play_unit(KINKOU_MONK, "left", (1, 2), st)
+    out = resolve_unit_play_trigger_outcomes(st, action, card)[0]
+    assert all(u.buffed for u in out.battlefields[0].units if u.instance_id in (1, 2))
+
+    _, none_action = play_unit(KINKOU_MONK, "left", (), st)
+    out_none = resolve_unit_play_trigger_outcomes(st, none_action, card)[0]
+    assert not any(u.buffed for u in out_none.battlefields[0].units)
+
+
+def test_maddened_marauder_stays_unregistered_because_of_the_zone_model():
+    """A real structural blocker, pinned so it can't be quietly forgotten.
+
+    "Move a unit from a battlefield to its base" works for our own units
+    and is unrepresentable for an enemy's: Zone is "base" or a battlefield
+    id, with no way to express WHOSE base. Charm's docstring flagged the
+    same gap earlier. The card is implemented apart from the destination
+    and stays out of the registry until the zone model can name both."""
+    from solver.engine.abilities import UNIT_PLAY_TRIGGERS
+    from solver.engine import coverage
+    assert MADDENED_MARAUDER not in UNIT_PLAY_TRIGGERS
+    assert coverage.classify(MADDENED_MARAUDER) == "blocking"

@@ -127,6 +127,14 @@ HANDLED: dict[str, str] = {
                    "battlefield",
     "ogn-234-298": "Harnessed Dragon — mandatory play trigger, kill an ENEMY unit "
                    "(narrower than Vengeance, which is unrestricted)",
+    "ogn-004-298": "Cleave — [Action] grant [Assault 3] via abilities.grant_trait; a "
+                   "trait rather than flat Might, so it is worth nothing on defence",
+    "ogn-105-298": "Singularity — deal 6 to each of up to two DISTINCT units",
+    "ogn-206-298": "Back to Back — [Reaction] +2 Might to two distinct friendly units",
+    "ogn-016-298": "Dangerous Duo — [Legion]-gated play trigger, +2 Might to a unit",
+    "ogn-132-298": "First Mate — play trigger, ready another unit (not itself, which "
+                   "is what stops it undoing its own entering exhausted)",
+    "ogn-141-298": "Kinkou Monk — play trigger, buff up to two other friendly units",
     "ogn-125-298": "Bilgewater Bully — \"while I'm buffed, I have [Ganking]\" via "
                    "traits.SELF_CONDITIONALS; the grant reaches movement legality "
                    "because effective_keywords now delegates to resolved_traits",

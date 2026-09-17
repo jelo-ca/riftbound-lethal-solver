@@ -194,6 +194,36 @@ def spend_buff(state: GameState, instance_id: int) -> GameState:
     return _replace_unit(state, unit, zone, dataclasses.replace(unit, buffed=False))
 
 
+def grant_trait(state: GameState, instance_id: int, trait: str) -> GameState:
+    """Add a trait to a unit for the rest of the turn.
+
+    Written straight into `unit.keywords` rather than a separate "granted"
+    field. traits.resolved_traits reads keywords as the printed-plus-
+    granted baseline precisely so this works, and a puzzle is one turn, so
+    "this turn" needs no expiry — the same reasoning that folds a
+    "+N Might this turn" spell straight into `might`.
+    """
+    located = find_unit_anywhere(state, instance_id)
+    assert located is not None
+    unit, zone = located
+    if trait in unit.keywords:
+        return state
+    updated = dataclasses.replace(unit, keywords=unit.keywords | {trait})
+    return _replace_unit(state, unit, zone, updated)
+
+
+def ready_unit(state: GameState, instance_id: int) -> GameState:
+    """Un-exhaust a unit, which is what lets it move or attack again this
+    turn. A no-op on a unit that is already ready, so the search doesn't
+    treat it as progress."""
+    located = find_unit_anywhere(state, instance_id)
+    assert located is not None
+    unit, zone = located
+    if not unit.exhausted:
+        return state
+    return _replace_unit(state, unit, zone, dataclasses.replace(unit, exhausted=False))
+
+
 def _grant_might(state: GameState, instance_id: int, amount: int) -> GameState:
     """Adds `amount` to a unit's `might` wherever it stands — unconditional
     Might raises are just Might (see engine/traits.py's module docstring).
@@ -403,6 +433,83 @@ def _grand_strategem_effect(state: GameState, action: PlaySpell) -> list[GameSta
     return [state]
 
 
+
+CLEAVE = "ogn-004-298"  # [Action] "Give a unit [Assault 3] this turn."
+SINGULARITY = "ogn-105-298"  # "Deal 6 to each of up to two units."
+BACK_TO_BACK = "ogn-206-298"  # [Reaction] "Give two friendly units each +2 Might this turn."
+
+
+def _cleave_effect(state: GameState, action: PlaySpell) -> list[GameState]:
+    """[Assault 3] is a trait, not flat Might: it only counts while the
+    unit is attacking, which is why it goes through grant_trait rather
+    than being added to Might directly."""
+    return [grant_trait(state, action.params[0], "Assault 3")]
+
+
+def _any_unit_is_legal(state: GameState, action: PlaySpell) -> bool:
+    return len(action.params) == 1 and find_unit_anywhere(state, action.params[0]) is not None
+
+
+def _any_unit_candidates(state: GameState) -> list[tuple]:
+    out = []
+    for player in state.players:
+        out += [(u.instance_id,) for u in sorted(player.base_units, key=lambda u: u.instance_id)]
+    for bf in state.battlefields:
+        out += [(u.instance_id,) for u in sorted(bf.units, key=lambda u: u.instance_id)]
+    return out
+
+
+def _singularity_is_legal(state: GameState, action: PlaySpell) -> bool:
+    """"Up to two units" — zero, one or two, and they must be distinct,
+    unlike Falling Star's two separate instances."""
+    if len(action.params) > 2 or len(set(action.params)) != len(action.params):
+        return False
+    return all(find_unit_anywhere(state, t) is not None for t in action.params)
+
+
+def _singularity_effect(state: GameState, action: PlaySpell) -> list[GameState]:
+    for target in action.params:
+        located = find_unit_at_any_battlefield(state, target)
+        if located is not None:
+            state = combat.deal_damage_to_unit(state, located[1], target, 6)
+    return [state]
+
+
+def _singularity_candidates(state: GameState) -> list[tuple]:
+    ids = [u.instance_id for bf in state.battlefields
+           for u in sorted(bf.units, key=lambda u: u.instance_id)]
+    out: list[tuple] = [()]
+    out += [(a,) for a in ids]
+    out += [(a, b) for i, a in enumerate(ids) for b in ids[i + 1:]]
+    return out
+
+
+def _back_to_back_is_legal(state: GameState, action: PlaySpell) -> bool:
+    """"Two friendly units" — two distinct ones, both ours."""
+    if len(action.params) != 2 or action.params[0] == action.params[1]:
+        return False
+    for target in action.params:
+        located = find_unit_anywhere(state, target)
+        if located is None or located[0].controller != state.turn_player:
+            return False
+    return True
+
+
+def _back_to_back_effect(state: GameState, action: PlaySpell) -> list[GameState]:
+    for target in action.params:
+        state = _grant_might(state, target, 2)
+    return [state]
+
+
+def _back_to_back_candidates(state: GameState) -> list[tuple]:
+    ours = [u.instance_id for u in sorted(state.players[state.turn_player].base_units,
+                                           key=lambda u: u.instance_id)]
+    ours += [u.instance_id for bf in state.battlefields
+             for u in sorted(bf.units, key=lambda u: u.instance_id)
+             if u.controller == state.turn_player]
+    return [(a, b) for i, a in enumerate(ours) for b in ours[i + 1:]]
+
+
 CHARM = "ogn-043-298"  # 1 Energy, 1 Calm Power: "Move an enemy unit." (Slow speed —
 # can't be played during a showdown; the engine has no showdown/priority-
 # window concept yet, so nothing currently in the action space could even
@@ -516,6 +623,9 @@ SPELL_EFFECTS: dict[str, tuple[
     FALLING_STAR: (_falling_star_is_legal, _falling_star_effect, _falling_star_candidates),
     REBUKE: (_single_battlefield_target_is_legal, _rebuke_effect, _units_at_battlefields),
     GRAND_STRATEGEM: (_grand_strategem_is_legal, _grand_strategem_effect, lambda state: [()]),
+    CLEAVE: (_any_unit_is_legal, _cleave_effect, _any_unit_candidates),
+    SINGULARITY: (_singularity_is_legal, _singularity_effect, _singularity_candidates),
+    BACK_TO_BACK: (_back_to_back_is_legal, _back_to_back_effect, _back_to_back_candidates),
 }
 
 
@@ -712,6 +822,10 @@ FAITHFUL_MANUFACTOR = "ogn-211-298"  # When you play me, play a 1 Might Recruit 
 VANGUARD_CAPTAIN = "ogn-218-298"  # [Legion] When you play me, play two 1 Might Recruit unit tokens
 # here. (Get the effect if you've played another card this turn.)
 WHITEFLAME_PROTECTOR = "ogn-082-298"  # "When you play me, give a unit +8 Might this turn."
+DANGEROUS_DUO = "ogn-016-298"  # [Legion] "When you play me, give a unit +2 Might this turn."
+FIRST_MATE = "ogn-132-298"  # "When you play me, ready another unit."
+KINKOU_MONK = "ogn-141-298"  # "When you play me, buff up to two other friendly units."
+MADDENED_MARAUDER = "ogn-191-298"  # [Tank] "When you play me, move a unit from a battlefield to its base."
 RIPTIDE_REX = "ogn-092-298"  # "When you play me, deal 6 to an enemy unit at a battlefield."
 HARNESSED_DRAGON = "ogn-234-298"  # "When you play me, kill an enemy unit."
 PIT_ROOKIE = "ogn-136-298"  # "When you play me, buff another friendly unit."
@@ -730,7 +844,8 @@ RECRUIT_TOKEN_CARD = CardDef(card_id=RECRUIT_TOKEN, card_type="Unit", energy_cos
 # trigger_params=() legitimately means "decline."
 MANDATORY_PLAY_TRIGGERS = frozenset({FAITHFUL_MANUFACTOR, VANGUARD_CAPTAIN, WHITEFLAME_PROTECTOR,
                                      PIT_ROOKIE, TRIFARIAN_GLORYSEEKER, PEAK_GUARDIAN,
-                                     RIPTIDE_REX, HARNESSED_DRAGON})
+                                     RIPTIDE_REX, HARNESSED_DRAGON, DANGEROUS_DUO,
+                                     FIRST_MATE, KINKOU_MONK})
 
 
 def _charm_deflect_targets(state: GameState, params: tuple) -> list[tuple]:
@@ -946,6 +1061,111 @@ def _harnessed_dragon_effect(state_after_play: GameState, action: PlayUnit) -> l
     return [kill_unit(state_after_play, action.trigger_params[0])]
 
 
+def _dangerous_duo_effect(state_after_play: GameState, action: PlayUnit) -> list[GameState]:
+    """[Legion] gates the whole effect, so with no prior card this turn the
+    Duo is a plain body."""
+    if not legion_condition_met(state_after_play):
+        return [state_after_play]
+    return [_grant_might(state_after_play, action.trigger_params[0], 2)]
+
+
+def _first_mate_is_legal(state: GameState, action: PlayUnit, card: CardDef) -> bool:
+    """"Another unit" — any unit but itself, either player's. Readying an
+    ENEMY unit is legal and merely unwise, so it isn't restricted."""
+    if len(action.trigger_params) != 1:
+        return False
+    state_after_play = apply_play_unit(state, dataclasses.replace(
+        action, trigger_params=(), trigger_payment=None), card)
+    if action.trigger_params[0] == _played_unit(state_after_play, action).instance_id:
+        return False
+    return find_unit_anywhere(state_after_play, action.trigger_params[0]) is not None
+
+
+def _first_mate_effect(state_after_play: GameState, action: PlayUnit) -> list[GameState]:
+    return [ready_unit(state_after_play, action.trigger_params[0])]
+
+
+def _other_unit_candidates(state: GameState, base_action: PlayUnit, card: CardDef) -> list[tuple]:
+    state_after_play = apply_play_unit(state, base_action, card)
+    played = _played_unit(state_after_play, base_action).instance_id
+    out = []
+    for player in state_after_play.players:
+        out += [(u.instance_id,) for u in sorted(player.base_units, key=lambda u: u.instance_id)]
+    for bf in state_after_play.battlefields:
+        out += [(u.instance_id,) for u in sorted(bf.units, key=lambda u: u.instance_id)]
+    return [t for t in out if t[0] != played]
+
+
+def _kinkou_monk_is_legal(state: GameState, action: PlayUnit, card: CardDef) -> bool:
+    """"Up to two OTHER FRIENDLY units" — zero, one or two, distinct, ours,
+    never itself."""
+    if len(action.trigger_params) > 2 or len(set(action.trigger_params)) != len(action.trigger_params):
+        return False
+    state_after_play = apply_play_unit(state, dataclasses.replace(
+        action, trigger_params=(), trigger_payment=None), card)
+    played = _played_unit(state_after_play, action).instance_id
+    for target in action.trigger_params:
+        if target == played:
+            return False
+        located = find_unit_anywhere(state_after_play, target)
+        if located is None or located[0].controller != state.turn_player:
+            return False
+    return True
+
+
+def _kinkou_monk_effect(state_after_play: GameState, action: PlayUnit) -> list[GameState]:
+    for target in action.trigger_params:
+        state_after_play = apply_buff(state_after_play, target)
+    return [state_after_play]
+
+
+def _kinkou_monk_candidates(state: GameState, base_action: PlayUnit, card: CardDef) -> list[tuple]:
+    state_after_play = apply_play_unit(state, base_action, card)
+    played = _played_unit(state_after_play, base_action).instance_id
+    ours = [u.instance_id for u in sorted(state_after_play.players[state.turn_player].base_units,
+                                           key=lambda u: u.instance_id) if u.instance_id != played]
+    ours += [u.instance_id for bf in state_after_play.battlefields
+             for u in sorted(bf.units, key=lambda u: u.instance_id)
+             if u.controller == state.turn_player and u.instance_id != played]
+    out: list[tuple] = [()]
+    out += [(a,) for a in ours]
+    out += [(a, b) for i, a in enumerate(ours) for b in ours[i + 1:]]
+    return out
+
+
+# NOT REGISTERED — blocked on the zone model, see engine/coverage.py.
+# "Move a unit from a battlefield to its base" is fine for our own units
+# but unrepresentable for an enemy's: Zone is "base" or a battlefield id,
+# with no way to say WHOSE base, so an enemy unit has nowhere to go. Kept
+# here rather than deleted because everything except the destination is
+# correct and will be reusable the day Zone distinguishes the two bases.
+def _marauder_is_legal(state: GameState, action: PlayUnit, card: CardDef) -> bool:
+    """"Move A UNIT from a battlefield to its base" — either player's, and
+    its OWN base, which for an enemy unit means off our board entirely."""
+    if len(action.trigger_params) != 1:
+        return False
+    state_after_play = apply_play_unit(state, dataclasses.replace(
+        action, trigger_params=(), trigger_payment=None), card)
+    return find_unit_at_any_battlefield(state_after_play, action.trigger_params[0]) is not None
+
+
+def _marauder_effect(state_after_play: GameState, action: PlayUnit) -> list[GameState]:
+    target = action.trigger_params[0]
+    unit, from_zone = find_unit_at_any_battlefield(state_after_play, target)
+    moved = _move_enemy_unit_no_combat(state_after_play, unit, from_zone, "base")         if unit.controller != state_after_play.turn_player         else relocate_unit(state_after_play, target, from_zone, "base",
+                            exhausted_after=unit.exhausted)
+    moved = scoring.resolve_control_change(state_after_play, moved, from_zone)
+    return [apply_move_triggers(moved, target)]
+
+
+def _marauder_candidates(state: GameState, base_action: PlayUnit, card: CardDef) -> list[tuple]:
+    state_after_play = apply_play_unit(state, base_action, card)
+    played = _played_unit(state_after_play, base_action).instance_id
+    return [(u.instance_id,) for bf in state_after_play.battlefields
+            for u in sorted(bf.units, key=lambda u: u.instance_id)
+            if u.instance_id != played]
+
+
 ZAUNITE_BOUNCER = "ogn-188-298"  # When you play me, return another unit at a battlefield to its owner's hand.
 
 
@@ -1011,6 +1231,9 @@ UNIT_PLAY_TRIGGERS: dict[str, tuple[
     RIPTIDE_REX: (_enemy_at_battlefield_is_legal, _riptide_rex_effect, _enemy_at_battlefield_candidates),
     HARNESSED_DRAGON: (_enemy_at_battlefield_is_legal, _harnessed_dragon_effect,
                         _enemy_at_battlefield_candidates),
+    DANGEROUS_DUO: (_whiteflame_is_legal, _dangerous_duo_effect, _whiteflame_candidates),
+    FIRST_MATE: (_first_mate_is_legal, _first_mate_effect, _other_unit_candidates),
+    KINKOU_MONK: (_kinkou_monk_is_legal, _kinkou_monk_effect, _kinkou_monk_candidates),
 }
 
 
