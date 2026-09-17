@@ -134,6 +134,25 @@ class ResolveShowdown:
 
 
 @dataclass(frozen=True)
+class ResolveAttackTrigger:
+    """Resolves a mandatory "when I attack" trigger (abilities.py's
+    ATTACK_TRIGGERS registry) for the unit currently attacking in an open
+    showdown — before any [Action]/[Reaction] spell and before any
+    damage-assignment option exists. See ShowdownState.attack_trigger_
+    resolved: while False, this is the ONLY legal action in the showdown.
+
+    `instance_id` names the attacking unit for validation/clarity, though
+    it is always derivable from the showdown itself (the attacking side
+    is exactly one unit — see combat.py's module docstring — and no spell
+    can have joined it yet, since nothing else is legal until this
+    resolves). `trigger_params` is opaque and effect-specific, same
+    convention as PlayUnit.trigger_params / PlaySpell.params.
+    """
+    instance_id: int
+    trigger_params: tuple
+
+
+@dataclass(frozen=True)
 class PlaySpell:
     card_id: str
     # Opaque, effect-specific: whatever the card's registered ability
@@ -166,7 +185,7 @@ class ActivateAbility:
 
 
 Action = (PlayUnit | MoveUnit | ResolveCombat | EnterShowdown | ResolveShowdown
-          | PlaySpell | PlayGear | ActivateAbility)
+          | ResolveAttackTrigger | PlaySpell | PlayGear | ActivateAbility)
 
 
 # --- Rune payment -----------------------------------------------------------

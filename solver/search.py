@@ -48,6 +48,7 @@ from .engine.actions import (
     PlayGear,
     PlaySpell,
     PlayUnit,
+    ResolveAttackTrigger,
     ResolveCombat,
     ResolveShowdown,
     apply_move_unit,
@@ -76,6 +77,16 @@ def _board_actions_with_showdown_entries(state: GameState, cards: dict[str, Card
     the same length they were before showdowns existed. The window is
     only materialised when an [Action]/[Reaction] play is genuinely
     available inside it — which is checked by entering and looking.
+
+    A mover registered in abilities.ATTACK_TRIGGERS ALWAYS forces the
+    showdown, regardless of what's playable: the atomic `atomic` list here
+    was built by legal_board_actions against the PRE-trigger defender
+    list, which Rule Answer 1 (coverage.py's ATTACK_TRIGGERS section)
+    makes unsafe to offer at all once the trigger could still kill one of
+    those defenders before the Combat Damage Step. There is no "decline
+    the trigger" form to fall back to either — every registered trigger is
+    mandatory, so forcing the showdown IS withholding the untriggered
+    path, the same way MANDATORY_PLAY_TRIGGERS withholds a plain PlayUnit.
     """
     result: list[Action] = []
     combat_groups: dict[tuple[int, str, str], list[ResolveCombat]] = {}
@@ -88,8 +99,9 @@ def _board_actions_with_showdown_entries(state: GameState, cards: dict[str, Card
 
     for (instance_id, from_zone, to_zone), atomic in combat_groups.items():
         mover = find_unit(state, instance_id, from_zone)
+        has_trigger = mover.card_id in abilities.ATTACK_TRIGGERS
         entered = combat.open_showdown(state, mover, from_zone, to_zone)
-        if _playable_spells(entered, cards, ("Action", "Reaction")):
+        if has_trigger or _playable_spells(entered, cards, ("Action", "Reaction")):
             result.append(EnterShowdown(instance_id=instance_id, from_zone=from_zone, to_zone=to_zone))
         else:
             result.extend(atomic)
@@ -122,13 +134,30 @@ def _playable_spells(state: GameState, cards: dict[str, CardDef],
     return found
 
 
+def _pending_attack_trigger_actions(state: GameState) -> list[Action]:
+    """The ONLY legal actions while ShowdownState.attack_trigger_resolved
+    is False — one ResolveAttackTrigger per candidate the registered
+    trigger offers. Nothing else (not even ResolveShowdown) is legal yet;
+    see abilities.py's ATTACK_TRIGGERS module comment for why the trigger
+    must fire before any damage-assignment option can even be computed."""
+    bf = next(b for b in state.battlefields if b.battlefield_id == state.showdown.battlefield_id)
+    attacker = next(u for u in bf.units if u.controller == state.showdown.attacker_controller)
+    _, _, generate_candidates = abilities.ATTACK_TRIGGERS[attacker.card_id]
+    return [ResolveAttackTrigger(instance_id=attacker.instance_id, trigger_params=params)
+            for params in generate_candidates(state, attacker.instance_id)]
+
+
 def _showdown_actions(state: GameState, cards: dict[str, CardDef]) -> list[Action]:
     """The action space while a showdown is open. Standard Moves are gone
     entirely — a unit can neither join nor leave a showdown by moving,
     only by being moved by a card — and so is anything Slow, which is
     every unit and (today) every registered ability. What's left is
-    [Action]/[Reaction] spells, plus resolving the damage step.
+    [Action]/[Reaction] spells, plus resolving the damage step — UNLESS a
+    mandatory attack trigger is still pending, in which case it alone is
+    offered (see _pending_attack_trigger_actions).
     """
+    if not state.showdown.attack_trigger_resolved:
+        return _pending_attack_trigger_actions(state)
     result: list[Action] = list(_playable_spells(state, cards, ("Action", "Reaction")))
     for assignment in combat.showdown_assignment_options(state, state.turn_player):
         result.append(ResolveShowdown(our_assignment=assignment))
@@ -297,8 +326,13 @@ def apply(state: GameState, action: Action, cards: dict[str, CardDef]) -> GameSt
         # No damage yet, so no deaths and no control change - nothing for
         # scoring to resolve until the showdown does.
         mover = find_unit(state, action.instance_id, action.from_zone)
-        new_state = combat.open_showdown(state, mover, action.from_zone, action.to_zone)
+        has_trigger = mover.card_id in abilities.ATTACK_TRIGGERS
+        new_state = combat.open_showdown(state, mover, action.from_zone, action.to_zone,
+                                          has_pending_trigger=has_trigger)
         return abilities.apply_move_triggers(new_state, action.instance_id)
+
+    if isinstance(action, ResolveAttackTrigger):
+        return abilities.apply_attack_trigger(state, action)
 
     if isinstance(action, ResolveShowdown):
         raise NotImplementedError(

@@ -28,6 +28,7 @@ from .engine.actions import (
     PlayGear,
     PlaySpell,
     PlayUnit,
+    ResolveAttackTrigger,
     ResolveCombat,
     ResolveShowdown,
     find_unit,
@@ -112,7 +113,8 @@ def render_state(state: GameState) -> dict:
         "scored_this_turn": sorted(state.scored_this_turn),
         "cards_played_this_turn": state.cards_played_this_turn,
         "showdown": ({"battlefield_id": state.showdown.battlefield_id,
-                      "attacker_controller": state.showdown.attacker_controller}
+                      "attacker_controller": state.showdown.attacker_controller,
+                      "attack_trigger_resolved": state.showdown.attack_trigger_resolved}
                      if state.showdown else None),
     }
 
@@ -171,6 +173,12 @@ def render_action(state: GameState, action: Action, action_id: str) -> dict:
     elif isinstance(action, ResolveShowdown):
         label = "Resolve showdown damage"
         card_id, keywords = "", []
+    elif isinstance(action, ResolveAttackTrigger):
+        bf = next(b for b in state.battlefields if b.battlefield_id == state.showdown.battlefield_id)
+        attacker = next(u for u in bf.units if u.instance_id == action.instance_id)
+        label = f"Resolve {card_names.display_name(attacker.card_id)}'s attack trigger"
+        card_id, keywords = attacker.card_id, []
+        instance_id = action.instance_id
     elif isinstance(action, PlaySpell):
         label = (f"Play {card_names.display_name(action.card_id)} "
                   f"({', '.join(str(p) for p in action.params)})")

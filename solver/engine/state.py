@@ -176,9 +176,19 @@ class ShowdownState:
     `attacker_controller` is whoever's unit applied Contested, which is
     not always us — our own effects can move an ENEMY unit onto ground we
     hold, making them the Attacker (see design/09-combat-resolution.md).
+
+    `attack_trigger_resolved` gates a mandatory "when I attack" trigger
+    (engine/abilities.py's ATTACK_TRIGGERS): while False, legal_actions()
+    offers ONLY the trigger's own resolution — no [Action]/[Reaction]
+    spells, no ResolveShowdown — which is what forces Rule 465-adjacent
+    triggers like "when I attack, deal 5 damage" to resolve BEFORE any
+    damage-assignment options are computed. Defaults True so every
+    existing showdown (nothing registered, or none of the cards that use
+    this) behaves exactly as before with no call site needing to change.
     """
     battlefield_id: str
     attacker_controller: int
+    attack_trigger_resolved: bool = True
 
 
 @dataclass(frozen=True)
@@ -266,7 +276,11 @@ def canonical_key(state: GameState) -> tuple:
         state.cards_played_this_turn,
         # Mid-showdown is a genuinely different position from the same
         # board after damage resolved — conflating them would let the
-        # transposition table prune real lines.
-        (state.showdown.battlefield_id, state.showdown.attacker_controller)
+        # transposition table prune real lines. attack_trigger_resolved is
+        # significant for the same reason moved_this_turn is: two states
+        # that look identical on the board otherwise offer different legal
+        # actions (only the trigger vs. the normal showdown menu).
+        (state.showdown.battlefield_id, state.showdown.attacker_controller,
+         state.showdown.attack_trigger_resolved)
         if state.showdown else None,
     )

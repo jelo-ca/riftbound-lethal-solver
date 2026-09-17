@@ -4,8 +4,8 @@
   "root": "936dff985079fd36",
   "solution": {
     "6eb79f6bbc0f4de7": "a35",
-    "7ce14a92e5a31186": "a21",
-    "85b195592233f73e": "a10",
+    "389284e1929d2997": "a21",
+    "52c6eab4745f59ed": "a10",
     "936dff985079fd36": "a3"
   },
   "nodes": {
@@ -190,7 +190,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "8a2d03cce5f44b9a": {
+    "feffafe501d3172e": {
       "turn_player": 0,
       "players": [
         {
@@ -280,10 +280,11 @@
       "cards_played_this_turn": 0,
       "showdown": {
         "battlefield_id": "right",
-        "attacker_controller": 0
+        "attacker_controller": 0,
+        "attack_trigger_resolved": true
       }
     },
-    "85b195592233f73e": {
+    "52c6eab4745f59ed": {
       "turn_player": 0,
       "players": [
         {
@@ -373,7 +374,8 @@
       "cards_played_this_turn": 0,
       "showdown": {
         "battlefield_id": "right",
-        "attacker_controller": 0
+        "attacker_controller": 0,
+        "attack_trigger_resolved": true
       }
     },
     "93c8b97de3853e35": {
@@ -466,7 +468,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "53322afa3b3f6b4e": {
+    "7fc2d170d6a4c4bb": {
       "turn_player": 0,
       "players": [
         {
@@ -556,10 +558,11 @@
       "cards_played_this_turn": 0,
       "showdown": {
         "battlefield_id": "right",
-        "attacker_controller": 0
+        "attacker_controller": 0,
+        "attack_trigger_resolved": true
       }
     },
-    "91fc44e8e66e2d02": {
+    "741008e1a32d442f": {
       "turn_player": 0,
       "players": [
         {
@@ -650,10 +653,11 @@
       "cards_played_this_turn": 1,
       "showdown": {
         "battlefield_id": "right",
-        "attacker_controller": 0
+        "attacker_controller": 0,
+        "attack_trigger_resolved": true
       }
     },
-    "402df441b0d4782a": {
+    "a8c8cca24142dd2c": {
       "turn_player": 0,
       "players": [
         {
@@ -743,7 +747,8 @@
       "cards_played_this_turn": 1,
       "showdown": {
         "battlefield_id": "right",
-        "attacker_controller": 0
+        "attacker_controller": 0,
+        "attack_trigger_resolved": true
       }
     },
     "8b40d4d0d6b3e3bb": {
@@ -824,7 +829,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "f1da539bcaec9d8b": {
+    "8ee861a18b2fef52": {
       "turn_player": 0,
       "players": [
         {
@@ -914,10 +919,11 @@
       "cards_played_this_turn": 1,
       "showdown": {
         "battlefield_id": "right",
-        "attacker_controller": 0
+        "attacker_controller": 0,
+        "attack_trigger_resolved": true
       }
     },
-    "7ce14a92e5a31186": {
+    "389284e1929d2997": {
       "turn_player": 0,
       "players": [
         {
@@ -1007,10 +1013,11 @@
       "cards_played_this_turn": 1,
       "showdown": {
         "battlefield_id": "right",
-        "attacker_controller": 0
+        "attacker_controller": 0,
+        "attack_trigger_resolved": true
       }
     },
-    "86d37308502fbdd2": {
+    "8b697dfc048babd9": {
       "turn_player": 0,
       "players": [
         {
@@ -1101,7 +1108,8 @@
       "cards_played_this_turn": 1,
       "showdown": {
         "battlefield_id": "right",
-        "attacker_controller": 0
+        "attacker_controller": 0,
+        "attack_trigger_resolved": true
       }
     },
     "26f88ed6f4b7ea05": {
@@ -1256,7 +1264,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "51701e03a982a0f5": {
+    "610f046e32c63e39": {
       "turn_player": 0,
       "players": [
         {
@@ -1347,10 +1355,11 @@
       "cards_played_this_turn": 1,
       "showdown": {
         "battlefield_id": "right",
-        "attacker_controller": 0
+        "attacker_controller": 0,
+        "attack_trigger_resolved": true
       }
     },
-    "ce77309d508aae1b": {
+    "b4e09507eb927f25": {
       "turn_player": 0,
       "players": [
         {
@@ -1440,7 +1449,8 @@
       "cards_played_this_turn": 1,
       "showdown": {
         "battlefield_id": "right",
-        "attacker_controller": 0
+        "attacker_controller": 0,
+        "attack_trigger_resolved": true
       }
     },
     "27cd8e22c1aa9330": {
@@ -1700,7 +1710,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "43aac786551c72ae": {
+    "757d8d53282cdc60": {
       "turn_player": 0,
       "players": [
         {
@@ -1777,7 +1787,8 @@
       "cards_played_this_turn": 0,
       "showdown": {
         "battlefield_id": "right",
-        "attacker_controller": 0
+        "attacker_controller": 0,
+        "attack_trigger_resolved": true
       }
     },
     "6eb79f6bbc0f4de7": {
@@ -1961,7 +1972,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "e9d53407b0df9b02": {
+    "d82e004b4b5037ef": {
       "turn_player": 0,
       "players": [
         {
@@ -2036,7 +2047,8 @@
       "cards_played_this_turn": 0,
       "showdown": {
         "battlefield_id": "right",
-        "attacker_controller": 0
+        "attacker_controller": 0,
+        "attack_trigger_resolved": true
       }
     },
     "2e63320879e69245": {
@@ -2540,7 +2552,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "1e4b38b0b154758b": {
+    "bbb11a11c1364924": {
       "turn_player": 0,
       "players": [
         {
@@ -2618,10 +2630,11 @@
       "cards_played_this_turn": 1,
       "showdown": {
         "battlefield_id": "right",
-        "attacker_controller": 0
+        "attacker_controller": 0,
+        "attack_trigger_resolved": true
       }
     },
-    "e6088b4fcdbac62c": {
+    "81a18de0a7d9e533": {
       "turn_player": 0,
       "players": [
         {
@@ -2699,7 +2712,8 @@
       "cards_played_this_turn": 1,
       "showdown": {
         "battlefield_id": "right",
-        "attacker_controller": 0
+        "attacker_controller": 0,
+        "attack_trigger_resolved": true
       }
     },
     "cc79d751a6c9f2aa": {
@@ -3088,7 +3102,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "bd815f7d601db77d": {
+    "619fee67cdc54ad6": {
       "turn_player": 0,
       "players": [
         {
@@ -3164,10 +3178,11 @@
       "cards_played_this_turn": 1,
       "showdown": {
         "battlefield_id": "right",
-        "attacker_controller": 0
+        "attacker_controller": 0,
+        "attack_trigger_resolved": true
       }
     },
-    "e6a52d437701f778": {
+    "a041106bbb1ae3f8": {
       "turn_player": 0,
       "players": [
         {
@@ -3243,7 +3258,8 @@
       "cards_played_this_turn": 1,
       "showdown": {
         "battlefield_id": "right",
-        "attacker_controller": 0
+        "attacker_controller": 0,
+        "attack_trigger_resolved": true
       }
     },
     "2e5282172a947ed1": {
@@ -3660,7 +3676,7 @@
           "instance_id": 3
         },
         "to": [
-          "8a2d03cce5f44b9a"
+          "feffafe501d3172e"
         ],
         "adversarial": false
       },
@@ -3678,7 +3694,7 @@
           "instance_id": 1
         },
         "to": [
-          "85b195592233f73e"
+          "52c6eab4745f59ed"
         ],
         "adversarial": false
       },
@@ -3714,12 +3730,12 @@
           "instance_id": 1
         },
         "to": [
-          "53322afa3b3f6b4e"
+          "7fc2d170d6a4c4bb"
         ],
         "adversarial": false
       }
     ],
-    "8a2d03cce5f44b9a": [
+    "feffafe501d3172e": [
       {
         "action": {
           "id": "a6",
@@ -3732,7 +3748,7 @@
           "instance_id": null
         },
         "to": [
-          "91fc44e8e66e2d02"
+          "741008e1a32d442f"
         ],
         "adversarial": false
       },
@@ -3748,7 +3764,7 @@
           "instance_id": null
         },
         "to": [
-          "402df441b0d4782a"
+          "a8c8cca24142dd2c"
         ],
         "adversarial": false
       },
@@ -3769,7 +3785,7 @@
         "adversarial": false
       }
     ],
-    "85b195592233f73e": [
+    "52c6eab4745f59ed": [
       {
         "action": {
           "id": "a9",
@@ -3782,7 +3798,7 @@
           "instance_id": null
         },
         "to": [
-          "f1da539bcaec9d8b"
+          "8ee861a18b2fef52"
         ],
         "adversarial": false
       },
@@ -3798,7 +3814,7 @@
           "instance_id": null
         },
         "to": [
-          "7ce14a92e5a31186"
+          "389284e1929d2997"
         ],
         "adversarial": false
       },
@@ -3814,7 +3830,7 @@
           "instance_id": null
         },
         "to": [
-          "86d37308502fbdd2"
+          "8b697dfc048babd9"
         ],
         "adversarial": false
       },
@@ -3855,7 +3871,7 @@
         "adversarial": false
       }
     ],
-    "53322afa3b3f6b4e": [
+    "7fc2d170d6a4c4bb": [
       {
         "action": {
           "id": "a14",
@@ -3868,7 +3884,7 @@
           "instance_id": null
         },
         "to": [
-          "51701e03a982a0f5"
+          "610f046e32c63e39"
         ],
         "adversarial": false
       },
@@ -3884,7 +3900,7 @@
           "instance_id": null
         },
         "to": [
-          "ce77309d508aae1b"
+          "b4e09507eb927f25"
         ],
         "adversarial": false
       },
@@ -3905,7 +3921,7 @@
         "adversarial": false
       }
     ],
-    "91fc44e8e66e2d02": [
+    "741008e1a32d442f": [
       {
         "action": {
           "id": "a17",
@@ -3923,7 +3939,7 @@
         "adversarial": false
       }
     ],
-    "402df441b0d4782a": [
+    "a8c8cca24142dd2c": [
       {
         "action": {
           "id": "a18",
@@ -3956,12 +3972,12 @@
           "instance_id": 1
         },
         "to": [
-          "43aac786551c72ae"
+          "757d8d53282cdc60"
         ],
         "adversarial": false
       }
     ],
-    "f1da539bcaec9d8b": [
+    "8ee861a18b2fef52": [
       {
         "action": {
           "id": "a20",
@@ -3979,7 +3995,7 @@
         "adversarial": false
       }
     ],
-    "7ce14a92e5a31186": [
+    "389284e1929d2997": [
       {
         "action": {
           "id": "a21",
@@ -3997,7 +4013,7 @@
         "adversarial": false
       }
     ],
-    "86d37308502fbdd2": [
+    "8b697dfc048babd9": [
       {
         "action": {
           "id": "a22",
@@ -4044,7 +4060,7 @@
           "instance_id": 3
         },
         "to": [
-          "e9d53407b0df9b02"
+          "d82e004b4b5037ef"
         ],
         "adversarial": false
       },
@@ -4065,7 +4081,7 @@
         "adversarial": false
       }
     ],
-    "51701e03a982a0f5": [
+    "610f046e32c63e39": [
       {
         "action": {
           "id": "a26",
@@ -4083,7 +4099,7 @@
         "adversarial": false
       }
     ],
-    "ce77309d508aae1b": [
+    "b4e09507eb927f25": [
       {
         "action": {
           "id": "a27",
@@ -4173,7 +4189,7 @@
         "adversarial": false
       }
     ],
-    "43aac786551c72ae": [
+    "757d8d53282cdc60": [
       {
         "action": {
           "id": "a32",
@@ -4186,7 +4202,7 @@
           "instance_id": null
         },
         "to": [
-          "1e4b38b0b154758b"
+          "bbb11a11c1364924"
         ],
         "adversarial": false
       },
@@ -4202,7 +4218,7 @@
           "instance_id": null
         },
         "to": [
-          "e6088b4fcdbac62c"
+          "81a18de0a7d9e533"
         ],
         "adversarial": false
       },
@@ -4345,7 +4361,7 @@
         "adversarial": false
       }
     ],
-    "e9d53407b0df9b02": [
+    "d82e004b4b5037ef": [
       {
         "action": {
           "id": "a42",
@@ -4358,7 +4374,7 @@
           "instance_id": null
         },
         "to": [
-          "bd815f7d601db77d"
+          "619fee67cdc54ad6"
         ],
         "adversarial": false
       },
@@ -4374,7 +4390,7 @@
           "instance_id": null
         },
         "to": [
-          "e6a52d437701f778"
+          "a041106bbb1ae3f8"
         ],
         "adversarial": false
       },
@@ -4527,7 +4543,7 @@
         "adversarial": false
       }
     ],
-    "1e4b38b0b154758b": [
+    "bbb11a11c1364924": [
       {
         "action": {
           "id": "a52",
@@ -4545,7 +4561,7 @@
         "adversarial": false
       }
     ],
-    "e6088b4fcdbac62c": [
+    "81a18de0a7d9e533": [
       {
         "action": {
           "id": "a53",
@@ -4655,7 +4671,7 @@
         "adversarial": false
       }
     ],
-    "bd815f7d601db77d": [
+    "619fee67cdc54ad6": [
       {
         "action": {
           "id": "a59",
@@ -4673,7 +4689,7 @@
         "adversarial": false
       }
     ],
-    "e6a52d437701f778": [
+    "a041106bbb1ae3f8": [
       {
         "action": {
           "id": "a60",

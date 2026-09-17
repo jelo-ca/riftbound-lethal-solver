@@ -16,6 +16,7 @@ from .actions import (
     ActivateAbility,
     PlaySpell,
     PlayUnit,
+    ResolveAttackTrigger,
     apply_play_spell_cost,
     apply_play_unit,
     find_unit,
@@ -1371,6 +1372,190 @@ UNIT_PLAY_TRIGGERS: dict[str, tuple[
     CARNIVOROUS_SNAPVINE: (_enemy_at_battlefield_is_legal, _snapvine_effect,
                             _enemy_at_battlefield_candidates),
 }
+
+
+# --- "When I attack" triggers ---------------------------------------------
+#
+# RULES ANSWER (project owner, 2026-09-17): if an attack trigger kills the
+# defender before the Combat Damage Step, that defender is removed from
+# combat entirely and deals no combat damage. Enumerating damage-assignment
+# options against the pre-trigger defender list would be wrong — it could
+# offer an assignment against a unit no longer there, or (worse) let a
+# defender that should already be dead still contribute Might to a pool
+# that kills the attacker back.
+#
+# The fix reuses the showdown mechanism rather than inventing a second one:
+# a Standard Move whose mover has a registered entry here is forced through
+# EnterShowdown (see search._board_actions_with_showdown_entries) with
+# ShowdownState.attack_trigger_resolved=False. legal_actions() then offers
+# ONLY this trigger's resolution — no spells, no ResolveShowdown — until it
+# fires (search._showdown_actions). Once it does,
+# combat.showdown_assignment_options reads the CURRENT board, which already
+# reflects whatever the trigger killed: a removed defender simply isn't
+# among "ours"/"theirs" any more, so it can neither be assigned to nor
+# contribute to anyone's pool. No change to enumerate_assignments or
+# resolve_showdown was needed — the restructuring is entirely about WHEN
+# the trigger fires relative to assignment enumeration, not how damage
+# assignment itself works.
+#
+# Every trigger registered here is MANDATORY (no printed "you may"), so
+# unlike UNIT_PLAY_TRIGGERS there is no plain untriggered form to withhold —
+# forcing the showdown IS withholding it, since the atomic ResolveCombat
+# path (built from the pre-trigger board) is never offered at all for a
+# mover with an entry here (search._board_actions_with_showdown_entries).
+#
+# None of the effects below can themselves cause a NEW combat (no move, no
+# redirect), so each is deterministic — one resulting GameState, not a
+# list — which is what lets apply_attack_trigger skip the AND-node
+# machinery PlayUnit/PlaySpell triggers need.
+ANIVIA_PRIMAL = "ogn-148-298"  # "When I attack, deal 3 to all enemy units here."
+YASUO_REMORSEFUL = "ogn-076-298"  # "When I attack, deal damage equal to my Might to an enemy unit here."
+YASUO_REMORSEFUL_ALT = "ogn-076a-298"  # same card, alternate art printing
+CRACKSHOT_CORSAIR = "ogn-130-298"  # "When I attack, deal 1 to an enemy unit here."
+DUNE_DRAKE = "ogn-131-298"  # "When I attack, give me +2 Might this turn if there is a ready enemy unit here."
+
+
+def _attacker_and_battlefield(state: GameState, attacker_instance_id: int):
+    """The attacking unit and the battlefield it's standing on, read off
+    the open showdown rather than passed in — the trigger always resolves
+    immediately after open_showdown, before anything else could have
+    moved units in or out (see the registry's module comment)."""
+    bf = next(b for b in state.battlefields if b.battlefield_id == state.showdown.battlefield_id)
+    attacker = next(u for u in bf.units if u.instance_id == attacker_instance_id)
+    return attacker, bf
+
+
+def _enemy_units_here(attacker, bf) -> list:
+    return [u for u in sorted(bf.units, key=lambda u: u.instance_id) if u.controller != attacker.controller]
+
+
+def _anivia_is_legal(state: GameState, attacker_instance_id: int, trigger_params: tuple) -> bool:
+    """No target, no choice — "all enemy units here" leaves nothing to
+    parametrize, so trigger_params is the fixed sentinel used everywhere
+    else in this codebase for a choiceless mandatory trigger."""
+    return trigger_params == ("all",)
+
+
+def _anivia_effect(state: GameState, attacker_instance_id: int, trigger_params: tuple) -> GameState:
+    attacker, bf = _attacker_and_battlefield(state, attacker_instance_id)
+    for enemy in _enemy_units_here(attacker, bf):
+        # Each call re-fetches the battlefield fresh, so a unit an earlier
+        # iteration already killed (or whose Deathknell removed something
+        # else) is simply absent rather than double-hit.
+        if find_unit_at_any_battlefield(state, enemy.instance_id) is not None:
+            state = combat.deal_damage_to_unit(state, bf.battlefield_id, enemy.instance_id, 3)
+    return state
+
+
+def _anivia_candidates(state: GameState, attacker_instance_id: int) -> list[tuple]:
+    return [("all",)]
+
+
+def _single_enemy_here_is_legal(state: GameState, attacker_instance_id: int, trigger_params: tuple) -> bool:
+    if len(trigger_params) != 1:
+        return False
+    attacker, bf = _attacker_and_battlefield(state, attacker_instance_id)
+    target = next((u for u in bf.units if u.instance_id == trigger_params[0]), None)
+    return target is not None and target.controller != attacker.controller
+
+
+def _single_enemy_here_candidates(state: GameState, attacker_instance_id: int) -> list[tuple]:
+    attacker, bf = _attacker_and_battlefield(state, attacker_instance_id)
+    return [(u.instance_id,) for u in _enemy_units_here(attacker, bf)]
+
+
+def _yasuo_remorseful_effect(state: GameState, attacker_instance_id: int, trigger_params: tuple) -> GameState:
+    """Amount = the attacker's own EFFECTIVE Might (Assault included — it
+    already applies to it as the attacker), read at the moment the
+    trigger fires, which is before anything of this combat has changed
+    it."""
+    attacker, bf = _attacker_and_battlefield(state, attacker_instance_id)
+    amount = traits.effective_might(state, attacker, bf.battlefield_id, "attacker")
+    return combat.deal_damage_to_unit(state, bf.battlefield_id, trigger_params[0], amount)
+
+
+# card_id -> flat damage dealt to the chosen enemy unit (Crackshot Corsair's
+# own text is a fixed number, unlike Yasuo - Remorseful's dynamic one).
+ATTACK_TRIGGER_FLAT_DAMAGE: dict[str, int] = {CRACKSHOT_CORSAIR: 1}
+
+
+def _attack_trigger_flat_damage_effect(state: GameState, attacker_instance_id: int,
+                                        trigger_params: tuple) -> GameState:
+    attacker, bf = _attacker_and_battlefield(state, attacker_instance_id)
+    amount = ATTACK_TRIGGER_FLAT_DAMAGE[attacker.card_id]
+    return combat.deal_damage_to_unit(state, bf.battlefield_id, trigger_params[0], amount)
+
+
+def _dune_drake_is_legal(state: GameState, attacker_instance_id: int, trigger_params: tuple) -> bool:
+    return trigger_params == ("buff",)
+
+
+def _dune_drake_candidates(state: GameState, attacker_instance_id: int) -> list[tuple]:
+    return [("buff",)]
+
+
+def _dune_drake_effect(state: GameState, attacker_instance_id: int, trigger_params: tuple) -> GameState:
+    """"+2 Might this turn IF there is a ready enemy unit here" — the
+    trigger always happens; whether it does anything is conditional. Read
+    at the moment it fires, same as everything else here — an enemy that
+    was ready when the attack began and gets exhausted afterwards (nothing
+    in this cluster does that) wouldn't retroactively undo an already-
+    granted buff, matching how every other "this turn" grant in this
+    codebase works (see traits.py's module docstring)."""
+    attacker, bf = _attacker_and_battlefield(state, attacker_instance_id)
+    if any(u.controller != attacker.controller and not u.exhausted for u in bf.units):
+        return _grant_might(state, attacker_instance_id, 2)
+    return state
+
+
+# card_id -> (is_legal(state, attacker_instance_id, trigger_params),
+#             effect(state, attacker_instance_id, trigger_params) -> GameState,
+#             generate_candidate_params(state, attacker_instance_id))
+#
+# Deliberately NOT wired into DEFLECT_TARGETS, following the existing
+# precedent of Riptide Rex / Harnessed Dragon (both mandatory triggers that
+# choose an enemy unit and are already HANDLED without one) — see
+# coverage.py's Anivia/Yasuo/Crackshot Corsair entries for the caveat this
+# carries forward rather than fixes.
+ATTACK_TRIGGERS: dict[str, tuple[
+    Callable[[GameState, int, tuple], bool],
+    Callable[[GameState, int, tuple], GameState],
+    Callable[[GameState, int], list[tuple]],
+]] = {
+    ANIVIA_PRIMAL: (_anivia_is_legal, _anivia_effect, _anivia_candidates),
+    YASUO_REMORSEFUL: (_single_enemy_here_is_legal, _yasuo_remorseful_effect, _single_enemy_here_candidates),
+    YASUO_REMORSEFUL_ALT: (_single_enemy_here_is_legal, _yasuo_remorseful_effect, _single_enemy_here_candidates),
+    CRACKSHOT_CORSAIR: (_single_enemy_here_is_legal, _attack_trigger_flat_damage_effect,
+                        _single_enemy_here_candidates),
+    DUNE_DRAKE: (_dune_drake_is_legal, _dune_drake_effect, _dune_drake_candidates),
+}
+
+
+def is_legal_resolve_attack_trigger(state: GameState, action: ResolveAttackTrigger) -> bool:
+    if state.showdown is None or state.showdown.attack_trigger_resolved:
+        return False
+    bf = next(b for b in state.battlefields if b.battlefield_id == state.showdown.battlefield_id)
+    attacker = next((u for u in bf.units if u.instance_id == action.instance_id), None)
+    if attacker is None or attacker.controller != state.showdown.attacker_controller:
+        return False
+    entry = ATTACK_TRIGGERS.get(attacker.card_id)
+    if entry is None:
+        return False
+    is_legal, _, _ = entry
+    return is_legal(state, action.instance_id, action.trigger_params)
+
+
+def apply_attack_trigger(state: GameState, action: ResolveAttackTrigger) -> GameState:
+    """Applies the registered effect, then marks the showdown's trigger
+    resolved — the one piece of bookkeeping every entry in ATTACK_TRIGGERS
+    shares, so it lives here once instead of at the end of every effect
+    function."""
+    bf = next(b for b in state.battlefields if b.battlefield_id == state.showdown.battlefield_id)
+    attacker = next(u for u in bf.units if u.instance_id == action.instance_id)
+    _, effect, _ = ATTACK_TRIGGERS[attacker.card_id]
+    new_state = effect(state, action.instance_id, action.trigger_params)
+    return dataclasses.replace(new_state, showdown=dataclasses.replace(
+        new_state.showdown, attack_trigger_resolved=True))
 
 
 # card_id -> chosen_targets(state, params) -> [(UnitInstance, zone), ...]

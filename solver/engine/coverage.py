@@ -168,6 +168,26 @@ HANDLED: dict[str, str] = {
     "ogn-125-298": "Bilgewater Bully — \"while I'm buffed, I have [Ganking]\" via "
                    "traits.SELF_CONDITIONALS; the grant reaches movement legality "
                    "because effective_keywords now delegates to resolved_traits",
+    # "When I attack" triggers (RULES ANSWER, project owner, 2026-09-17): a
+    # trigger that kills the defender before the Combat Damage Step removes
+    # it from combat entirely — it deals no combat damage. abilities.py's
+    # ATTACK_TRIGGERS registry forces the combat through the showdown
+    # mechanism with the trigger resolved BEFORE any damage-assignment
+    # option is computed, so a killed defender is simply gone from
+    # combat.showdown_assignment_options's live board by the time
+    # assignment happens. See search._board_actions_with_showdown_entries
+    # and abilities.ATTACK_TRIGGERS's own module comment.
+    "ogn-148-298": "Anivia, Primal — mandatory \"when I attack, deal 3 to all enemy units "
+                   "here\" via abilities.ATTACK_TRIGGERS, resolved before damage assignment",
+    "ogn-076-298": "Yasuo, Remorseful — mandatory \"when I attack, deal damage equal to my "
+                   "Might to an enemy unit here\" via abilities.ATTACK_TRIGGERS; the amount "
+                   "is read at trigger time via traits.effective_might",
+    "ogn-076a-298": "Yasuo, Remorseful (alt art) — same card as ogn-076-298",
+    "ogn-130-298": "Crackshot Corsair — mandatory \"when I attack, deal 1 to an enemy unit "
+                   "here\" via abilities.ATTACK_TRIGGERS",
+    "ogn-131-298": "Dune Drake — mandatory \"when I attack, give me +2 Might this turn if "
+                   "there is a ready enemy unit here\" via abilities.ATTACK_TRIGGERS; the "
+                   "trigger always fires, its effect is merely conditional",
 }
 
 
