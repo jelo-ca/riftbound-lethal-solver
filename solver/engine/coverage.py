@@ -188,6 +188,14 @@ HANDLED: dict[str, str] = {
     "ogn-131-298": "Dune Drake — mandatory \"when I attack, give me +2 Might this turn if "
                    "there is a ready enemy unit here\" via abilities.ATTACK_TRIGGERS; the "
                    "trigger always fires, its effect is merely conditional",
+    # "While I'm attacking or defending alone" (RULES ANSWER, project
+    # owner, 2026-09-17): SelfConditional.condition now takes the unit's
+    # combat role (designation) as a fourth argument. "Attacking alone" is
+    # unconditionally true in this engine (combat.py: the attacking side
+    # is always exactly one unit); "defending alone" is checked for real,
+    # against co-located controllers, the same shape as En Garde.
+    "ogn-055-298": "Wielder of Water — \"while I'm attacking or defending alone, +2 Might\" "
+                   "via traits.SELF_CONDITIONALS with the new designation parameter",
 }
 
 
