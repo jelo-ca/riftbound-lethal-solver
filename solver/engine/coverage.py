@@ -485,13 +485,19 @@ def blocking_reason(card_id: str) -> str:
 
 def card_ids_present(state: GameState) -> set[str]:
     """Every card id the board depends on: units anywhere (both players),
-    both hands, battlefield effects, and Legends. A card only has to be
-    PRESENT to matter — an unmodelled enemy unit standing on a battlefield
-    changes combat just as much as one we could play."""
+    both hands, both players' Gear, battlefield effects, and Legends. A
+    card only has to be PRESENT to matter — an unmodelled enemy unit
+    standing on a battlefield changes combat just as much as one we could
+    play, and the same is true of a pre-placed Gear: nothing requires it
+    to have arrived via a scanned hand first. Found missing while wiring
+    the kill-gear mechanism (2026-09-18) — a board seeded with an
+    unclassified Gear directly in PlayerState.gear, never touching a hand,
+    was silently invisible to blocking_cards() and would have bluffed."""
     found: set[str] = set()
     for player in state.players:
         found.update(u.card_id for u in player.base_units)
         found.update(player.hand)
+        found.update(g.card_id for g in player.gear)
         if player.legend is not None:
             found.add(player.legend.card_id)
     for bf in state.battlefields:

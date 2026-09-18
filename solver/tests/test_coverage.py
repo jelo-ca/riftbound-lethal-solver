@@ -276,6 +276,33 @@ def test_scan_finds_cards_in_every_zone():
     assert coverage.card_ids_present(state) >= {"a", "b", "c", "d"}
 
 
+def test_a_pre_placed_gear_is_not_invisible_to_the_scan():
+    """Found while wiring kill-gear: a Gear in PlayerState.gear never has
+    to pass through a scanned hand to be on the board, so a board seeded
+    with one directly would have silently bypassed the whole refusal
+    mechanism before card_ids_present looked at player.gear."""
+    from solver.engine.state import GearInstance
+
+    sun_disc = "ogn-021-298"  # unclassified — real Gear, still blocking
+    state = GameState(
+        turn_player=0,
+        players=(
+            PlayerState(base_units=frozenset(), hand=(), runes=RunePool(available=()), score=0,
+                        gear=frozenset({GearInstance(card_id=sun_disc, instance_id=1,
+                                                      exhausted=False)})),
+            PlayerState(base_units=frozenset(), hand=(), runes=RunePool(available=()), score=0),
+        ),
+        battlefields=(
+            BattlefieldState("left", None, frozenset(), None),
+            BattlefieldState("right", None, frozenset(), None),
+        ),
+        scored_this_turn=frozenset(),
+        cards_played_this_turn=0,
+    )
+    assert sun_disc in coverage.card_ids_present(state)
+    assert any(sun_disc in reason for reason in coverage.blocking_cards(state))
+
+
 def test_the_synthetic_opponent_body_is_not_treated_as_an_unmodelled_card():
     """generate.py's "generic-opponent" is a stat-stick the engine invents,
     not a printing — it has no text to miss."""
