@@ -67,6 +67,23 @@ def ability_cost(card_id: str) -> tuple[int, int, Optional[Domain]]:
     return ABILITY_COSTS.get(card_id, (0, 0, None))
 
 
+TREASURE_TROVE = "ogn-186-298"  # "When this leaves the board, draw 1 and channel 1 rune exhausted."
+SCRAPHEAP = "ogn-182-298"  # "When this is played, discarded, or killed, draw 1."
+
+# Gear whose OWN printed text reacts to it leaving the board — surfaced by
+# actions.kill_gear's introduction, since until it existed nothing could
+# ever kill someone else's Gear and this question never came up. No
+# generic "on Gear death" hook exists (deaths.py's DEATH_TRIGGERS is
+# unit-only); a caller offering "kill a gear" as a candidate MUST exclude
+# these card_ids rather than silently drop the reaction — restrictive, not
+# permissive, same convention as play_unit_from_trash excluding units with
+# their own UNIT_PLAY_TRIGGERS. Scrapheap's reaction is itself a no-op
+# (draw, no Main Deck) but is excluded anyway rather than special-cased,
+# since telling the two apart buys nothing; Treasure Trove's additionally
+# needs "channel 1 rune exhausted", a RunePool change out of scope here.
+GEAR_DEATH_REACTIONS = frozenset({TREASURE_TROVE, SCRAPHEAP})
+
+
 def _exhaust_source(state: GameState, action: ActivateAbility) -> GameState:
     """Pay the Exhaust, and any runes the ability charges on top."""
     located = find_gear(state, action.source_id)
