@@ -11,10 +11,17 @@ never reads `stunned` and must not start to.
 
 from solver import search
 from solver.engine import abilities, combat
-from solver.engine.abilities import LEONA_DETERMINED
+from solver.engine.abilities import LEONA_DETERMINED, RADIANT_DAWN
 from solver.engine.actions import EnterShowdown, ResolveAttackTrigger
 from solver.engine.card_pool import card_def
-from solver.engine.state import BattlefieldState, GameState, PlayerState, RunePool, UnitInstance
+from solver.engine.state import (
+    BattlefieldState,
+    GameState,
+    LegendState,
+    PlayerState,
+    RunePool,
+    UnitInstance,
+)
 
 LEONA_CARD = card_def(LEONA_DETERMINED)
 
@@ -26,11 +33,12 @@ def make_unit(instance_id, controller=0, might=3, keywords=frozenset(), damage=0
                          is_token=False, stunned=stunned)
 
 
-def make_state(base_units=frozenset(), left_units=frozenset(), left_ctrl=None):
+def make_state(base_units=frozenset(), left_units=frozenset(), left_ctrl=None, legend=None):
     return GameState(
         turn_player=0,
         players=(
-            PlayerState(base_units=base_units, hand=(), runes=RunePool(available=()), score=0),
+            PlayerState(base_units=base_units, hand=(), runes=RunePool(available=()), score=0,
+                        legend=legend),
             PlayerState(base_units=frozenset(), hand=(), runes=RunePool(available=()), score=0),
         ),
         battlefields=(
@@ -216,3 +224,71 @@ def test_leona_stunned_enemy_deals_zero_combat_damage_but_still_dies_normally():
     assert {u.instance_id for u in survivors} == {1}  # enemy died to exactly its real Might
     assert next(iter(survivors)).damage == 0  # Leona took zero back
     assert resolved.battlefields[0].controller == 0
+
+
+# --- Radiant Dawn: "when you stun one or more enemy units, buff a unit" --
+
+
+def test_no_radiant_dawn_leaves_leonas_trigger_a_plain_single_target():
+    """Without the observer, Leona's own candidates stay exactly the
+    1-tuple shape she had before Radiant Dawn existed."""
+    leona = make_attacker(LEONA_DETERMINED, 1, might=4)
+    enemy = make_filler(2, might=3)
+    ally = make_filler(3, controller=0, might=1)
+    state = make_state(base_units=frozenset({leona, ally}), left_units=frozenset({enemy}), left_ctrl=1)
+    entered = combat.open_showdown(state, leona, "base", "left", has_pending_trigger=True)
+    candidates = abilities.ATTACK_TRIGGERS[LEONA_DETERMINED][2](entered, 1)
+    assert candidates == [(2,)]
+
+
+def test_radiant_dawn_makes_the_buff_choice_mandatory_and_reachable():
+    """With Radiant Dawn as our Legend and a friendly unit on the board,
+    the plain 1-tuple form must no longer be legal (the buff isn't
+    optional on the card's text) and the 2-tuple form must be — verified
+    through search.legal_actions end to end, not just the registry."""
+    leona = make_attacker(LEONA_DETERMINED, 1, might=4)
+    enemy = make_filler(2, might=3)
+    ally = make_filler(3, controller=0, might=1)
+    legend = LegendState(card_id=RADIANT_DAWN)
+    state = make_state(base_units=frozenset({leona, ally}), left_units=frozenset({enemy}),
+                        left_ctrl=1, legend=legend)
+    cards = {LEONA_DETERMINED: LEONA_CARD}
+
+    enter = next(a for a in search.legal_actions(state, cards) if isinstance(a, EnterShowdown))
+    entered = search.apply(state, enter, cards)
+
+    triggers = [a for a in search.legal_actions(entered, cards) if isinstance(a, ResolveAttackTrigger)]
+    param_sets = {t.trigger_params for t in triggers}
+    # One candidate per (enemy, friendly) pair - friendly is either the
+    # ally or Leona herself, both legal buff targets.
+    assert param_sets == {(2, 1), (2, 3)}
+    # The bare 1-tuple stun-only form is no longer offered at all.
+    assert not any(len(t.trigger_params) == 1 for t in triggers)
+
+    chosen = next(t for t in triggers if t.trigger_params == (2, 3))
+    after_trigger = search.apply(entered, chosen, cards)
+    left = next(bf for bf in after_trigger.battlefields if bf.battlefield_id == "left")
+    assert next(u for u in left.units if u.instance_id == 2).stunned is True
+    ally_after = next(u for u in after_trigger.players[0].base_units if u.instance_id == 3)
+    assert ally_after.buffed is True
+    # Leona herself (now standing in the showdown, not base) is untouched
+    # by the buff choice made here.
+    leona_after = next(u for u in left.units if u.instance_id == 1)
+    assert leona_after.buffed is False
+
+
+def test_radiant_dawn_buff_can_target_leona_herself():
+    leona = make_attacker(LEONA_DETERMINED, 1, might=4)
+    enemy = make_filler(2, might=3)
+    legend = LegendState(card_id=RADIANT_DAWN)
+    state = make_state(base_units=frozenset({leona}), left_units=frozenset({enemy}),
+                        left_ctrl=1, legend=legend)
+    entered = combat.open_showdown(state, leona, "base", "left", has_pending_trigger=True)
+    candidates = abilities.ATTACK_TRIGGERS[LEONA_DETERMINED][2](entered, 1)
+    assert candidates == [(2, 1)]  # only Leona herself is a friendly unit here
+    after_trigger = abilities.apply_attack_trigger(
+        entered, ResolveAttackTrigger(instance_id=1, trigger_params=(2, 1)))
+    left = next(bf for bf in after_trigger.battlefields if bf.battlefield_id == "left")
+    leona_after = next(u for u in left.units if u.instance_id == 1)
+    assert leona_after.buffed is True
+    assert next(u for u in left.units if u.instance_id == 2).stunned is True

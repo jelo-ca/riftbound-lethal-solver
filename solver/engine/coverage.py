@@ -310,9 +310,25 @@ HANDLED: dict[str, str] = {
     "ogn-238-298": "Leona, Determined — [Shield] via traits.TRAIT_REGISTRY; mandatory "
                    "\"when I attack, stun an enemy unit here\" via abilities.ATTACK_TRIGGERS "
                    "and abilities.stun_unit, same targeted-trigger shape as Yasuo Remorseful/"
-                   "Crackshot Corsair (_single_enemy_here_is_legal/_candidates), only the "
-                   "effect differs",
+                   "Crackshot Corsair, extended (abilities._leona_is_legal/_candidates) to "
+                   "fold in Radiant Dawn's mandatory buff choice when that Legend is present "
+                   "(no resolution stack, so the compound trigger's whole choice lives in one "
+                   "trigger_params tuple — same shape as Kinkou Monk's two-target buff)",
     "ogn-238a-298": "Leona, Determined — same card as ogn-238-298, alternate art",
+    # Radiant Dawn: a passive "when you stun" observer, wired directly into
+    # the one card that can currently cause a stun (Leona) via
+    # abilities.STUN_OBSERVER_LEGENDS/_stun_observer_present — checked by
+    # Legend identity, not by which card did the stunning, so a second
+    # stunner reuses the same hook unchanged. The buff target is a real
+    # choice (unlike observers.py's deterministic play-trigger watchers),
+    # so it can't use that module's shape; it's folded into Leona's own
+    # ATTACK_TRIGGERS trigger_params instead, verified reachable through
+    # search.legal_actions offering the 2-tuple form.
+    "ogn-261-298": "Radiant Dawn — Legend, \"when you stun one or more enemy units, buff a "
+                   "friendly unit\" via abilities.STUN_OBSERVER_LEGENDS, wired into Leona's "
+                   "attack trigger",
+    "ogn-306-298": "Radiant Dawn — same Legend, alternate printing",
+    "ogn-306-star-298": "Radiant Dawn — same Legend, alternate printing",
 }
 
 

@@ -2004,6 +2004,37 @@ DUNE_DRAKE = "ogn-131-298"  # "When I attack, give me +2 Might this turn if ther
 LEONA_DETERMINED = "ogn-238-298"  # "[Shield] When I attack, stun an enemy unit here."
 LEONA_DETERMINED_ALT = "ogn-238a-298"  # same card, alternate art printing
 
+# Radiant Dawn (Legend): "When you stun one or more enemy units, buff a
+# friendly unit." A passive observer keyed to a stun the Legend's OWN
+# controller causes — same "you" convention as conquer.py/observers.py's
+# own triggers (keyed to the acting unit's controller, not who the effect
+# lands on). Checked by Legend identity rather than by which card did the
+# stunning, so a second stunner card reuses this unchanged — the same
+# "add a card, reuse the hook" shape those two modules already use.
+RADIANT_DAWN = "ogn-261-298"
+RADIANT_DAWN_NX = "ogn-306-298"  # same Legend, alternate printing
+RADIANT_DAWN_STAR = "ogn-306-star-298"  # same Legend, alternate printing
+STUN_OBSERVER_LEGENDS = frozenset({RADIANT_DAWN, RADIANT_DAWN_NX, RADIANT_DAWN_STAR})
+
+
+def _stun_observer_present(state: GameState, controller: int) -> bool:
+    legend = state.players[controller].legend
+    return legend is not None and legend.card_id in STUN_OBSERVER_LEGENDS
+
+
+def _units_controlled_by(state: GameState, controller: int) -> list:
+    """Every unit `controller` has anywhere — Base plus every battlefield.
+    Parametrized by controller rather than hardcoded to state.turn_player
+    because an attack trigger's attacker isn't always us: Charm/
+    Blitzcrank can redirect an ENEMY unit into combat, making THEM the
+    Attacker for that trigger (combat.py's module docstring) — and it's
+    the attacker's own controller whose Radiant Dawn (if any) would be
+    watching, not necessarily state.turn_player's."""
+    found = list(state.players[controller].base_units)
+    for bf in state.battlefields:
+        found.extend(u for u in bf.units if u.controller == controller)
+    return found
+
 
 def _attacker_and_battlefield(state: GameState, attacker_instance_id: int):
     """The attacking unit and the battlefield it's standing on, read off
@@ -2098,14 +2129,52 @@ def _dune_drake_effect(state: GameState, attacker_instance_id: int, trigger_para
     return state
 
 
+def _leona_is_legal(state: GameState, attacker_instance_id: int, trigger_params: tuple) -> bool:
+    """params = (enemy_target_id,), or (enemy_target_id, buff_target_id)
+    exactly when the attacker's controller runs a "when you stun"
+    observer (Radiant Dawn) with a friendly unit available to receive the
+    buff. This engine has no resolution stack, so a compound MANDATORY
+    trigger's whole choice has to live in one trigger_params tuple — same
+    shape as every other multi-target mandatory trigger in this registry
+    (e.g. Kinkou Monk's two-target buff). The buff isn't optional on
+    Radiant Dawn's text, so when it's reachable the plain 1-tuple form
+    stops being legal, same as MANDATORY_PLAY_TRIGGERS withholding the
+    untriggered form elsewhere in this module."""
+    attacker, bf = _attacker_and_battlefield(state, attacker_instance_id)
+    friendlies = _units_controlled_by(state, attacker.controller)
+    observer_active = _stun_observer_present(state, attacker.controller) and bool(friendlies)
+    expected_len = 2 if observer_active else 1
+    if len(trigger_params) != expected_len:
+        return False
+    target = next((u for u in bf.units if u.instance_id == trigger_params[0]), None)
+    if target is None or target.controller == attacker.controller:
+        return False
+    if observer_active and not any(u.instance_id == trigger_params[1] for u in friendlies):
+        return False
+    return True
+
+
+def _leona_candidates(state: GameState, attacker_instance_id: int) -> list[tuple]:
+    attacker, bf = _attacker_and_battlefield(state, attacker_instance_id)
+    enemy_ids = [u.instance_id for u in _enemy_units_here(attacker, bf)]
+    friendlies = _units_controlled_by(state, attacker.controller)
+    if _stun_observer_present(state, attacker.controller) and friendlies:
+        return [(enemy_id, friendly.instance_id)
+                for enemy_id in enemy_ids
+                for friendly in sorted(friendlies, key=lambda u: u.instance_id)]
+    return [(enemy_id,) for enemy_id in enemy_ids]
+
+
 def _leona_effect(state: GameState, attacker_instance_id: int, trigger_params: tuple) -> GameState:
-    """"Stun an enemy unit here." Same (enemy_target_id,) shape as
-    Yasuo/Crackshot's own targeted triggers (_single_enemy_here_is_legal/
-    _single_enemy_here_candidates, reused below) — only the effect
-    differs: stun_unit rather than damage. "It doesn't deal combat damage
-    this turn" IS the stun (see combat.side_damage_pool), not a separate
-    clause to model."""
-    return stun_unit(state, trigger_params[0])
+    """"Stun an enemy unit here." "It doesn't deal combat damage this
+    turn" IS the stun (see combat.side_damage_pool), not a separate
+    clause to model. A second param, when present, is Radiant Dawn's
+    mandatory buff choice — apply_buff already no-ops on an
+    already-buffed target, matching its reminder text."""
+    state = stun_unit(state, trigger_params[0])
+    if len(trigger_params) == 2:
+        state = apply_buff(state, trigger_params[1])
+    return state
 
 
 # card_id -> (is_legal(state, attacker_instance_id, trigger_params),
@@ -2128,8 +2197,8 @@ ATTACK_TRIGGERS: dict[str, tuple[
     CRACKSHOT_CORSAIR: (_single_enemy_here_is_legal, _attack_trigger_flat_damage_effect,
                         _single_enemy_here_candidates),
     DUNE_DRAKE: (_dune_drake_is_legal, _dune_drake_effect, _dune_drake_candidates),
-    LEONA_DETERMINED: (_single_enemy_here_is_legal, _leona_effect, _single_enemy_here_candidates),
-    LEONA_DETERMINED_ALT: (_single_enemy_here_is_legal, _leona_effect, _single_enemy_here_candidates),
+    LEONA_DETERMINED: (_leona_is_legal, _leona_effect, _leona_candidates),
+    LEONA_DETERMINED_ALT: (_leona_is_legal, _leona_effect, _leona_candidates),
 }
 
 
