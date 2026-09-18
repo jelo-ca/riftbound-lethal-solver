@@ -29,13 +29,13 @@ def make_state(yasuo):
 def test_no_point_before_third_move():
     for count in (0, 1, 2):
         state = make_state(make_yasuo(moved_this_turn=count))
-        result = apply_move_triggers(state, 1)
+        result = apply_move_triggers(state, 1, "right")
         assert result.players[0].score == 7
 
 
 def test_point_granted_exactly_on_third_move():
     state = make_state(make_yasuo(moved_this_turn=3))
-    result = apply_move_triggers(state, 1)
+    result = apply_move_triggers(state, 1, "right")
     assert result.players[0].score == 8
 
 
@@ -43,7 +43,7 @@ def test_no_repeat_trigger_past_third_move():
     """The card fires once, at exactly the third move — not every move
     from then on."""
     state = make_state(make_yasuo(moved_this_turn=4))
-    result = apply_move_triggers(state, 1)
+    result = apply_move_triggers(state, 1, "right")
     assert result.players[0].score == 7
 
 
@@ -57,5 +57,5 @@ def test_only_controllers_own_move_counts():
         BattlefieldState("left", 1, frozenset({enemy_yasuo}), None),
         state.battlefields[1],
     ))
-    result = apply_move_triggers(state, enemy_yasuo.instance_id)
+    result = apply_move_triggers(state, enemy_yasuo.instance_id, "right")
     assert result.players[0].score == 7  # not granted to us — it's the opponent's card

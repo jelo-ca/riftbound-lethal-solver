@@ -283,6 +283,36 @@ HANDLED: dict[str, str] = {
     "ogn-295-298": "Vilemaw's Lair — \"Units can't move from here to base\" via "
                    "battlefields.BattlefieldEffect(blocks_move_to_base=True), exercised "
                    "in puzzle 7 and covered directly by test_battlefields.py",
+    # Same ledger-hygiene shape as Vilemaw's Lair above: both were already
+    # implemented in battlefields.py and covered by test_battlefields.py
+    # before this pass, just never entered here — so they read as BLOCKING
+    # despite being correctly modelled.
+    "ogn-297-298": "Windswept Hillock — \"Units here have [Ganking]\" via "
+                   "battlefields.BattlefieldEffect(grants=frozenset({'Ganking'})), read "
+                   "through traits.resolved_traits and reachable in move legality via "
+                   "actions.effective_keywords — covered by test_battlefields.py",
+    "ogn-294-298": "Trifarian War Camp — \"Units here have +1 Might. (This includes "
+                   "attackers.)\" via battlefields.BattlefieldEffect(flat_might_bonus=1), "
+                   "read through traits.effective_might for both combat roles AND plain "
+                   "(non-combat) damage, unlike Assault/Shield's role-gated bonus — "
+                   "covered by test_battlefields.py",
+    # Back-Alley Bar — a genuine MOVE-COMPLETION trigger, not a static
+    # positional bonus, so it doesn't fit battlefields.py's BattlefieldEffect
+    # shape at all (that module's own docstring: TRIGGERS stay out of it).
+    # Hooked into abilities.apply_move_triggers instead — the same choke
+    # point every completed move (Standard Move, EnterShowdown, ResolveCombat,
+    # and every ability/spell that relocates a unit: Ride The Wind, Charm,
+    # Blitzcrank, Maddened Marauder) already routes through for Yasuo
+    # Windrider's move-count trigger, so no new hook was needed, just a
+    # second condition alongside the existing one.
+    "ogn-277-298": "Back-Alley Bar — \"When a unit moves from here, give it +1 Might "
+                   "this turn.\" via abilities.apply_move_triggers/_grant_might, keyed off "
+                   "the battlefield's own effect_id read from the post-move state (effect_id "
+                   "is fixed at position setup and never changes as units enter or leave, so "
+                   "reading it after the move is exactly as correct as before). Printed text "
+                   "names no controller (\"a unit,\" not \"a friendly unit\" — contrast Reaver's "
+                   "Row/Fortified Position below), so it fires for either player's mover; "
+                   "verified reachable through search.legal_actions via a plain Standard Move.",
     # Observer triggers — "when you play ANOTHER unit," fired at whoever is
     # already on the board watching, from actions.apply_play_unit (the one
     # choke point every genuine unit-from-hand play routes through). See

@@ -301,6 +301,23 @@ def test_vilemaws_lair_is_handled():
     assert coverage.blocking_cards(state) == []
 
 
+def test_windswept_hillock_and_trifarian_war_camp_are_handled():
+    """Same ledger-hygiene gap as Vilemaw's Lair — both battlefield
+    effects were already implemented and covered by test_battlefields.py
+    before this pass, just missing their HANDLED entries."""
+    state = make_state(left_effect="ogn-297-298")
+    assert coverage.blocking_cards(state) == []
+    state = make_state(left_effect="ogn-294-298")
+    assert coverage.blocking_cards(state) == []
+
+
+def test_back_alley_bar_is_handled():
+    """New move-completion hook, not a ledger-hygiene gap — see
+    test_battlefields.py for the search.legal_actions-reachable proof."""
+    state = make_state(left_effect="ogn-277-298")
+    assert coverage.blocking_cards(state) == []
+
+
 # --- what the board scan sees ---
 
 
