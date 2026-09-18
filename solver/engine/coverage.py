@@ -197,6 +197,16 @@ HANDLED: dict[str, str] = {
                    "legends.LEGEND_ABILITIES, same shape as Yasuo, Unforgiven",
     "ogn-304-298": "Blind Monk — same Legend, alternate printing",
     "ogn-304-star-298": "Blind Monk — same Legend, alternate printing",
+    # Ledger-hygiene fixes: implemented and tested since before this pass,
+    # just never added to the ledger. Leaving them off cost nothing but
+    # missed coverage (the safe direction), unlike the Warden regression
+    # above, which cost correctness.
+    "ogn-259-298": "Yasuo, Unforgiven — Legend, \"2 Energy, Exhaust: Move a friendly "
+                   "unit to or from its base\" via legends.LEGEND_ABILITIES, the same "
+                   "generic dispatch (search.py) that makes Blind Monk reachable",
+    "ogn-295-298": "Vilemaw's Lair — \"Units can't move from here to base\" via "
+                   "battlefields.BattlefieldEffect(blocks_move_to_base=True), exercised "
+                   "in puzzle 7 and covered directly by test_battlefields.py",
     # "When I attack" triggers (RULES ANSWER, project owner, 2026-09-17): a
     # trigger that kills the defender before the Combat Damage Step removes
     # it from combat entirely — it deals no combat damage. abilities.py's

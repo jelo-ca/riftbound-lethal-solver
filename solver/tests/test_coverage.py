@@ -143,16 +143,16 @@ def test_being_in_card_pool_does_not_clear_a_card(monkeypatch):
 
 
 def test_being_a_registered_legend_ability_does_not_clear_it(monkeypatch):
-    """The Legend-side analogue: Yasuo, Unforgiven's ability has been a
-    complete, tested, legal_actions-reachable legends.LEGEND_ABILITIES
-    entry since before this session and is STILL "blocking" here — nobody
-    has written its coverage ledger entry yet, which is exactly the state
-    the ledger is supposed to be able to represent. Blind Monk must be
-    cleared on its own ledger entry, not because legends.py can run it."""
+    """The Legend-side analogue: both current legends.LEGEND_ABILITIES
+    entries (Yasuo, Unforgiven and Blind Monk) are complete, tested,
+    legal_actions-reachable code — and neither is "handled" because
+    legends.py can run it, only because its own ledger entry says so.
+    Proven by removing Blind Monk's entry and confirming the registry
+    alone doesn't keep it cleared."""
     from solver.engine import legends
 
     assert legends.is_legend_ability(legends.YASUO_UNFORGIVEN)
-    assert coverage.classify(legends.YASUO_UNFORGIVEN) == "blocking"
+    assert coverage.classify(legends.YASUO_UNFORGIVEN) == "handled"
 
     victim = "ogn-257-298"  # Blind Monk
     assert legends.is_legend_ability(victim) and coverage.classify(victim) == "handled"
@@ -171,19 +171,22 @@ def test_every_handled_card_has_stats_available():
     Stats may come from the hand-written pool OR be derived from the card
     cache; what matters is that something can describe it.
 
-    Legends are the one structural exception: a Legend is never drawn or
-    played from hand (legends.py's own docstring — LegendState carries a
-    bare card_id, no cost fields at all, since it starts in its own zone
-    as part of the puzzle's initial position) and its ability's
-    reachability runs through player.legend directly in search.py, not
-    through the cards/CardDef table this test exists to guard. So the
+    Legends and Battlefields are the two structural exceptions: neither is
+    ever drawn or played from hand (a Legend starts in its own zone per
+    legends.py's docstring — LegendState carries a bare card_id, no cost
+    fields at all; a Battlefield effect lives in BattlefieldState.effect_id,
+    set at position setup, never in a hand) and reachability for both runs
+    outside the cards/CardDef table this test exists to guard — Legends
+    through player.legend in search.py, Battlefields through
+    battlefields.BATTLEFIELD_EFFECTS keyed off the state directly. So the
     exact failure mode this test checks for — "skipped by action
-    generation because nothing could describe it" — cannot happen to one,
-    and CardType has no Legend representation for card_def() to produce
-    regardless (see card_data.py's REPRESENTABLE_TYPES)."""
+    generation because nothing could describe it" — cannot happen to
+    either, and CardType has no Legend/Battlefield representation for
+    card_def() to produce regardless (see card_data.py's
+    REPRESENTABLE_TYPES)."""
     cache = json.loads(coverage.card_names.CACHE_PATH.read_text(encoding="utf-8"))
     for card_id in coverage.HANDLED:
-        if cache.get(card_id, {}).get("type") == "Legend":
+        if cache.get(card_id, {}).get("type") in ("Legend", "Battlefield"):
             continue
         assert card_def(card_id) is not None, \
             f"{card_id} cleared as handled but nothing can supply its stats"
@@ -243,6 +246,25 @@ def test_mageseeker_warden_stays_blocking_now_dune_drake_is_handled():
         "Dune Drake is expected to be handled now — if this ever reverts, " \
         "Mageseeker Warden's old inert argument becomes valid again"
     assert coverage.classify("ogn-070-298") == "blocking"
+
+
+# --- ledger-hygiene: implemented+tested cards missing their entry ---
+
+
+def test_yasuo_unforgiven_is_handled():
+    """His Legend ability predates this ledger's HANDLED entries — real
+    reachability is already covered by test_legends.py's direct tests plus
+    search.py's generic legends.LEGEND_ABILITIES dispatch (the same path
+    proven for Blind Monk)."""
+    assert coverage.classify("ogn-259-298") == "handled"
+
+
+def test_vilemaws_lair_is_handled():
+    """Implemented in battlefields.py, exercised in puzzle 7, covered by
+    test_battlefields.py — it just never got a ledger entry, so it read as
+    BLOCKING despite being correctly modelled."""
+    state = make_state(left_effect="ogn-295-298")
+    assert coverage.blocking_cards(state) == []
 
 
 # --- what the board scan sees ---
