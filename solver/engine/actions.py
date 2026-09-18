@@ -47,7 +47,13 @@ Zone = str  # "base" or a battlefield_id
 
 @dataclass(frozen=True)
 class RunePayment:
-    energy_runes: tuple[Domain, ...]  # domains of runes Exhausted for Energy
+    # `Optional[Domain]` (not just `Domain`): a domain-less rune (state.
+    # RunePool's docstring) can be Exhausted for Energy same as any other,
+    # so it can legitimately be one of the representative runes here. Its
+    # actual domain value is never read for Energy (see generate_
+    # rune_payments — "one representative split is exact"), only its
+    # count, so `None` entries are harmless.
+    energy_runes: tuple[Optional[Domain], ...]  # domains of runes Exhausted for Energy
     power_runes: tuple[Domain, ...]  # domains of runes Recycled for Power
     # Runes Recycled to pay a domain-FREE cost — today only [Deflect]'s
     # "opponents must pay ⟨rainbow⟩ to choose me." Recycled like Power but
@@ -232,8 +238,15 @@ def generate_rune_payments(pool: RunePool, energy_cost: int, power_cost: int,
     power_runes = tuple([power_domain] * power_cost) if power_cost else ()
 
     # Recycle capacity left per domain once this cost's own Power is taken.
+    # `None` (a domain-less rune — state.RunePool's docstring) is skipped
+    # here on purpose: it can never occupy a rainbow slot regardless of how
+    # much Recycle capacity is otherwise left, so it must never become a key
+    # of this dict, which _domain_multisets treats as "a domain the rainbow
+    # cost may draw from."
     remaining_by_domain: dict[Domain, int] = {}
     for domain in set(pool.available):
+        if domain is None:
+            continue
         left = power_capacity(pool, domain) - (power_cost if domain == power_domain else 0)
         if left > 0:
             remaining_by_domain[domain] = left
