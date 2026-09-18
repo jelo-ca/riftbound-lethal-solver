@@ -30,6 +30,7 @@ from .engine.actions import (
     PlayUnit,
     ResolveAttackTrigger,
     ResolveCombat,
+    ResolveConquerTrigger,
     ResolveShowdown,
     find_unit,
 )
@@ -122,6 +123,14 @@ def render_state(state: GameState) -> dict:
                       "attacker_controller": state.showdown.attacker_controller,
                       "attack_trigger_resolved": state.showdown.attack_trigger_resolved}
                      if state.showdown else None),
+        # In canonical_key (a pending choice narrows the legal action space
+        # to just ResolveConquerTrigger), so it has to render here too, or
+        # two genuinely different positions would look identical.
+        "pending_conquer_choice": ({"kind": state.pending_conquer_choice.kind,
+                                     "key": state.pending_conquer_choice.key,
+                                     "battlefield_id": state.pending_conquer_choice.battlefield_id,
+                                     "instance_id": state.pending_conquer_choice.instance_id}
+                                    if state.pending_conquer_choice else None),
     }
 
 
@@ -185,6 +194,9 @@ def render_action(state: GameState, action: Action, action_id: str) -> dict:
         label = f"Resolve {card_names.display_name(attacker.card_id)}'s attack trigger"
         card_id, keywords = attacker.card_id, []
         instance_id = action.instance_id
+    elif isinstance(action, ResolveConquerTrigger):
+        label = f"Resolve conquer trigger ({', '.join(str(p) for p in action.params)})"
+        card_id, keywords = "", []
     elif isinstance(action, PlaySpell):
         label = (f"Play {card_names.display_name(action.card_id)} "
                   f"({', '.join(str(p) for p in action.params)})")

@@ -1,14 +1,14 @@
 {
   "schema_version": 2,
   "puzzle_id": "puzzle-003-the-long-way-around",
-  "root": "17a1f2e3dbc60d83",
+  "root": "ef276c891346cca1",
   "solution": {
-    "8b72da6318e04ccb": "a39",
-    "7515c4fbebdcf9af": "a9",
-    "17a1f2e3dbc60d83": "a1"
+    "6fb798e1b1e3c84d": "a39",
+    "57326d2f8c97b10a": "a9",
+    "ef276c891346cca1": "a1"
   },
   "nodes": {
-    "17a1f2e3dbc60d83": {
+    "ef276c891346cca1": {
       "turn_player": 0,
       "players": [
         {
@@ -106,9 +106,10 @@
       ],
       "cards_played_this_turn": 0,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "7515c4fbebdcf9af": {
+    "57326d2f8c97b10a": {
       "turn_player": 0,
       "players": [
         {
@@ -207,9 +208,10 @@
       ],
       "cards_played_this_turn": 0,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "f59fe6d0d3c3769b": {
+    "39a932cefea16110": {
       "turn_player": 0,
       "players": [
         {
@@ -307,9 +309,10 @@
       ],
       "cards_played_this_turn": 0,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "19dc2fca624a0f5c": {
+    "2474cf4b51032f84": {
       "turn_player": 0,
       "players": [
         {
@@ -410,9 +413,10 @@
       ],
       "cards_played_this_turn": 1,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "842956126dd5d2ee": {
+    "fde1fe331bbf8df1": {
       "turn_player": 0,
       "players": [
         {
@@ -512,9 +516,10 @@
       ],
       "cards_played_this_turn": 1,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "e9d3381a15c71896": {
+    "9f841bf4fdaa0844": {
       "turn_player": 0,
       "players": [
         {
@@ -615,9 +620,10 @@
       ],
       "cards_played_this_turn": 1,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "dc1b5df7bcfee6f8": {
+    "731f6fe3c0e5de91": {
       "turn_player": 0,
       "players": [
         {
@@ -717,9 +723,10 @@
       ],
       "cards_played_this_turn": 1,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "71f8cbfe32e66264": {
+    "c4827c7c4729b2af": {
       "turn_player": 0,
       "players": [
         {
@@ -819,9 +826,10 @@
       ],
       "cards_played_this_turn": 1,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "2408433e882492ca": {
+    "fc370ae2f83c2f48": {
       "turn_player": 0,
       "players": [
         {
@@ -920,9 +928,10 @@
       ],
       "cards_played_this_turn": 1,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "8b72da6318e04ccb": {
+    "6fb798e1b1e3c84d": {
       "turn_player": 0,
       "players": [
         {
@@ -1022,9 +1031,10 @@
       ],
       "cards_played_this_turn": 1,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "0c3047cf937f3c71": {
+    "d719ace0c4925e0d": {
       "turn_player": 0,
       "players": [
         {
@@ -1124,9 +1134,10 @@
       ],
       "cards_played_this_turn": 1,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "cad2f9c54f7a2ed3": {
+    "1f9767e9358940c6": {
       "turn_player": 0,
       "players": [
         {
@@ -1226,9 +1237,10 @@
       ],
       "cards_played_this_turn": 1,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "96e6fefd7eb3f18d": {
+    "2891f1a7da8fca3f": {
       "turn_player": 0,
       "players": [
         {
@@ -1328,9 +1340,10 @@
       ],
       "cards_played_this_turn": 1,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "504b913acfa81dd4": {
+    "472b74a17f721f6d": {
       "turn_player": 0,
       "players": [
         {
@@ -1430,9 +1443,10 @@
       ],
       "cards_played_this_turn": 1,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "3a6173e0df81c12e": {
+    "eb5109024f72d948": {
       "turn_player": 0,
       "players": [
         {
@@ -1532,9 +1546,10 @@
       ],
       "cards_played_this_turn": 1,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "82ed56af688e1e7a": {
+    "41cfc84e3ba9b257": {
       "turn_player": 0,
       "players": [
         {
@@ -1634,9 +1649,10 @@
       ],
       "cards_played_this_turn": 1,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "ebe5827e9c3b9226": {
+    "b13ab23bed889658": {
       "turn_player": 0,
       "players": [
         {
@@ -1735,9 +1751,10 @@
       ],
       "cards_played_this_turn": 1,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "aed7aea6a461d9bd": {
+    "35130fd2ed277b99": {
       "turn_player": 0,
       "players": [
         {
@@ -1838,9 +1855,10 @@
       ],
       "cards_played_this_turn": 1,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "b4e49eaf7ee3f172": {
+    "e6b1985a48c14b1d": {
       "turn_player": 0,
       "players": [
         {
@@ -1941,9 +1959,10 @@
       ],
       "cards_played_this_turn": 1,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "7cdee84e756c72a6": {
+    "c4eeb557a55388a3": {
       "turn_player": 0,
       "players": [
         {
@@ -2043,9 +2062,10 @@
       ],
       "cards_played_this_turn": 1,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "edb7c988cc172c9b": {
+    "b4dc7d2c476e9e0b": {
       "turn_player": 0,
       "players": [
         {
@@ -2145,9 +2165,10 @@
       ],
       "cards_played_this_turn": 1,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "1aab9b8ceadf586e": {
+    "515bd7165ad0fa28": {
       "turn_player": 0,
       "players": [
         {
@@ -2247,9 +2268,10 @@
       ],
       "cards_played_this_turn": 1,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "974fa74c30400c6a": {
+    "e6f85658b74edf70": {
       "turn_player": 0,
       "players": [
         {
@@ -2350,9 +2372,10 @@
       ],
       "cards_played_this_turn": 1,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "701714c54fe410dc": {
+    "bd6344ff2fca19da": {
       "turn_player": 0,
       "players": [
         {
@@ -2452,9 +2475,10 @@
       ],
       "cards_played_this_turn": 1,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "aa628cf56a476baf": {
+    "7fc3d3caddb6dc1b": {
       "turn_player": 0,
       "players": [
         {
@@ -2554,9 +2578,10 @@
       ],
       "cards_played_this_turn": 1,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "eacb79d46cd1fc37": {
+    "585acca028a1665a": {
       "turn_player": 0,
       "players": [
         {
@@ -2657,9 +2682,10 @@
       ],
       "cards_played_this_turn": 1,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "369822239510c5e5": {
+    "259af70a0e4f0b1c": {
       "turn_player": 0,
       "players": [
         {
@@ -2758,9 +2784,10 @@
       ],
       "cards_played_this_turn": 1,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "d3bc8b01c20fb274": {
+    "dd7022a045c698f0": {
       "turn_player": 0,
       "players": [
         {
@@ -2860,9 +2887,10 @@
       ],
       "cards_played_this_turn": 1,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "0119854c834a4155": {
+    "01282564d31e33cc": {
       "turn_player": 0,
       "players": [
         {
@@ -2962,9 +2990,10 @@
       ],
       "cards_played_this_turn": 1,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "d10c40daf1adff9c": {
+    "29a4b62f3e088734": {
       "turn_player": 0,
       "players": [
         {
@@ -3065,9 +3094,10 @@
       ],
       "cards_played_this_turn": 1,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "06efdafc993bd028": {
+    "d49938e51bccb173": {
       "turn_player": 0,
       "players": [
         {
@@ -3167,9 +3197,10 @@
       ],
       "cards_played_this_turn": 1,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "3859e781f957b7c4": {
+    "74da522af5f84291": {
       "turn_player": 0,
       "players": [
         {
@@ -3269,9 +3300,10 @@
       ],
       "cards_played_this_turn": 1,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "24d3c31fd2ecbdbd": {
+    "f48ee0c7f64c689e": {
       "turn_player": 0,
       "players": [
         {
@@ -3372,9 +3404,10 @@
       ],
       "cards_played_this_turn": 1,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "a9fa37ac768ad61f": {
+    "a8c92ce728ea8a46": {
       "turn_player": 0,
       "players": [
         {
@@ -3474,9 +3507,10 @@
       ],
       "cards_played_this_turn": 1,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "71ec6340a3adf77d": {
+    "220bcc0ee28004e7": {
       "turn_player": 0,
       "players": [
         {
@@ -3576,9 +3610,10 @@
       ],
       "cards_played_this_turn": 1,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "a59ab513def5da81": {
+    "c7d97def34344829": {
       "turn_player": 0,
       "players": [
         {
@@ -3678,9 +3713,10 @@
       ],
       "cards_played_this_turn": 1,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "37df9e7bc5950ca2": {
+    "89be9792083f7c63": {
       "turn_player": 0,
       "players": [
         {
@@ -3781,9 +3817,10 @@
       ],
       "cards_played_this_turn": 1,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "83f755f71d289413": {
+    "bd4df8ae26c10072": {
       "turn_player": 0,
       "players": [
         {
@@ -3883,9 +3920,10 @@
       ],
       "cards_played_this_turn": 1,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "1a036a6e57f0484f": {
+    "0f39857015acc86a": {
       "turn_player": 0,
       "players": [
         {
@@ -3985,9 +4023,10 @@
       ],
       "cards_played_this_turn": 1,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "c70ae9b94367de52": {
+    "8a35f70d0dfc6ac2": {
       "turn_player": 0,
       "players": [
         {
@@ -4086,9 +4125,10 @@
       ],
       "cards_played_this_turn": 1,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "06443b265ade41c1": {
+    "3f80c44eb900aa78": {
       "turn_player": 0,
       "players": [
         {
@@ -4188,9 +4228,10 @@
       ],
       "cards_played_this_turn": 1,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "6968d7c6e09c8f20": {
+    "04fbbeaa82bf160a": {
       "turn_player": 0,
       "players": [
         {
@@ -4290,9 +4331,10 @@
       ],
       "cards_played_this_turn": 1,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "2a379b9667fd5d1a": {
+    "143c988321d3c44e": {
       "turn_player": 0,
       "players": [
         {
@@ -4392,9 +4434,10 @@
       ],
       "cards_played_this_turn": 1,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     },
-    "2469b6f47b421589": {
+    "d097991caa3b38bd": {
       "turn_player": 0,
       "players": [
         {
@@ -4495,11 +4538,12 @@
       ],
       "cards_played_this_turn": 1,
       "cards_discarded_this_turn": 0,
-      "showdown": null
+      "showdown": null,
+      "pending_conquer_choice": null
     }
   },
   "edges": {
-    "17a1f2e3dbc60d83": [
+    "ef276c891346cca1": [
       {
         "action": {
           "id": "a1",
@@ -4514,7 +4558,7 @@
           "instance_id": 1
         },
         "to": [
-          "7515c4fbebdcf9af"
+          "57326d2f8c97b10a"
         ],
         "adversarial": false
       },
@@ -4532,7 +4576,7 @@
           "instance_id": 1
         },
         "to": [
-          "f59fe6d0d3c3769b"
+          "39a932cefea16110"
         ],
         "adversarial": false
       },
@@ -4548,7 +4592,7 @@
           "instance_id": null
         },
         "to": [
-          "19dc2fca624a0f5c"
+          "2474cf4b51032f84"
         ],
         "adversarial": false
       },
@@ -4564,7 +4608,7 @@
           "instance_id": null
         },
         "to": [
-          "842956126dd5d2ee"
+          "fde1fe331bbf8df1"
         ],
         "adversarial": false
       },
@@ -4580,7 +4624,7 @@
           "instance_id": null
         },
         "to": [
-          "e9d3381a15c71896"
+          "9f841bf4fdaa0844"
         ],
         "adversarial": false
       },
@@ -4596,7 +4640,7 @@
           "instance_id": null
         },
         "to": [
-          "dc1b5df7bcfee6f8"
+          "731f6fe3c0e5de91"
         ],
         "adversarial": false
       },
@@ -4612,7 +4656,7 @@
           "instance_id": null
         },
         "to": [
-          "71f8cbfe32e66264"
+          "c4827c7c4729b2af"
         ],
         "adversarial": false
       },
@@ -4628,12 +4672,12 @@
           "instance_id": null
         },
         "to": [
-          "2408433e882492ca"
+          "fc370ae2f83c2f48"
         ],
         "adversarial": false
       }
     ],
-    "7515c4fbebdcf9af": [
+    "57326d2f8c97b10a": [
       {
         "action": {
           "id": "a9",
@@ -4646,7 +4690,7 @@
           "instance_id": null
         },
         "to": [
-          "8b72da6318e04ccb"
+          "6fb798e1b1e3c84d"
         ],
         "adversarial": false
       },
@@ -4662,7 +4706,7 @@
           "instance_id": null
         },
         "to": [
-          "0c3047cf937f3c71"
+          "d719ace0c4925e0d"
         ],
         "adversarial": false
       },
@@ -4678,7 +4722,7 @@
           "instance_id": null
         },
         "to": [
-          "cad2f9c54f7a2ed3"
+          "1f9767e9358940c6"
         ],
         "adversarial": false
       },
@@ -4694,7 +4738,7 @@
           "instance_id": null
         },
         "to": [
-          "96e6fefd7eb3f18d"
+          "2891f1a7da8fca3f"
         ],
         "adversarial": false
       },
@@ -4710,7 +4754,7 @@
           "instance_id": null
         },
         "to": [
-          "504b913acfa81dd4"
+          "472b74a17f721f6d"
         ],
         "adversarial": false
       },
@@ -4726,12 +4770,12 @@
           "instance_id": null
         },
         "to": [
-          "3a6173e0df81c12e"
+          "eb5109024f72d948"
         ],
         "adversarial": false
       }
     ],
-    "f59fe6d0d3c3769b": [
+    "39a932cefea16110": [
       {
         "action": {
           "id": "a15",
@@ -4744,7 +4788,7 @@
           "instance_id": null
         },
         "to": [
-          "82ed56af688e1e7a"
+          "41cfc84e3ba9b257"
         ],
         "adversarial": false
       },
@@ -4760,7 +4804,7 @@
           "instance_id": null
         },
         "to": [
-          "ebe5827e9c3b9226"
+          "b13ab23bed889658"
         ],
         "adversarial": false
       },
@@ -4776,7 +4820,7 @@
           "instance_id": null
         },
         "to": [
-          "aed7aea6a461d9bd"
+          "35130fd2ed277b99"
         ],
         "adversarial": false
       },
@@ -4792,7 +4836,7 @@
           "instance_id": null
         },
         "to": [
-          "8b72da6318e04ccb"
+          "6fb798e1b1e3c84d"
         ],
         "adversarial": false
       },
@@ -4808,7 +4852,7 @@
           "instance_id": null
         },
         "to": [
-          "b4e49eaf7ee3f172"
+          "e6b1985a48c14b1d"
         ],
         "adversarial": false
       },
@@ -4824,12 +4868,12 @@
           "instance_id": null
         },
         "to": [
-          "7cdee84e756c72a6"
+          "c4eeb557a55388a3"
         ],
         "adversarial": false
       }
     ],
-    "19dc2fca624a0f5c": [
+    "2474cf4b51032f84": [
       {
         "action": {
           "id": "a21",
@@ -4844,7 +4888,7 @@
           "instance_id": 1
         },
         "to": [
-          "edb7c988cc172c9b"
+          "b4dc7d2c476e9e0b"
         ],
         "adversarial": false
       },
@@ -4862,12 +4906,12 @@
           "instance_id": 1
         },
         "to": [
-          "1aab9b8ceadf586e"
+          "515bd7165ad0fa28"
         ],
         "adversarial": false
       }
     ],
-    "842956126dd5d2ee": [
+    "fde1fe331bbf8df1": [
       {
         "action": {
           "id": "a23",
@@ -4882,7 +4926,7 @@
           "instance_id": 1
         },
         "to": [
-          "974fa74c30400c6a"
+          "e6f85658b74edf70"
         ],
         "adversarial": false
       },
@@ -4900,12 +4944,12 @@
           "instance_id": 1
         },
         "to": [
-          "edb7c988cc172c9b"
+          "b4dc7d2c476e9e0b"
         ],
         "adversarial": false
       }
     ],
-    "e9d3381a15c71896": [
+    "9f841bf4fdaa0844": [
       {
         "action": {
           "id": "a25",
@@ -4918,7 +4962,7 @@
           "instance_id": 2
         },
         "to": [
-          "701714c54fe410dc"
+          "bd6344ff2fca19da"
         ],
         "adversarial": false
       },
@@ -4934,7 +4978,7 @@
           "instance_id": 2
         },
         "to": [
-          "aa628cf56a476baf"
+          "7fc3d3caddb6dc1b"
         ],
         "adversarial": false
       },
@@ -4952,7 +4996,7 @@
           "instance_id": 1
         },
         "to": [
-          "cad2f9c54f7a2ed3"
+          "1f9767e9358940c6"
         ],
         "adversarial": false
       },
@@ -4970,12 +5014,12 @@
           "instance_id": 1
         },
         "to": [
-          "82ed56af688e1e7a"
+          "41cfc84e3ba9b257"
         ],
         "adversarial": false
       }
     ],
-    "dc1b5df7bcfee6f8": [
+    "731f6fe3c0e5de91": [
       {
         "action": {
           "id": "a29",
@@ -4990,7 +5034,7 @@
           "instance_id": 1
         },
         "to": [
-          "96e6fefd7eb3f18d"
+          "2891f1a7da8fca3f"
         ],
         "adversarial": false
       },
@@ -5008,7 +5052,7 @@
           "instance_id": 1
         },
         "to": [
-          "ebe5827e9c3b9226"
+          "b13ab23bed889658"
         ],
         "adversarial": false
       },
@@ -5024,12 +5068,12 @@
           "instance_id": 2
         },
         "to": [
-          "eacb79d46cd1fc37"
+          "585acca028a1665a"
         ],
         "adversarial": false
       }
     ],
-    "71f8cbfe32e66264": [
+    "c4827c7c4729b2af": [
       {
         "action": {
           "id": "a32",
@@ -5042,7 +5086,7 @@
           "instance_id": 3
         },
         "to": [
-          "369822239510c5e5"
+          "259af70a0e4f0b1c"
         ],
         "adversarial": false
       },
@@ -5058,7 +5102,7 @@
           "instance_id": 3
         },
         "to": [
-          "d3bc8b01c20fb274"
+          "dd7022a045c698f0"
         ],
         "adversarial": false
       },
@@ -5076,7 +5120,7 @@
           "instance_id": 1
         },
         "to": [
-          "504b913acfa81dd4"
+          "472b74a17f721f6d"
         ],
         "adversarial": false
       },
@@ -5094,12 +5138,12 @@
           "instance_id": 1
         },
         "to": [
-          "b4e49eaf7ee3f172"
+          "e6b1985a48c14b1d"
         ],
         "adversarial": false
       }
     ],
-    "2408433e882492ca": [
+    "fc370ae2f83c2f48": [
       {
         "action": {
           "id": "a36",
@@ -5114,7 +5158,7 @@
           "instance_id": 1
         },
         "to": [
-          "3a6173e0df81c12e"
+          "eb5109024f72d948"
         ],
         "adversarial": false
       },
@@ -5132,7 +5176,7 @@
           "instance_id": 1
         },
         "to": [
-          "7cdee84e756c72a6"
+          "c4eeb557a55388a3"
         ],
         "adversarial": false
       },
@@ -5148,12 +5192,12 @@
           "instance_id": 3
         },
         "to": [
-          "0119854c834a4155"
+          "01282564d31e33cc"
         ],
         "adversarial": false
       }
     ],
-    "8b72da6318e04ccb": [
+    "6fb798e1b1e3c84d": [
       {
         "action": {
           "id": "a39",
@@ -5168,7 +5212,7 @@
           "instance_id": 1
         },
         "to": [
-          "d10c40daf1adff9c"
+          "29a4b62f3e088734"
         ],
         "adversarial": false
       },
@@ -5186,12 +5230,12 @@
           "instance_id": 1
         },
         "to": [
-          "06efdafc993bd028"
+          "d49938e51bccb173"
         ],
         "adversarial": false
       }
     ],
-    "0c3047cf937f3c71": [
+    "d719ace0c4925e0d": [
       {
         "action": {
           "id": "a41",
@@ -5206,7 +5250,7 @@
           "instance_id": 1
         },
         "to": [
-          "d10c40daf1adff9c"
+          "29a4b62f3e088734"
         ],
         "adversarial": false
       },
@@ -5224,12 +5268,12 @@
           "instance_id": 1
         },
         "to": [
-          "3859e781f957b7c4"
+          "74da522af5f84291"
         ],
         "adversarial": false
       }
     ],
-    "cad2f9c54f7a2ed3": [
+    "1f9767e9358940c6": [
       {
         "action": {
           "id": "a43",
@@ -5242,7 +5286,7 @@
           "instance_id": 2
         },
         "to": [
-          "24d3c31fd2ecbdbd"
+          "f48ee0c7f64c689e"
         ],
         "adversarial": false
       },
@@ -5258,12 +5302,12 @@
           "instance_id": 2
         },
         "to": [
-          "a9fa37ac768ad61f"
+          "a8c92ce728ea8a46"
         ],
         "adversarial": false
       }
     ],
-    "96e6fefd7eb3f18d": [
+    "2891f1a7da8fca3f": [
       {
         "action": {
           "id": "a45",
@@ -5276,12 +5320,12 @@
           "instance_id": 2
         },
         "to": [
-          "71ec6340a3adf77d"
+          "220bcc0ee28004e7"
         ],
         "adversarial": false
       }
     ],
-    "504b913acfa81dd4": [
+    "472b74a17f721f6d": [
       {
         "action": {
           "id": "a46",
@@ -5294,7 +5338,7 @@
           "instance_id": 3
         },
         "to": [
-          "a59ab513def5da81"
+          "c7d97def34344829"
         ],
         "adversarial": false
       },
@@ -5310,12 +5354,12 @@
           "instance_id": 3
         },
         "to": [
-          "37df9e7bc5950ca2"
+          "89be9792083f7c63"
         ],
         "adversarial": false
       }
     ],
-    "3a6173e0df81c12e": [
+    "eb5109024f72d948": [
       {
         "action": {
           "id": "a48",
@@ -5328,12 +5372,12 @@
           "instance_id": 3
         },
         "to": [
-          "83f755f71d289413"
+          "bd4df8ae26c10072"
         ],
         "adversarial": false
       }
     ],
-    "82ed56af688e1e7a": [
+    "41cfc84e3ba9b257": [
       {
         "action": {
           "id": "a49",
@@ -5346,7 +5390,7 @@
           "instance_id": 2
         },
         "to": [
-          "1a036a6e57f0484f"
+          "0f39857015acc86a"
         ],
         "adversarial": false
       },
@@ -5362,12 +5406,12 @@
           "instance_id": 2
         },
         "to": [
-          "c70ae9b94367de52"
+          "8a35f70d0dfc6ac2"
         ],
         "adversarial": false
       }
     ],
-    "ebe5827e9c3b9226": [
+    "b13ab23bed889658": [
       {
         "action": {
           "id": "a51",
@@ -5380,12 +5424,12 @@
           "instance_id": 2
         },
         "to": [
-          "06443b265ade41c1"
+          "3f80c44eb900aa78"
         ],
         "adversarial": false
       }
     ],
-    "aed7aea6a461d9bd": [
+    "35130fd2ed277b99": [
       {
         "action": {
           "id": "a52",
@@ -5400,7 +5444,7 @@
           "instance_id": 1
         },
         "to": [
-          "3859e781f957b7c4"
+          "74da522af5f84291"
         ],
         "adversarial": false
       },
@@ -5418,12 +5462,12 @@
           "instance_id": 1
         },
         "to": [
-          "06efdafc993bd028"
+          "d49938e51bccb173"
         ],
         "adversarial": false
       }
     ],
-    "b4e49eaf7ee3f172": [
+    "e6b1985a48c14b1d": [
       {
         "action": {
           "id": "a54",
@@ -5436,7 +5480,7 @@
           "instance_id": 3
         },
         "to": [
-          "6968d7c6e09c8f20"
+          "04fbbeaa82bf160a"
         ],
         "adversarial": false
       },
@@ -5452,12 +5496,12 @@
           "instance_id": 3
         },
         "to": [
-          "2a379b9667fd5d1a"
+          "143c988321d3c44e"
         ],
         "adversarial": false
       }
     ],
-    "7cdee84e756c72a6": [
+    "c4eeb557a55388a3": [
       {
         "action": {
           "id": "a56",
@@ -5470,12 +5514,12 @@
           "instance_id": 3
         },
         "to": [
-          "2469b6f47b421589"
+          "d097991caa3b38bd"
         ],
         "adversarial": false
       }
     ],
-    "701714c54fe410dc": [
+    "bd6344ff2fca19da": [
       {
         "action": {
           "id": "a57",
@@ -5490,7 +5534,7 @@
           "instance_id": 1
         },
         "to": [
-          "24d3c31fd2ecbdbd"
+          "f48ee0c7f64c689e"
         ],
         "adversarial": false
       },
@@ -5508,12 +5552,12 @@
           "instance_id": 1
         },
         "to": [
-          "1a036a6e57f0484f"
+          "0f39857015acc86a"
         ],
         "adversarial": false
       }
     ],
-    "aa628cf56a476baf": [
+    "7fc3d3caddb6dc1b": [
       {
         "action": {
           "id": "a59",
@@ -5528,7 +5572,7 @@
           "instance_id": 1
         },
         "to": [
-          "a9fa37ac768ad61f"
+          "a8c92ce728ea8a46"
         ],
         "adversarial": false
       },
@@ -5546,12 +5590,12 @@
           "instance_id": 1
         },
         "to": [
-          "c70ae9b94367de52"
+          "8a35f70d0dfc6ac2"
         ],
         "adversarial": false
       }
     ],
-    "eacb79d46cd1fc37": [
+    "585acca028a1665a": [
       {
         "action": {
           "id": "a61",
@@ -5566,7 +5610,7 @@
           "instance_id": 1
         },
         "to": [
-          "71ec6340a3adf77d"
+          "220bcc0ee28004e7"
         ],
         "adversarial": false
       },
@@ -5584,12 +5628,12 @@
           "instance_id": 1
         },
         "to": [
-          "06443b265ade41c1"
+          "3f80c44eb900aa78"
         ],
         "adversarial": false
       }
     ],
-    "369822239510c5e5": [
+    "259af70a0e4f0b1c": [
       {
         "action": {
           "id": "a63",
@@ -5604,7 +5648,7 @@
           "instance_id": 1
         },
         "to": [
-          "a59ab513def5da81"
+          "c7d97def34344829"
         ],
         "adversarial": false
       },
@@ -5622,12 +5666,12 @@
           "instance_id": 1
         },
         "to": [
-          "6968d7c6e09c8f20"
+          "04fbbeaa82bf160a"
         ],
         "adversarial": false
       }
     ],
-    "d3bc8b01c20fb274": [
+    "dd7022a045c698f0": [
       {
         "action": {
           "id": "a65",
@@ -5642,7 +5686,7 @@
           "instance_id": 1
         },
         "to": [
-          "37df9e7bc5950ca2"
+          "89be9792083f7c63"
         ],
         "adversarial": false
       },
@@ -5660,12 +5704,12 @@
           "instance_id": 1
         },
         "to": [
-          "2a379b9667fd5d1a"
+          "143c988321d3c44e"
         ],
         "adversarial": false
       }
     ],
-    "0119854c834a4155": [
+    "01282564d31e33cc": [
       {
         "action": {
           "id": "a67",
@@ -5680,7 +5724,7 @@
           "instance_id": 1
         },
         "to": [
-          "83f755f71d289413"
+          "bd4df8ae26c10072"
         ],
         "adversarial": false
       },
@@ -5698,30 +5742,30 @@
           "instance_id": 1
         },
         "to": [
-          "2469b6f47b421589"
+          "d097991caa3b38bd"
         ],
         "adversarial": false
       }
     ]
   },
   "terminal": {
-    "edb7c988cc172c9b": "dead_end",
-    "1aab9b8ceadf586e": "dead_end",
-    "974fa74c30400c6a": "dead_end",
-    "d10c40daf1adff9c": "win",
-    "06efdafc993bd028": "win",
-    "3859e781f957b7c4": "win",
-    "24d3c31fd2ecbdbd": "dead_end",
-    "a9fa37ac768ad61f": "dead_end",
-    "71ec6340a3adf77d": "dead_end",
-    "a59ab513def5da81": "dead_end",
-    "37df9e7bc5950ca2": "dead_end",
-    "83f755f71d289413": "dead_end",
-    "1a036a6e57f0484f": "dead_end",
-    "c70ae9b94367de52": "dead_end",
-    "06443b265ade41c1": "dead_end",
-    "6968d7c6e09c8f20": "dead_end",
-    "2a379b9667fd5d1a": "dead_end",
-    "2469b6f47b421589": "dead_end"
+    "b4dc7d2c476e9e0b": "dead_end",
+    "515bd7165ad0fa28": "dead_end",
+    "e6f85658b74edf70": "dead_end",
+    "29a4b62f3e088734": "win",
+    "d49938e51bccb173": "win",
+    "74da522af5f84291": "win",
+    "f48ee0c7f64c689e": "dead_end",
+    "a8c92ce728ea8a46": "dead_end",
+    "220bcc0ee28004e7": "dead_end",
+    "c7d97def34344829": "dead_end",
+    "89be9792083f7c63": "dead_end",
+    "bd4df8ae26c10072": "dead_end",
+    "0f39857015acc86a": "dead_end",
+    "8a35f70d0dfc6ac2": "dead_end",
+    "3f80c44eb900aa78": "dead_end",
+    "04fbbeaa82bf160a": "dead_end",
+    "143c988321d3c44e": "dead_end",
+    "d097991caa3b38bd": "dead_end"
   }
 }

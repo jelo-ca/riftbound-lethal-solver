@@ -219,6 +219,42 @@ class ShowdownState:
 
 
 @dataclass(frozen=True)
+class PendingConquerChoice:
+    """A conquer trigger that offers a genuine player choice (which card
+    to discard, which spell to replay from trash, ...) recorded on
+    GameState instead of resolved inline by scoring.resolve_control_change
+    — the same "pending, gates everything else" shape as ShowdownState.
+    attack_trigger_resolved, generalized past combat.
+
+    engine/conquer.py documents why this shape was chosen over making
+    resolve_control_change itself return a list of alternative resulting
+    states: ANY of its ~9 callers (MoveUnit, PlayUnit's open-battlefield
+    deploy, ResolveCombat/ResolveShowdown's damage step, or a control-
+    changing spell/ability effect) can leave a state pending, and every
+    one of them already threads a plain GameState back to its own caller
+    via `dataclasses.replace`/`replace_player`/`replace_battlefield` — so
+    a new GameState field flows through all of them for free, with none
+    of the 9 needing to change. `search.legal_actions()` offers nothing
+    but `ResolveConquerTrigger` while this is set, exactly the way
+    `ShowdownState.attack_trigger_resolved` gates everything but
+    `ResolveAttackTrigger`.
+
+    `kind` distinguishes the two conquer-trigger grammars conquer.py
+    implements (UNIT-keyed "when I conquer" vs BATTLEFIELD-keyed "when
+    you conquer here"); `key` is the card_id (the unit's or the
+    battlefield's) that owns the registered choice, so
+    ResolveConquerTrigger's apply() knows which registry to dispatch
+    into. `instance_id` names the conquering unit for a unit-keyed
+    trigger and is unused (None) for a battlefield-keyed one, whose
+    source is the battlefield itself, not a unit.
+    """
+    kind: Literal["unit", "battlefield"]
+    key: str
+    battlefield_id: str
+    instance_id: Optional[int] = None
+
+
+@dataclass(frozen=True)
 class GameState:
     turn_player: int
     players: tuple[PlayerState, PlayerState]
@@ -238,6 +274,9 @@ class GameState:
     # time — Raging Soul's condition is a plain ">0" threshold, so the
     # exact count past 1 is never actually read.
     cards_discarded_this_turn: int = 0
+    # None unless a choice-bearing conquer trigger is awaiting resolution —
+    # see PendingConquerChoice.
+    pending_conquer_choice: Optional[PendingConquerChoice] = None
 
 
 def _canonical_unit(unit: UnitInstance) -> tuple:
@@ -328,4 +367,11 @@ def canonical_key(state: GameState) -> tuple:
         (state.showdown.battlefield_id, state.showdown.attacker_controller,
          state.showdown.attack_trigger_resolved)
         if state.showdown else None,
+        # A pending choice changes the legal action space (ONLY
+        # ResolveConquerTrigger is offered), so two otherwise-identical
+        # boards, one pending and one not, are genuinely different
+        # positions — same reasoning as showdown above.
+        (state.pending_conquer_choice.kind, state.pending_conquer_choice.key,
+         state.pending_conquer_choice.battlefield_id, state.pending_conquer_choice.instance_id)
+        if state.pending_conquer_choice else None,
     )
