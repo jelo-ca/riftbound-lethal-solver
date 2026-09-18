@@ -327,6 +327,27 @@ def legal_actions(state: GameState, cards: dict[str, CardDef]) -> list[Action]:
                 triggered = dataclasses.replace(triggered, trigger_payment=payments[0])
             if abilities.is_legal_unit_play_trigger(state, triggered, card):
                 result.append(triggered)
+
+    # Legend "observer" play-trigger candidates: a Legend reacting to
+    # WHATEVER unit is played (legends.LEGEND_OBSERVER_PLAY_TRIGGERS,
+    # keyed by the WATCHING Legend rather than the played card — contrast
+    # the UNIT_PLAY_TRIGGERS loop just above). Bolted onto whichever
+    # PlayUnit actions already exist in `result`, own-trigger variants
+    # included, since the two are independent decisions on the same
+    # action (PlayUnit.legend_reaction_params's field comment).
+    if player.legend is not None:
+        entry = legends.LEGEND_OBSERVER_PLAY_TRIGGERS.get(player.legend.card_id)
+        if entry is not None:
+            is_legal_reaction, generate_reaction_candidates = entry
+            for base_action in [a for a in result
+                                if isinstance(a, PlayUnit) and not a.legend_reaction_params]:
+                card = cards[base_action.card_id]
+                for reaction_params in generate_reaction_candidates(state, base_action, card):
+                    if not reaction_params:
+                        continue  # declining is already covered by base_action itself
+                    reacted = dataclasses.replace(base_action, legend_reaction_params=reaction_params)
+                    if is_legal_reaction(state, reacted, card):
+                        result.append(reacted)
     return result
 
 

@@ -21,18 +21,22 @@ from __future__ import annotations
 import dataclasses
 from typing import Callable, Optional
 
-from . import scoring
+from . import scoring, traits
 from .actions import (
     ActivateAbility,
+    PlayUnit,
     RunePayment,
+    apply_play_unit,
     consume_runes,
+    next_instance_id,
     payment_is_affordable,
     find_unit,
     find_unit_anywhere,
     is_legal_ability_move_destination,
     relocate_unit,
 )
-from .state import GameState, replace_player
+from .cards import CardDef
+from .state import GameState, add_runes, replace_player
 
 LEGEND_SOURCE_ID = 0
 
@@ -267,3 +271,106 @@ def resolve_legend_ability_outcomes(state: GameState, action: ActivateAbility) -
         state = replace_player(state, player_index, dataclasses.replace(player, runes=new_runes))
     _, effect, _ = LEGEND_ABILITIES[action.ability_id]
     return effect(state, action)
+
+
+# --- Legend "observer" play triggers --------------------------------------
+#
+# A Legend reacting to ANY unit being played, as opposed to LEGEND_ABILITIES
+# above (an activated ability the player chooses to use on its own turn) or
+# abilities.UNIT_PLAY_TRIGGERS (keyed by the PLAYED card's own text). See
+# PlayUnit.legend_reaction_params's field comment and observers.py, whose
+# OBSERVER_PLAY_TRIGGERS is the same idea for a UNIT watching from the
+# board rather than a Legend watching from its own zone — kept as a
+# separate registry (not folded into observers.py) because this shape
+# needs a CHOICE (list-returning effect), which observers.py's module
+# docstring explicitly excludes ("deterministic effects only").
+
+RELENTLESS_STORM = "ogn-249-298"  # "When you play a [Mighty] unit, you may exhaust me to channel 1 rune exhausted."
+RELENTLESS_STORM_NX = "ogn-300-298"  # same Legend, alternate printing
+RELENTLESS_STORM_STAR = "ogn-300-star-298"  # same Legend, alternate printing
+RELENTLESS_STORM_PRINTINGS = frozenset({RELENTLESS_STORM, RELENTLESS_STORM_NX, RELENTLESS_STORM_STAR})
+
+MIGHTY_THRESHOLD = 5  # reminder text: "A unit is Mighty while it has 5+ Might."
+
+
+def _newly_played_unit(state_after_play: GameState, new_instance_id: int):
+    """The unit `apply_play_unit` just created, located on the board it
+    produced. `next_instance_id` is called on the state BEFORE placement,
+    so this id is exactly the one that was assigned — see actions.
+    next_instance_id's docstring."""
+    return find_unit_anywhere(state_after_play, new_instance_id)
+
+
+def _is_our_relentless_storm_unexhausted(state: GameState) -> bool:
+    legend = state.players[state.turn_player].legend
+    return (legend is not None and legend.card_id in RELENTLESS_STORM_PRINTINGS
+            and not legend.exhausted)
+
+
+def _relentless_storm_reaction_is_legal(state: GameState, action: PlayUnit, card: CardDef) -> bool:
+    """legend_reaction_params = ("channel",) or () to decline. Legal only
+    while our Legend IS Relentless Storm, unexhausted, and the unit just
+    played is Mighty — read as EFFECTIVE Might, at the moment it lands, the
+    same rigor already used for Anivia/Dune Drake's attack triggers."""
+    if action.legend_reaction_params != ("channel",):
+        return False
+    if not _is_our_relentless_storm_unexhausted(state):
+        return False
+    new_id = next_instance_id(state)
+    state_after_play = apply_play_unit(state, dataclasses.replace(
+        action, legend_reaction_params=()), card)
+    located = _newly_played_unit(state_after_play, new_id)
+    if located is None:
+        return False
+    unit, zone = located
+    return traits.effective_might(state_after_play, unit, zone) >= MIGHTY_THRESHOLD
+
+
+def apply_legend_observer_reaction(state: GameState, player_index: int) -> GameState:
+    """The deterministic payload every Legend observer reaction shares
+    today: exhaust the Legend (its whole cost — no separate rune cost is
+    printed), then channel 1 domain-less rune EXHAUSTED (RULING 1,
+    project owner, 2026-09-18 — see state.add_runes's docstring for why
+    this is real but narrow: it does nothing observable unless something
+    readies runes later the same turn). Called from actions.apply_play_unit
+    via a deferred import, since this module imports THAT one."""
+    state = exhaust_legend(state, player_index)
+    player = state.players[player_index]
+    new_pool = add_runes(player.runes, (None,), exhausted=True)
+    return replace_player(state, player_index, dataclasses.replace(player, runes=new_pool))
+
+
+def _relentless_storm_reaction_candidates(state: GameState, base_action: PlayUnit,
+                                           card: CardDef) -> list[tuple]:
+    """() always (declining is always legal); ("channel",) too, IF the
+    Legend/Mighty conditions hold — checked here rather than left for
+    is_legal alone, so a board without Relentless Storm never pays the
+    cost of re-simulating apply_play_unit for every single unit played."""
+    if not _is_our_relentless_storm_unexhausted(state):
+        return [()]
+    new_id = next_instance_id(state)
+    state_after_play = apply_play_unit(state, base_action, card)
+    located = _newly_played_unit(state_after_play, new_id)
+    if located is None:
+        return [()]
+    unit, zone = located
+    if traits.effective_might(state_after_play, unit, zone) < MIGHTY_THRESHOLD:
+        return [()]
+    return [(), ("channel",)]
+
+
+# card_id (the WATCHING LEGEND's) -> (is_legal(state, action, card),
+#             candidates(state, base_action, card))
+# No separate "effect" callback: apply_legend_observer_reaction above is
+# shared by every entry today (deterministic, folded straight into
+# actions.apply_play_unit's tail) — a future Legend observer whose payload
+# differs would need this shape to grow an effect slot, same as
+# UNIT_PLAY_TRIGGERS, rather than complicating the one card that exists now.
+LEGEND_OBSERVER_PLAY_TRIGGERS: dict[str, tuple[
+    Callable[[GameState, PlayUnit, CardDef], bool],
+    Callable[[GameState, PlayUnit, CardDef], list[tuple]],
+]] = {
+    RELENTLESS_STORM: (_relentless_storm_reaction_is_legal, _relentless_storm_reaction_candidates),
+    RELENTLESS_STORM_NX: (_relentless_storm_reaction_is_legal, _relentless_storm_reaction_candidates),
+    RELENTLESS_STORM_STAR: (_relentless_storm_reaction_is_legal, _relentless_storm_reaction_candidates),
+}

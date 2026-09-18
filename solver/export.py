@@ -35,7 +35,14 @@ from .engine.actions import (
     find_unit,
 )
 from .engine.cards import CardDef
-from .engine.state import BattlefieldState, GameState, PlayerState, UnitInstance, canonical_key
+from .engine.state import (
+    BattlefieldState,
+    GameState,
+    PlayerState,
+    UnitInstance,
+    canonical_key,
+    sorted_available,
+)
 from .search import apply, legal_actions, resolve_combat_outcomes, resolve_showdown_outcomes, solve
 
 SCHEMA_VERSION = 2
@@ -83,7 +90,11 @@ def render_player(player: PlayerState) -> dict:
         "hand": sorted(player.hand),
         # Both spend-trackers are in canonical_key, so both have to render
         # or two genuinely different positions would look identical here.
-        "runes": sorted(player.runes.available),
+        # sorted_available (not plain sorted()): a domain-less rune (a
+        # channelled/added rune with no real domain — see state.RunePool's
+        # docstring) renders as JSON `null`, distinct from any of the six
+        # domain strings, and plain sorted() can't order None against str.
+        "runes": sorted_available(player.runes.available),
         "runes_energy_spent": player.runes.energy_spent,
         "runes_power_spent": sorted(player.runes.power_spent),
         "score": player.score,

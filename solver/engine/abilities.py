@@ -545,6 +545,35 @@ def _rebuke_effect(state: GameState, action: PlaySpell) -> list[GameState]:
     return [return_unit_to_hand(state, bf_id, action.params[0])]
 
 
+MOBILIZE = "ogn-134-298"  # "Channel 1 rune exhausted. If you can't, draw 1."
+CATALYST_OF_AEONS = "ogn-138-298"  # "Channel 2 runes exhausted. If you couldn't channel 2 runes this way, draw 1."
+
+
+def _channel_exhausted_is_legal(state: GameState, action: PlaySpell) -> bool:
+    return action.params == ()
+
+
+def _mobilize_effect(state: GameState, action: PlaySpell) -> list[GameState]:
+    """"If you can't, draw 1" is dead text in THIS engine specifically: no
+    Rune Deck is modelled at all (RULING 1, project owner, 2026-09-18), so
+    "channel 1 rune exhausted" is never something the engine can fail to
+    do — the failure branch has no state that could trigger it, unlike
+    "draw" (which fails because the deck is empty, not absent). Always
+    resolves to the primary clause."""
+    from .state import add_runes
+    player = state.players[state.turn_player]
+    new_pool = add_runes(player.runes, (None,), exhausted=True)
+    return [replace_player(state, state.turn_player, dataclasses.replace(player, runes=new_pool))]
+
+
+def _catalyst_of_aeons_effect(state: GameState, action: PlaySpell) -> list[GameState]:
+    """Same reasoning as Mobilize, for 2 runes."""
+    from .state import add_runes
+    player = state.players[state.turn_player]
+    new_pool = add_runes(player.runes, (None, None), exhausted=True)
+    return [replace_player(state, state.turn_player, dataclasses.replace(player, runes=new_pool))]
+
+
 def _grand_strategem_is_legal(state: GameState, action: PlaySpell) -> bool:
     return action.params == ()
 
@@ -1523,6 +1552,8 @@ SPELL_EFFECTS: dict[str, tuple[
     STUPEFY: (_smoke_screen_is_legal, _stupefy_effect, _smoke_screen_candidates),
     BLOCK: (_primal_strength_is_legal, _block_effect, _primal_strength_candidates),
     HIDDEN_BLADE: (_single_battlefield_target_is_legal, _hidden_blade_effect, _units_at_battlefields),
+    MOBILIZE: (_channel_exhausted_is_legal, _mobilize_effect, lambda state: [()]),
+    CATALYST_OF_AEONS: (_channel_exhausted_is_legal, _catalyst_of_aeons_effect, lambda state: [()]),
 }
 
 
@@ -1986,6 +2017,8 @@ TEEMO_SCOUT = "ogn-197-298"  # [Hidden] "When you play me, give me +3 Might this
 TEEMO_SCOUT_ALT = "ogn-197a-298"  # same card, alternate printing
 TRIFARIAN_GLORYSEEKER = "ogn-217-298"  # [Legion] "When you play me, buff me."
 PEAK_GUARDIAN = "ogn-223-298"  # "When you play me, buff me. Then, if I am at a battlefield, buff all other friendly units there."
+STORMCLAW_URSINE = "ogn-137-298"  # [Tank] "When you play me, channel 1 rune exhausted."
+ALBUS_FERROS = "ogn-230-298"  # "When you play me, spend any number of buffs. For each buff spent, channel 1 rune exhausted."
 RECRUIT_TOKEN = "ogn-271-298"  # one of three same-stat printings (see card_pool.py); this one
 # picked as the canonical id for tokens minted by card effects.
 RECRUIT_TOKEN_CARD = CardDef(card_id=RECRUIT_TOKEN, card_type="Unit", energy_cost=0,
@@ -2003,7 +2036,7 @@ MANDATORY_PLAY_TRIGGERS = frozenset({FAITHFUL_MANUFACTOR, VANGUARD_CAPTAIN, WHIT
                                      FIRST_MATE, KINKOU_MONK, CARNIVOROUS_SNAPVINE,
                                      SETT_BRAWLER, SETT_BRAWLER_ALT, CEMETERY_ATTENDANT,
                                      CHEMTECH_ENFORCER, SCRAPYARD_CHAMPION, MINDSPLITTER,
-                                     TEEMO_SCOUT, TEEMO_SCOUT_ALT})
+                                     TEEMO_SCOUT, TEEMO_SCOUT_ALT, STORMCLAW_URSINE})
 
 
 def _charm_deflect_targets(state: GameState, params: tuple) -> list[tuple]:
@@ -2069,6 +2102,72 @@ def _faithful_manufactor_effect(state_after_play: GameState, action: PlayUnit) -
 
 def _faithful_manufactor_candidates(state: GameState, base_action: PlayUnit, card: CardDef) -> list[tuple]:
     return [("mint",)]
+
+
+def _stormclaw_ursine_is_legal(state: GameState, action: PlayUnit, card: CardDef) -> bool:
+    """No target/choice — trigger_params is a fixed sentinel, same
+    convention as Faithful Manufactor (mandatory, see MANDATORY_PLAY_TRIGGERS)."""
+    return action.trigger_params == ("channel",)
+
+
+def _stormclaw_ursine_effect(state_after_play: GameState, action: PlayUnit) -> list[GameState]:
+    """"Channel 1 rune exhausted" (RULING 1, project owner, 2026-09-18):
+    a domain-less rune, arriving with its own Energy already spent, so
+    this is real but narrow — nothing observable unless something
+    readies runes later the same turn. See state.add_runes's docstring."""
+    from .state import add_runes  # deferred, same reasoning as other cross-module imports here
+    player = state_after_play.players[state_after_play.turn_player]
+    new_player = dataclasses.replace(player, runes=add_runes(player.runes, (None,), exhausted=True))
+    return [replace_player(state_after_play, state_after_play.turn_player, new_player)]
+
+
+def _stormclaw_ursine_candidates(state: GameState, base_action: PlayUnit, card: CardDef) -> list[tuple]:
+    return [("channel",)]
+
+
+def _albus_ferros_is_legal(state: GameState, action: PlayUnit, card: CardDef) -> bool:
+    """trigger_params = a subset (no repeats) of currently-buffed friendly
+    units to spend, evaluated against the board AFTER Albus Ferros himself
+    is placed — same shape as Overt Operation's spend-and-ready choice,
+    minus the readying. He can never be among the choices: he just
+    entered and starts unbuffed, so "must currently be buffed" already
+    rules him out. "Any number" includes zero, so the empty subset (spend
+    nothing, channel nothing) is legal — this trigger is never mandatory."""
+    if len(set(action.trigger_params)) != len(action.trigger_params):
+        return False
+    state_after_play = apply_play_unit(state, dataclasses.replace(
+        action, trigger_params=(), trigger_payment=None), card)
+    buffed_ids = {u.instance_id for u in _friendly_units_anywhere(state_after_play) if u.buffed}
+    return all(target in buffed_ids for target in action.trigger_params)
+
+
+def _albus_ferros_effect(state_after_play: GameState, action: PlayUnit) -> list[GameState]:
+    """"For each buff spent, channel 1 rune exhausted" — one domain-less,
+    already-Exhausted rune per buff (RULING 1, project owner, 2026-09-18;
+    see state.add_runes's docstring for why "exhausted" makes each one a
+    real but narrow effect, not observable until something readies runes
+    later the same turn)."""
+    from .state import add_runes  # deferred, same reasoning as other cross-module imports here
+    for target in action.trigger_params:
+        state_after_play = spend_buff(state_after_play, target)
+    if action.trigger_params:
+        player = state_after_play.players[state_after_play.turn_player]
+        new_pool = add_runes(player.runes, (None,) * len(action.trigger_params), exhausted=True)
+        state_after_play = replace_player(state_after_play, state_after_play.turn_player,
+                                          dataclasses.replace(player, runes=new_pool))
+    return [state_after_play]
+
+
+def _albus_ferros_candidates(state: GameState, base_action: PlayUnit, card: CardDef) -> list[tuple]:
+    """Every subset of currently-buffed friendly units — same "2**N
+    independent choices" shape as Overt Operation, not "up to N"."""
+    state_after_play = apply_play_unit(state, base_action, card)
+    ids = [u.instance_id for u in sorted(_friendly_units_anywhere(state_after_play), key=lambda u: u.instance_id)
+           if u.buffed]
+    out: list[tuple] = []
+    for size in range(len(ids) + 1):
+        out.extend(itertools.combinations(ids, size))
+    return out
 
 
 def _vanguard_captain_is_legal(state: GameState, action: PlayUnit, card: CardDef) -> bool:
@@ -2571,6 +2670,9 @@ UNIT_PLAY_TRIGGERS: dict[str, tuple[
     MINDSPLITTER: (_mindsplitter_is_legal, _mindsplitter_effect, _mindsplitter_candidates),
     TEEMO_SCOUT: (_self_buff_is_legal, _teemo_scout_effect, _self_buff_candidates),
     TEEMO_SCOUT_ALT: (_self_buff_is_legal, _teemo_scout_effect, _self_buff_candidates),
+    STORMCLAW_URSINE: (_stormclaw_ursine_is_legal, _stormclaw_ursine_effect,
+                        _stormclaw_ursine_candidates),
+    ALBUS_FERROS: (_albus_ferros_is_legal, _albus_ferros_effect, _albus_ferros_candidates),
 }
 
 

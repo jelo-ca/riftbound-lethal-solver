@@ -20,6 +20,7 @@ from solver.engine.state import (
     PlayerState,
     RunePool,
     UnitInstance,
+    add_runes,
     energy_capacity,
     power_capacity,
 )
@@ -90,6 +91,42 @@ def test_generate_rune_payment_no_power_cost():
     payments = generate_rune_payments(pool, energy_cost=2, power_cost=0, power_domain=None)
     assert len(payments) == 1
     assert payments[0].power_runes == ()
+
+
+# --- Domain-less (channelled/added) runes: RULING 1, project owner, 2026-09-18 ---
+
+
+def test_domain_less_rune_pays_an_energy_cost():
+    pool = add_runes(RunePool(available=()), (None,))
+    payments = generate_rune_payments(pool, energy_cost=1, power_cost=0, power_domain=None)
+    assert len(payments) == 1
+
+
+def test_domain_less_rune_never_offered_for_a_rainbow_power_cost():
+    """A [Deflect]-style domain-free (rainbow) Power cost must never be
+    payable out of a domain-less rune — its domain is genuinely unknowable,
+    and picking one would be exactly the invention this project's coverage
+    ledger forbids. One real Fury rune plus one domain-less rune can pay
+    a rainbow cost of 1 (from the Fury rune) but never 2."""
+    pool = add_runes(RunePool(available=("Fury",)), (None,))
+    payable_1 = generate_rune_payments(pool, energy_cost=0, power_cost=0, power_domain=None,
+                                        rainbow_cost=1)
+    assert payable_1 and all(None not in p.rainbow_runes for p in payable_1)
+    assert generate_rune_payments(pool, energy_cost=0, power_cost=0, power_domain=None,
+                                   rainbow_cost=2) == []
+
+
+def test_domain_less_rune_never_pays_a_domain_specific_power_cost():
+    pool = add_runes(RunePool(available=()), (None,))
+    assert generate_rune_payments(pool, energy_cost=0, power_cost=1, power_domain="Fury") == []
+
+
+def test_channeled_exhausted_rune_is_unaffordable_until_readied():
+    """"Channel 1 rune exhausted" arrives with its own Energy already
+    spent — generate_rune_payments must see zero net new Energy capacity
+    from it, not the +1 its mere presence in `available` might suggest."""
+    pool = add_runes(RunePool(available=()), (None,), exhausted=True)
+    assert generate_rune_payments(pool, energy_cost=1, power_cost=0, power_domain=None) == []
 
 
 # --- PlayUnit ---

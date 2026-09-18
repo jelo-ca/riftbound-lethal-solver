@@ -499,6 +499,59 @@ HANDLED: dict[str, str] = {
                    "leaving trash for good (the nonexistent Main Deck), the same Vision/ "
                    "Ekko convention used throughout this ledger.",
     "ogn-112a-298": "Kai'Sa, Evolutionary — same card as ogn-112-298, alternate art",
+    # "Channel N runes exhausted" (RULING 1, project owner, 2026-09-18): no
+    # Rune Deck exists in this engine, so a channelled rune's domain is
+    # unknowable — it contributes Energy capacity only, never Power, via
+    # state.add_runes. "...exhausted" means it arrives with that Energy
+    # already spent, so each of these is a real but narrow effect: nothing
+    # observable happens unless something readies runes later the SAME
+    # turn (Ekko, Recurrent's Deathknell is the only such effect that fires
+    # mid-turn — Sona and Targon's Peak both ready at END of turn and stay
+    # INERT_FOR_LETHAL below).
+    "ogn-216-298": "Soaring Scout — [Deathknell] \"Channel 1 rune exhausted\" via "
+                   "deaths.DEATH_TRIGGERS and state.add_runes",
+    "ogn-137-298": "Stormclaw Ursine — [Tank] via traits.TRAIT_REGISTRY, mandatory "
+                   "\"when you play me, channel 1 rune exhausted\" via "
+                   "abilities.UNIT_PLAY_TRIGGERS and state.add_runes",
+    "ogn-230-298": "Albus Ferros — \"when you play me, spend any number of buffs. For "
+                   "each buff spent, channel 1 rune exhausted\" via "
+                   "abilities.UNIT_PLAY_TRIGGERS, the same 2**N-subset candidate shape "
+                   "as Overt Operation's spend-and-ready choice; \"any number\" includes "
+                   "zero, so this is optional rather than mandatory",
+    "ogn-249-298": "Relentless Storm — Legend, \"When you play a [Mighty] unit, you may "
+                   "exhaust me to channel 1 rune exhausted\" via "
+                   "legends.LEGEND_OBSERVER_PLAY_TRIGGERS (a new registry, keyed by the "
+                   "WATCHING Legend rather than the played card — observers.py's "
+                   "deterministic-only shape can't carry this card's \"you may\" choice). "
+                   "\"Mighty\" is 5+ EFFECTIVE Might, read at the moment the unit lands. "
+                   "The channelled rune is real but narrow (RULING 1: Energy-only, "
+                   "arriving already-exhausted) — see test_channel_runes.py's Ekko "
+                   "interaction test for the case where it actually matters.",
+    "ogn-300-298": "Relentless Storm — same Legend as ogn-249-298, alternate printing",
+    "ogn-300-star-298": "Relentless Storm — same Legend as ogn-249-298, alternate printing",
+    # "Channel N runes exhausted. If you can't/couldn't, draw 1." — the
+    # fallback branch is dead text in THIS engine specifically: there is no
+    # Rune Deck modelled at all (RULING 1), so "channel N runes exhausted"
+    # is never something the engine can fail to do (contrast "draw," which
+    # fails because the deck is EMPTY, not absent as a concept). Always the
+    # primary clause, via abilities.SPELL_EFFECTS and state.add_runes.
+    "ogn-134-298": "Mobilize — \"Channel 1 rune exhausted. If you can't, draw 1.\" — "
+                   "the draw branch is unreachable in this model, see the comment "
+                   "above; always channels",
+    "ogn-138-298": "Catalyst of Aeons — \"Channel 2 runes exhausted. If you couldn't "
+                   "channel 2 runes this way, draw 1.\" — same reasoning as Mobilize",
+    # The Seals — RULING 2 (project owner, 2026-09-18): "Add 1 [domain] rune"
+    # STATES its own domain, so it's a normal, real-domain rune via
+    # state.add_runes and gear.SEAL_DOMAINS — none of RULING 1's
+    # domain-less machinery applies, and nothing says "exhausted," so it
+    # arrives ready.
+    "ogn-040-298": "Seal of Rage — Gear, \"Exhaust: Add 1 Fury rune\" via "
+                   "gear.GEAR_ABILITIES and state.add_runes",
+    "ogn-081-298": "Seal of Focus — Gear, \"Exhaust: Add 1 Calm rune\", same shape",
+    "ogn-120-298": "Seal of Insight — Gear, \"Exhaust: Add 1 Mind rune\", same shape",
+    "ogn-163-298": "Seal of Strength — Gear, \"Exhaust: Add 1 Body rune\", same shape",
+    "ogn-204-298": "Seal of Discord — Gear, \"Exhaust: Add 1 Chaos rune\", same shape",
+    "ogn-245-298": "Seal of Unity — Gear, \"Exhaust: Add 1 Order rune\", same shape",
 }
 
 # Investigated alongside the choice-bearing [Conquer] cluster above and
@@ -627,11 +680,21 @@ INERT_FOR_LETHAL: dict[str, str] = {
     "ogn-281-298": "Hallowed Tomb — hold trigger only",
     "ogn-283-298": "Navori Fighting Pit — hold trigger only",
     "ogn-286-298": "Reckoner's Arena — hold trigger only",
-    "ogn-288-298": "Startipped Peak — hold trigger only",
     "ogn-293-298": "The Grand Plaza — hold trigger only. Note this is an ALTERNATE "
                    "WIN CONDITION (\"if you have 7+ units here, you win the game\"); "
                    "it is inert only because the trigger cannot fire, so if Hold ever "
                    "becomes a live event this entry must be revisited first.",
+    "ogn-288-298": "Startipped Peak — \"When you hold here, you may channel 1 rune "
+                   "exhausted.\" Hold trigger only, same as the other battlefields "
+                   "above — no Hold occurs during the turn being searched. (Its "
+                   "\"channel 1 rune exhausted\" payload never matters here, since "
+                   "the trigger that would fire it can't fire at all.)",
+    # Beginning-Phase-only triggers, same non-event as Loose Cannon above.
+    "ogn-284-298": "Obelisk of Power — \"At the start of each player's first "
+                   "Beginning Phase, that player channels 1 rune.\" The Beginning "
+                   "Phase is already resolved before the Action Phase this engine "
+                   "searches, so this fires (if ever) before the position the "
+                   "engine is asked about even exists.",
     "ogn-045-298": "Defy — \"counter a spell\"; no opposing spell can ever exist",
     "ogn-064-298": "Wind Wall — \"counter a spell\"; as above",
     "ogn-080-298": "Mystic Reversal — \"gain control of a spell\"; as above",

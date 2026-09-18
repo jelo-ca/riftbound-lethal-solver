@@ -47,7 +47,13 @@ Zone = str  # "base" or a battlefield_id
 
 @dataclass(frozen=True)
 class RunePayment:
-    energy_runes: tuple[Domain, ...]  # domains of runes Exhausted for Energy
+    # `Optional[Domain]` (not just `Domain`): a domain-less rune (state.
+    # RunePool's docstring) can be Exhausted for Energy same as any other,
+    # so it can legitimately be one of the representative runes here. Its
+    # actual domain value is never read for Energy (see generate_
+    # rune_payments — "one representative split is exact"), only its
+    # count, so `None` entries are harmless.
+    energy_runes: tuple[Optional[Domain], ...]  # domains of runes Exhausted for Energy
     power_runes: tuple[Domain, ...]  # domains of runes Recycled for Power
     # Runes Recycled to pay a domain-FREE cost — today only [Deflect]'s
     # "opponents must pay ⟨rainbow⟩ to choose me." Recycled like Power but
@@ -82,6 +88,15 @@ class PlayUnit:
     # targeting, not the card's own cost, and is spent from what's left
     # after the card itself is paid for. None when no tax is owed.
     trigger_payment: Optional[RunePayment] = None
+    # A LEGEND watching the play from its own zone, reacting to whichever
+    # unit is being played rather than to its own text — as opposed to
+    # `trigger_params` above, which belongs to the PLAYED card. Opaque,
+    # same () = declined/not-applicable convention (see
+    # legends.LEGEND_OBSERVER_PLAY_TRIGGERS — today only Relentless
+    # Storm's "when you play a Mighty unit, you may exhaust me to channel
+    # 1 rune exhausted"). Independent of trigger_params: a Mighty unit
+    # with its own registered trigger can carry both on the same action.
+    legend_reaction_params: tuple = ()
 
 
 @dataclass(frozen=True)
@@ -249,8 +264,15 @@ def generate_rune_payments(pool: RunePool, energy_cost: int, power_cost: int,
     power_runes = tuple([power_domain] * power_cost) if power_cost else ()
 
     # Recycle capacity left per domain once this cost's own Power is taken.
+    # `None` (a domain-less rune — state.RunePool's docstring) is skipped
+    # here on purpose: it can never occupy a rainbow slot regardless of how
+    # much Recycle capacity is otherwise left, so it must never become a key
+    # of this dict, which _domain_multisets treats as "a domain the rainbow
+    # cost may draw from."
     remaining_by_domain: dict[Domain, int] = {}
     for domain in set(pool.available):
+        if domain is None:
+            continue
         left = power_capacity(pool, domain) - (power_cost if domain == power_domain else 0)
         if left > 0:
             remaining_by_domain[domain] = left
@@ -441,7 +463,8 @@ def apply_play_unit(state: GameState, action: PlayUnit, card: CardDef) -> GameSt
             runes=new_runes,
         )
         state = replace_player(state, player_index, new_player)
-        return observers.fire_observer_play_triggers(state, new_unit)
+        state = observers.fire_observer_play_triggers(state, new_unit)
+        return _apply_legend_observer_reaction(state, action, player_index)
 
     new_player = dataclasses.replace(player, hand=tuple(new_hand), runes=new_runes)
     state = replace_player(state, player_index, new_player)
@@ -453,7 +476,26 @@ def apply_play_unit(state: GameState, action: PlayUnit, card: CardDef) -> GameSt
     new_controller = bf.controller if bf.controller is not None else player_index
     new_bf = dataclasses.replace(bf, units=bf.units | {new_unit}, controller=new_controller)
     state = replace_battlefield(state, new_bf)
-    return observers.fire_observer_play_triggers(state, new_unit)
+    state = observers.fire_observer_play_triggers(state, new_unit)
+    return _apply_legend_observer_reaction(state, action, player_index)
+
+
+def _apply_legend_observer_reaction(state: GameState, action: PlayUnit, player_index: int) -> GameState:
+    """The other half of `apply_play_unit`'s tail, alongside observers.py's
+    unit watchers — a LEGEND watching the play instead (PlayUnit.
+    legend_reaction_params's field comment). Deferred import: legends.py
+    imports this module (ActivateAbility, RunePayment, ...), so importing
+    it back at this module's top level would cycle.
+
+    Deterministic — no combat, no branching — so this can live directly in
+    apply_play_unit's single-state path and still be reached correctly
+    from abilities.resolve_unit_play_trigger_outcomes, which calls
+    apply_play_unit with the full action (legend_reaction_params included)
+    before branching on the PLAYED card's own trigger."""
+    if not action.legend_reaction_params:
+        return state
+    from . import legends  # deferred — see above
+    return legends.apply_legend_observer_reaction(state, player_index)
 
 
 def mint_token_unit(state: GameState, card: CardDef, controller: int, zone: Zone) -> GameState:

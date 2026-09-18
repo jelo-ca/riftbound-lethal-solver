@@ -82,15 +82,71 @@ class RunePool:
 
     Energy is domain-agnostic, so its spend is just a count; Power is
     domain-matched, so its spend records which domains went.
+
+    `available` uses `None` for a DOMAIN-LESS rune — RULING (project
+    owner, 2026-09-18): this engine has no Rune Deck (see HANDOFF.md's
+    position model), so a "channel N runes" or "add 1 rainbow rune"
+    effect can't draw a real domain from anywhere; inventing one would be
+    exactly the kind of guess coverage.py exists to forbid. The sound,
+    safe reading is that such a rune contributes Energy capacity ONLY
+    (it can be Exhausted like any rune) and NEVER Power capacity,
+    regardless of domain — see `power_capacity`'s `None`-domain branch,
+    which deliberately excludes it, and `add_runes` below, which is how
+    one enters the pool. A domain-less rune is still a real rune for
+    every other purpose: `ready_runes` un-Exhausts it exactly like any
+    other, since nothing about "which domain" bears on readying.
     """
-    available: tuple[Domain, ...]  # the runes held this turn
+    available: tuple[Optional[Domain], ...]  # the runes held this turn
     energy_spent: int = 0  # how many have been Exhausted
     power_spent: tuple[Domain, ...] = ()  # domains already Recycled
 
 
 def energy_capacity(pool: RunePool) -> int:
-    """Runes still able to be Exhausted for Energy — any domain will do."""
+    """Runes still able to be Exhausted for Energy — any domain will do,
+    a domain-less (channelled/added) rune included."""
     return len(pool.available) - pool.energy_spent
+
+
+def add_runes(pool: RunePool, domains: tuple[Optional[Domain], ...],
+              exhausted: bool = False) -> RunePool:
+    """A rune (or runes) arriving MID-TURN from a card's own text — a
+    "channel" or "add" effect — as opposed to `available` at position
+    setup, which is always the starting hand of runes (see
+    PlayerState.runes's field comment: no Main Deck, so nothing is ever
+    channelled from position setup itself).
+
+    `domains` uses `None` per rune for a domain-less arrival (see
+    RunePool's docstring) and a real `Domain` when the card states one
+    (e.g. a hypothetical "add 1 Fury rune" would pass `("Fury",)` and
+    behaves exactly like any other rune from then on).
+
+    `exhausted=True` models "channel N runes EXHAUSTED" (~12 cards use
+    this exact phrasing): the rune arrives with its Energy already spent
+    THIS turn. It still raises `len(available)` (so a later `ready_runes`
+    can un-Exhaust it, same as any rune that spent its own Energy earlier
+    this turn), but raises `energy_spent` by the same amount in the same
+    call, so it contributes zero NET usable capacity until something
+    readies it. Deliberately not folded into `energy_spent` alone without
+    also extending `available` — Recycle capacity (for a real-domain
+    rune) and the rune's very existence for `ready_runes` both key off
+    `available`'s length.
+    """
+    return dataclasses.replace(
+        pool,
+        available=pool.available + domains,
+        energy_spent=pool.energy_spent + (len(domains) if exhausted else 0),
+    )
+
+
+def sorted_available(available: tuple[Optional[Domain], ...]) -> list:
+    """Deterministic ordering of a rune pool's domains for canonical_key
+    and export.py — the two MUST agree (HANDOFF.md: anything canonical_key
+    treats as significant must also render in export.py, or two distinct
+    positions collide). A domain-less rune (`None`) can't be compared to a
+    `str` by plain `sorted()`, so this is the one place that ordering is
+    decided; both call sites route through it rather than each inventing
+    their own key."""
+    return sorted(available, key=lambda d: (d is None, d or ""))
 
 
 def ready_runes(pool: RunePool, count: Optional[int] = None) -> RunePool:
@@ -103,12 +159,12 @@ def ready_runes(pool: RunePool, count: Optional[int] = None) -> RunePool:
     readying is about untapping, not undoing that. So only `energy_spent`
     moves.
 
-    Deliberately NOT paired with a channel operation. Channelling pulls a
-    fresh rune off the Rune Deck, which this model doesn't have, and every
-    printed channel in Origins reads "channel N runes EXHAUSTED" — a rune
-    arriving with its Energy already spent and its domain unknowable,
-    which can pay nothing except a domain-free Recycle cost. See
-    engine/coverage.py for how those cards are classified instead.
+    Deliberately a separate function from `add_runes` (channelling), which
+    pulls a fresh rune from the Rune Deck this model doesn't have — see
+    `add_runes`'s docstring and `RunePool`'s for how a channelled rune is
+    represented (domain-less, Energy-only). This function doesn't care
+    whether a rune is domain-less or not: readying is purely about the
+    Exhausted flag, which every rune carries the same way.
     """
     if count is None:
         return dataclasses.replace(pool, energy_spent=0)
@@ -117,9 +173,15 @@ def ready_runes(pool: RunePool, count: Optional[int] = None) -> RunePool:
 
 def power_capacity(pool: RunePool, domain: Optional[Domain]) -> int:
     """Runes of `domain` still able to be Recycled for Power. `None`
-    counts every domain, for a domain-free (rainbow) cost."""
+    counts every REAL domain, for a domain-free (rainbow) cost —
+    deliberately EXCLUDING domain-less runes (RunePool's docstring):
+    their domain is unknowable, so they may never occupy any Power slot,
+    rainbow included. `pool.power_spent` only ever records real domains
+    (nothing ever selects a domain-less rune into a payment — see
+    actions.generate_rune_payments), so subtracting its length here is
+    still exact once the domain-less runes are excluded from the total."""
     if domain is None:
-        return len(pool.available) - len(pool.power_spent)
+        return sum(1 for d in pool.available if d is not None) - len(pool.power_spent)
     return pool.available.count(domain) - pool.power_spent.count(domain)
 
 
@@ -309,8 +371,9 @@ def _canonical_player(player: PlayerState) -> tuple:
         tuple(sorted(player.hand)),
         # Both spend-trackers are significant: the same starting runes with
         # different amounts already Exhausted or Recycled are genuinely
-        # different positions.
-        (tuple(sorted(player.runes.available)), player.runes.energy_spent,
+        # different positions. sorted_available (not plain sorted()) since
+        # a domain-less rune (None) can't compare against a domain str.
+        (tuple(sorted_available(player.runes.available)), player.runes.energy_spent,
          tuple(sorted(player.runes.power_spent))),
         player.score,
         # Exhaustion matters: a Legend that's already paid its Exhaust cost
