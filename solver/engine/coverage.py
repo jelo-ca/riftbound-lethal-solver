@@ -314,6 +314,20 @@ HANDLED: dict[str, str] = {
                    "every other draw effect above (e.g. Watchful Sentry). Mandatory, so "
                    "there is no decline candidate — an empty hand still resolves, as the "
                    "single no-op \"discard nothing\" candidate.",
+    "ogn-112-298": "Kai'Sa, Evolutionary — [Ganking] (plain trait, already handled) "
+                   "\"when I conquer, you may play a spell from your trash with Energy "
+                   "cost less than your points, without paying its Energy cost. Then "
+                   "recycle it (must still pay Power cost)\" via "
+                   "conquer.CONQUER_TRIGGERS_WITH_CHOICE and "
+                   "abilities.kaisa_evolutionary_candidates/_effect — the "
+                   "Soulgorger/Spectral Matron trash-replay pattern aimed at "
+                   "SPELL_EFFECTS instead of a unit. Restricted to trash spells whose own "
+                   "resolution is a single, deterministic outcome, same restriction and "
+                   "same direction as SPELL_KILL_REACTIONS' Immortal Phoenix (no spell "
+                   "registered today needs the missing case). \"Recycle it\" reads as "
+                   "leaving trash for good (the nonexistent Main Deck), the same Vision/ "
+                   "Ekko convention used throughout this ledger.",
+    "ogn-112a-298": "Kai'Sa, Evolutionary — same card as ogn-112-298, alternate art",
 }
 
 

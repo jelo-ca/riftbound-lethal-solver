@@ -1199,6 +1199,113 @@ SPELL_EFFECTS: dict[str, tuple[
 }
 
 
+# --- Kai'Sa, Evolutionary: play a SPELL from trash (conquer trigger) ------
+#
+# "When I conquer, you may play a spell from your trash with Energy cost
+# less than your points, without paying its Energy cost. Then recycle it.
+# (Must still pay Power cost.)" Called from engine/conquer.py's
+# CONQUER_TRIGGERS_WITH_CHOICE via a deferred import (same cycle-avoidance
+# reason conquer.py defers every abilities.py import). This is Soulgorger/
+# The Harrowing/Spectral Matron's trash-replay pattern (_trash_replay_*
+# above) aimed at SPELL_EFFECTS instead of UNIT_PLAY_TRIGGERS-free units:
+# same "pay from what's left, ignore Energy" shape, different registry.
+KAISA_EVOLUTIONARY = "ogn-112-298"
+KAISA_EVOLUTIONARY_ALT = "ogn-112a-298"
+
+
+def _spells_in_trash(state: GameState, controller: int) -> list[str]:
+    """Distinct card_ids in `controller`'s trash that are Spell
+    printings — the counterpart to _units_in_trash above, since Kai'Sa
+    replays a spell, never a unit."""
+    from .card_pool import card_def
+    return sorted({card_id for card_id in state.players[controller].trash
+                   if (d := card_def(card_id)) is not None and d.card_type == "Spell"})
+
+
+def _play_spell_from_trash_cost(state: GameState, controller: int, card_id: str,
+                                 power_payment: RunePayment) -> GameState:
+    """Same bookkeeping as actions.apply_play_spell_cost, sourced from
+    trash with Energy waived (Kai'Sa's text) instead of from hand at full
+    cost. Unlike a normally-played spell, the card does NOT land back in
+    trash afterward: Kai'Sa's own "then recycle it" sends it to the
+    (nonexistent) Main Deck instead — the same reading already
+    established for Vision/Ekko's "recycle" (see coverage.py) — so it
+    simply leaves trash for good."""
+    player = state.players[controller]
+    new_trash = list(player.trash)
+    new_trash.remove(card_id)
+    new_runes = consume_runes(player.runes, power_payment)
+    new_player = dataclasses.replace(player, trash=tuple(new_trash), runes=new_runes)
+    state = dataclasses.replace(state, cards_played_this_turn=state.cards_played_this_turn + 1)
+    return replace_player(state, controller, new_player)
+
+
+def _kaisa_trash_spell_outcome(state: GameState, card_id: str, params: tuple,
+                                payment: RunePayment) -> Optional[GameState]:
+    """The resulting state for replaying `card_id` from trash per Kai'Sa's
+    text, or None if it isn't a registered single-outcome spell, `params`
+    isn't legal against the board as it stands before the replay, or the
+    effect turns out to have more than one outcome (adversarial combat) —
+    restrictive, same direction and same shape as SPELL_KILL_REACTIONS'
+    _spell_single_outcome, mirrored here for a trash source instead of
+    hand (no spell registered today causes combat, so the restriction
+    costs nothing yet, same note as there)."""
+    entry = SPELL_EFFECTS.get(card_id)
+    if entry is None:
+        return None
+    is_legal_effect, effect, _ = entry
+    action = PlaySpell(card_id=card_id, params=params, rune_payment=payment)
+    if not is_legal_effect(state, action):
+        return None
+    state_after_cost = _play_spell_from_trash_cost(state, state.turn_player, card_id, payment)
+    try:
+        outcomes = effect(state_after_cost, action)
+    except NotImplementedError:
+        return None
+    if len(outcomes) != 1:
+        return None
+    return outcomes[0]
+
+
+def kaisa_evolutionary_candidates(state: GameState, instance_id: int) -> list[tuple]:
+    """() to decline (this is a "you may"), or (card_id, params, payment)
+    for every trash spell whose Energy cost is strictly less than the
+    controller's current points — read AFTER the conquer's own point (if
+    any) is already granted, since scoring.resolve_control_change fires
+    this trigger after resolve_conquer — and whose own targeting is legal
+    and single-outcome against the board as it stands right now."""
+    from .card_pool import card_def
+    controller = state.turn_player
+    score = state.players[controller].score
+    out: list[tuple] = [()]
+    for card_id in _spells_in_trash(state, controller):
+        card = card_def(card_id)
+        if card.energy_cost >= score:
+            continue
+        entry = SPELL_EFFECTS.get(card_id)
+        if entry is None:
+            continue
+        _, _, generate_candidates = entry
+        for params in generate_candidates(state):
+            for payment in generate_rune_payments(state.players[controller].runes, 0,
+                                                    card.power_cost, card.power_domain):
+                if _kaisa_trash_spell_outcome(state, card_id, params, payment) is not None:
+                    out.append((card_id, params, payment))
+    return out
+
+
+def kaisa_evolutionary_effect(state: GameState, instance_id: int, params: tuple) -> GameState:
+    if not params:
+        return state
+    card_id, spell_params, payment = params
+    result = _kaisa_trash_spell_outcome(state, card_id, spell_params, payment)
+    assert result is not None, (
+        "kaisa_evolutionary_effect: params not re-derivable — candidate "
+        "generation drifted from re-validation"
+    )
+    return result
+
+
 def _caitlyn_is_legal(state: GameState, action: ActivateAbility) -> bool:
     """params = (target_instance_id,). "Exhaust: Deal damage equal to my
     Might to a unit at a battlefield. Use this ability only while I'm at

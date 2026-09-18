@@ -117,20 +117,36 @@ CONQUER_TRIGGERS: dict[str, Callable[[GameState, int], GameState]] = {
 }
 
 
+KAISA_EVOLUTIONARY = "ogn-112-298"  # [Ganking] "When I conquer, you may play a
+# spell from your trash with Energy cost less than your points, without
+# paying its Energy cost. Then recycle it. (Must still pay Power cost.)"
+KAISA_EVOLUTIONARY_ALT = "ogn-112a-298"  # same card, alternate art
+
+
+def _kaisa_candidates(state: GameState, instance_id: int) -> list[tuple]:
+    from .abilities import kaisa_evolutionary_candidates  # deferred — see module docstring
+    return kaisa_evolutionary_candidates(state, instance_id)
+
+
+def _kaisa_effect(state: GameState, instance_id: int, params: tuple) -> GameState:
+    from .abilities import kaisa_evolutionary_effect  # deferred — see module docstring
+    return kaisa_evolutionary_effect(state, instance_id, params)
+
+
 # card_id -> (generate_candidates(state, instance_id) -> list[tuple],
 #             effect(state, instance_id, params) -> GameState)
 #
 # `params == ()` is always the "decline" candidate for these — every
 # registered entry today is a "you may". A mandatory unit-keyed choice
 # trigger would need its own convention (no decline candidate), same as
-# BATTLEFIELD_CONQUER_TRIGGERS' Zaun Warrens below. Empty until the next
-# commit registers Kai'Sa, Evolutionary — the fan-out machinery below
-# doesn't need a registrant to be exercised (Zaun Warrens, the
-# BATTLEFIELD-keyed grammar, already proves it end to end).
+# BATTLEFIELD_CONQUER_TRIGGERS' Zaun Warrens below; none is registered yet.
 CONQUER_TRIGGERS_WITH_CHOICE: dict[str, tuple[
     Callable[[GameState, int], list[tuple]],
     Callable[[GameState, int, tuple], GameState],
-]] = {}
+]] = {
+    KAISA_EVOLUTIONARY: (_kaisa_candidates, _kaisa_effect),
+    KAISA_EVOLUTIONARY_ALT: (_kaisa_candidates, _kaisa_effect),
+}
 
 
 ZAUN_WARRENS = "ogn-298-298"  # Battlefield: "When you conquer here, discard 1, then draw 1."
