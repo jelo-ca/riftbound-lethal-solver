@@ -12,7 +12,7 @@ import dataclasses
 import itertools
 from typing import Callable, Optional
 
-from . import combat, deaths, scoring, traits
+from . import combat, deaths, gear, scoring, traits
 from .actions import (
     ActivateAbility,
     PlayGear,
@@ -23,6 +23,7 @@ from .actions import (
     apply_play_gear,
     apply_play_spell_cost,
     apply_play_unit,
+    find_gear,
     find_unit,
     find_unit_anywhere,
     find_unit_at_any_battlefield,
@@ -32,6 +33,7 @@ from .actions import (
     is_legal_play_spell_cost,
     is_legal_play_unit,
     consume_runes,
+    kill_gear,
     kill_unit,
     mint_token_unit,
     next_instance_id,
@@ -997,6 +999,47 @@ def _the_harrowing_effect(state: GameState, action: PlaySpell) -> list[GameState
     return [_trash_replay_effect(state, card_id, zone, payment)]
 
 
+# Salvage: "[Action] You may kill a gear. Draw 1." "A gear" is unqualified
+# — no "friendly" or "enemy" — same convention as Orb of Regret's "give a
+# unit -1 Might", which the gear.py module docstring already establishes
+# reads as either player's. "Draw 1" is a no-op (no Main Deck; HANDOFF's
+# Position model, same reading as every other draw-N card in the pool),
+# so only the kill half does anything, and it's optional.
+SALVAGE = "ogn-224-298"
+
+
+def _salvage_candidates(state: GameState) -> list[tuple]:
+    """Declining (the empty tuple, leaving only the no-op draw) is always
+    legal. Gear with its own unbuilt on-death reaction is excluded from
+    the kill target list — see gear.GEAR_DEATH_REACTIONS — rather than
+    silently dropping that reaction on the floor."""
+    out: list[tuple] = [()]
+    for player in state.players:
+        for piece in sorted(player.gear, key=lambda g: g.instance_id):
+            if piece.card_id not in gear.GEAR_DEATH_REACTIONS:
+                out.append((piece.instance_id,))
+    return out
+
+
+def _salvage_is_legal(state: GameState, action: PlaySpell) -> bool:
+    if action.params == ():
+        return True
+    if len(action.params) != 1:
+        return False
+    located = find_gear(state, action.params[0])
+    if located is None:
+        return False
+    piece, _ = located
+    return piece.card_id not in gear.GEAR_DEATH_REACTIONS
+
+
+def _salvage_effect(state: GameState, action: PlaySpell) -> list[GameState]:
+    if not action.params:
+        return [state]
+    piece, controller = find_gear(state, action.params[0])
+    return [kill_gear(state, controller, piece)]
+
+
 # Spectral Matron: "play a unit costing no more than 3 Energy and no more
 # than [rainbow, bare] from your trash, ignoring its cost" — a bare
 # rainbow icon reads as 1 Power of any domain (project owner,
@@ -1196,6 +1239,7 @@ SPELL_EFFECTS: dict[str, tuple[
     OVERT_OPERATION: (_overt_operation_is_legal, _overt_operation_effect, _overt_operation_candidates),
     MORBID_RETURN: (_morbid_return_is_legal, _morbid_return_effect, _morbid_return_candidates),
     THE_HARROWING: (_the_harrowing_is_legal, _the_harrowing_effect, _the_harrowing_candidates),
+    SALVAGE: (_salvage_is_legal, _salvage_effect, _salvage_candidates),
 }
 
 

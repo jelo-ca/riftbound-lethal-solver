@@ -292,6 +292,38 @@ def test_an_unregistered_gear_ability_is_refused():
     assert not gear.is_legal_gear_ability(state, _activate("ogn-021-298", (1,)))
 
 
+# --- kill_gear: removal + trash landing ---
+
+
+def test_kill_gear_removes_it_from_the_board():
+    from solver.engine.actions import kill_gear
+    piece = ready_gear(gear.ORB_OF_REGRET)
+    state = make_state(gear_pieces=frozenset({piece}))
+    result = kill_gear(state, 0, piece)
+    assert result.players[0].gear == frozenset()
+
+
+def test_kill_gear_lands_the_card_in_its_controllers_trash():
+    """A Gear is a real printed card, same as a dying unit — it leaves
+    play into trash, not off into the void."""
+    from solver.engine.actions import kill_gear
+    piece = ready_gear(gear.ORB_OF_REGRET)
+    state = make_state(gear_pieces=frozenset({piece}))
+    result = kill_gear(state, 0, piece)
+    assert result.players[0].trash == (gear.ORB_OF_REGRET,)
+
+
+def test_kill_gear_does_not_touch_other_gear_or_units():
+    from solver.engine.actions import kill_gear
+    victim = ready_gear(gear.ORB_OF_REGRET, instance_id=50)
+    survivor = ready_gear(gear.THE_SYREN, instance_id=51)
+    unit = make_unit(1)
+    state = make_state(gear_pieces=frozenset({victim, survivor}), base_units=frozenset({unit}))
+    result = kill_gear(state, 0, victim)
+    assert {g.instance_id for g in result.players[0].gear} == {51}
+    assert result.players[0].base_units == frozenset({unit})
+
+
 # --- reachable through real action generation ---
 
 def test_gear_can_actually_be_played_from_hand():

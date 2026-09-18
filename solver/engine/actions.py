@@ -585,6 +585,28 @@ def replace_gear(state: GameState, controller: int, old: GearInstance,
     return replace_player(state, controller, dataclasses.replace(player, gear=remaining))
 
 
+def kill_gear(state: GameState, controller: int, gear_piece: GearInstance) -> GameState:
+    """Remove `gear_piece` from the board and land it in its controller's
+    trash. A Gear is a real printed card like any other Origins card, not
+    a token, so it leaves play the same way a dying unit does
+    (deaths._send_to_trash) — no printed Gear text redirects it anywhere
+    else on death (contrast Ekko, Recurrent's "recycle me").
+
+    Deliberately no Deathknell-style hook here: unlike units, nothing
+    could ever kill *another* controller's Gear before this function
+    existed, so no "when your gear dies" trigger has ever needed one.
+    Treasure Trove reacts to its OWN death ("when this leaves the
+    board...") with an effect this engine can't fire yet (it needs a
+    RunePool change) — see gear.GEAR_DEATH_REACTIONS, which callers must
+    exclude from their own kill-target candidates until that lands, same
+    "restrictive, not permissive" convention as play_unit_from_trash
+    excluding units with their own UNIT_PLAY_TRIGGERS."""
+    state = replace_gear(state, controller, gear_piece, None)
+    player = state.players[controller]
+    return replace_player(state, controller, dataclasses.replace(
+        player, trash=player.trash + (gear_piece.card_id,)))
+
+
 # --- PlaySpell (generic cost/hand bookkeeping; effects live in abilities.py) --
 
 
