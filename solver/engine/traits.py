@@ -119,6 +119,36 @@ AURA_SOURCES: dict[str, AuraDef] = {
 }
 
 
+LEE_SIN_CENTERED = "ogn-151-298"  # "Other buffed friendly units at my battlefield have +2 Might."
+LEE_SIN_CENTERED_ALT = "ogn-151a-298"  # same card, alternate printing
+
+# card_id -> flat Might a co-located, same-controller, OTHER unit gets
+# while buffed. Unlike AURA_SOURCES (a trait grant, unconditional on the
+# receiver), this is Might and conditional on the RECEIVER's own buffed
+# state — the source itself need not be buffed. Kept as its own dict
+# rather than folded into AURA_SOURCES/AuraDef since AuraDef's `grants`
+# has no room for a per-receiver condition; a second card of this shape
+# costs one line here, same as AURA_SOURCES's own comment says for traits.
+BUFF_MIGHT_AURA_SOURCES: dict[str, int] = {
+    LEE_SIN_CENTERED: 2,
+    LEE_SIN_CENTERED_ALT: 2,
+}
+
+
+SETT_KINGPIN = "ogn-240-298"  # "[Tank] I get +1 Might for each buffed friendly unit at my battlefield."
+SETT_KINGPIN_ALT = "ogn-240a-298"  # same card, alternate printing
+
+# card_id -> Might gained per buffed friendly unit at the card's own
+# battlefield, itself included (the text doesn't say "other"). A COUNT,
+# not a threshold, so it doesn't fit SelfConditional's boolean condition
+# — the count reads unit.buffed (plain state) on each occupant, never
+# Might, so the module's non-circularity invariant still holds.
+SELF_COUNT_MIGHT: dict[str, int] = {
+    SETT_KINGPIN: 1,
+    SETT_KINGPIN_ALT: 1,
+}
+
+
 def parse_trait(trait: str) -> tuple[str, Optional[int]]:
     """`"Shield 2"` -> `("Shield", 2)`; `"Shield"` -> `("Shield", None)` —
     `None` means "use TRAIT_REGISTRY's default for the bare form"."""
@@ -229,5 +259,19 @@ def effective_might(state: GameState, unit: UnitInstance, zone: Zone,
         if trait_def.applies_when is not None and trait_def.applies_when != designation:
             continue
         bonus += amount if amount is not None else trait_def.might_delta
+
+    if zone != "base":
+        bf = _battlefield(state, zone)
+        if bf is not None:
+            if unit.buffed:
+                for other in bf.units:
+                    if (other.controller == unit.controller and other.instance_id != unit.instance_id
+                            and other.card_id in BUFF_MIGHT_AURA_SOURCES):
+                        bonus += BUFF_MIGHT_AURA_SOURCES[other.card_id]
+
+            per_buffed = SELF_COUNT_MIGHT.get(unit.card_id)
+            if per_buffed is not None:
+                buffed_here = sum(1 for u in bf.units if u.controller == unit.controller and u.buffed)
+                bonus += per_buffed * buffed_here
 
     return unit.might + bonus

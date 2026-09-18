@@ -168,6 +168,27 @@ HANDLED: dict[str, str] = {
     "ogn-125-298": "Bilgewater Bully — \"while I'm buffed, I have [Ganking]\" via "
                    "traits.SELF_CONDITIONALS; the grant reaches movement legality "
                    "because effective_keywords now delegates to resolved_traits",
+    "ogn-147-298": "Wildclaw Shaman — \"you may spend a buff to buff me and ready me\" "
+                   "via UNIT_PLAY_TRIGGERS; the buff-spend target must already carry a "
+                   "buff, which also rules out targeting itself (it just entered)",
+    "ogn-151-298": "Lee Sin, Centered — \"other buffed friendly units at my battlefield "
+                   "have +2 Might\" via traits.BUFF_MIGHT_AURA_SOURCES, a co-located "
+                   "conditional Might aura alongside AURA_SOURCES' trait grants",
+    "ogn-151a-298": "Lee Sin, Centered — same card, alternate printing",
+    "ogn-153-298": "Overt Operation — \"for each friendly unit, you may spend its buff "
+                   "to ready it, then buff all friendly units\" via SPELL_EFFECTS; the "
+                   "per-unit spend choice is independent, so candidates are the full "
+                   "powerset of currently-buffed friendly units, not a capped count",
+    "ogn-240-298": "Sett, Kingpin — [Tank] handled; \"+1 Might for each buffed friendly "
+                   "unit at my battlefield\" (itself included) via "
+                   "traits.SELF_COUNT_MIGHT, a counting variant of SelfConditional's "
+                   "boolean condition — the count reads unit.buffed on each occupant, "
+                   "never Might, so the non-circularity invariant holds",
+    "ogn-240a-298": "Sett, Kingpin — same card, alternate printing",
+    "ogn-257-298": "Blind Monk — Legend, \"1 Energy, Exhaust: Buff a friendly unit\" via "
+                   "legends.LEGEND_ABILITIES, same shape as Yasuo, Unforgiven",
+    "ogn-304-298": "Blind Monk — same Legend, alternate printing",
+    "ogn-304-star-298": "Blind Monk — same Legend, alternate printing",
 }
 
 

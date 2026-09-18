@@ -131,3 +131,66 @@ def test_canonical_key_ignores_legend_when_absent_on_both():
     a = make_state(base_units=frozenset({unit}), legend=None)
     b = make_state(base_units=frozenset({unit}), legend=None)
     assert canonical_key(a) == canonical_key(b)
+
+
+# --- Blind Monk: "Energy 1, Exhaust: Buff a friendly unit." ---
+
+from solver.engine.legends import BLIND_MONK  # noqa: E402
+
+BLIND_MONK_PAYMENT = RunePayment(energy_runes=("Fury",), power_runes=())
+
+
+def buff_action(target_id, payment=BLIND_MONK_PAYMENT):
+    return ActivateAbility(source_id=LEGEND_SOURCE_ID, ability_id=BLIND_MONK,
+                            params=(target_id,), rune_payment=payment)
+
+
+def test_blind_monk_buffs_a_friendly_unit():
+    unit = make_unit(1)
+    state = make_state(base_units=frozenset({unit}), legend=LegendState(BLIND_MONK))
+    action = buff_action(1)
+    assert legends.is_legal_legend_ability(state, action)
+
+    new_state = apply(state, action, {})
+    assert next(iter(new_state.players[0].base_units)).buffed is True
+    assert new_state.players[0].legend.exhausted is True
+    assert new_state.players[0].runes.energy_spent == 1
+
+
+def test_blind_monk_can_buff_a_unit_at_a_battlefield_too():
+    """"A friendly unit" — no "at a battlefield" restriction, unlike
+    Caitlyn's ability."""
+    unit = make_unit(1)
+    state = make_state(left_units=frozenset({unit}), left_ctrl=0, legend=LegendState(BLIND_MONK))
+    action = buff_action(1)
+    assert legends.is_legal_legend_ability(state, action)
+    new_state = apply(state, action, {})
+    assert next(iter(new_state.battlefields[0].units)).buffed is True
+
+
+def test_blind_monk_cannot_target_an_enemy_unit():
+    enemy = make_unit(1, controller=1)
+    state = make_state(left_units=frozenset({enemy}), left_ctrl=1, legend=LegendState(BLIND_MONK))
+    assert not legends.is_legal_legend_ability(state, buff_action(1))
+
+
+def test_blind_monk_cannot_fire_twice():
+    unit = make_unit(1)
+    state = make_state(base_units=frozenset({unit}),
+                        legend=LegendState(BLIND_MONK, exhausted=True))
+    assert not legends.is_legal_legend_ability(state, buff_action(1))
+
+
+def test_blind_monk_requires_affording_the_energy_cost():
+    unit = make_unit(1)
+    state = make_state(base_units=frozenset({unit}), legend=LegendState(BLIND_MONK), runes=())
+    assert not legends.is_legal_legend_ability(state, buff_action(1))
+
+
+def test_blind_monk_appears_in_legal_actions():
+    unit = make_unit(1)
+    state = make_state(base_units=frozenset({unit}), legend=LegendState(BLIND_MONK))
+    actions = [a for a in legal_actions(state, {})
+               if isinstance(a, ActivateAbility) and a.ability_id == BLIND_MONK]
+    assert any(a.params == (1,) for a in actions)
+    assert all(a.source_id == LEGEND_SOURCE_ID for a in actions)

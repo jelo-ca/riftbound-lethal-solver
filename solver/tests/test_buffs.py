@@ -23,9 +23,9 @@ from solver.engine.state import (
 )
 
 
-def make_unit(instance_id=1, controller=0, might=3, buffed=False):
+def make_unit(instance_id=1, controller=0, might=3, buffed=False, exhausted=False):
     return UnitInstance(card_id="u", instance_id=instance_id, controller=controller,
-                         might=might, keywords=frozenset(), exhausted=False, damage=0,
+                         might=might, keywords=frozenset(), exhausted=exhausted, damage=0,
                          is_token=False, buffed=buffed)
 
 
@@ -249,3 +249,233 @@ def test_a_conditional_grant_unlocks_a_move_that_was_illegal():
 def test_an_unbuffed_card_without_a_conditional_is_unaffected():
     plain = make_state(frozenset({buffed_unit("u", might=4)}))
     assert combat.effective_might(plain, unit_at(plain), "left") == 4
+
+
+# --- Wildclaw Shaman: "you may spend a buff to buff me and ready me" ---
+
+from solver.engine.abilities import (  # noqa: E402
+    WILDCLAW_SHAMAN,
+    is_legal_unit_play_trigger,
+)
+from solver.search import legal_actions  # noqa: E402
+
+
+def test_wildclaw_shaman_can_decline():
+    state, card, action = play(WILDCLAW_SHAMAN, "left", ())
+    result = resolve_unit_play_trigger_outcomes(state, action, card)[0]
+    played = max((u.instance_id for u in result.battlefields[0].units))
+    assert unit_at(result, played).buffed is False
+    assert unit_at(result, played).exhausted is True  # rule 143.4.a, no Accelerate paid
+
+
+def test_wildclaw_shaman_spends_a_buff_to_buff_and_ready_itself():
+    ally = make_unit(instance_id=5, might=2, buffed=True)
+    state, card, action = play(WILDCLAW_SHAMAN, "left", (5,), board=frozenset({ally}))
+    assert is_legal_unit_play_trigger(state, action, card)
+
+    result = resolve_unit_play_trigger_outcomes(state, action, card)[0]
+    assert unit_at(result, 5).buffed is False  # spent as the cost
+    played = max(u.instance_id for u in result.battlefields[0].units if u.instance_id != 5)
+    assert unit_at(result, played).buffed is True
+    assert unit_at(result, played).exhausted is False  # "and ready me"
+
+
+def test_wildclaw_shaman_cannot_spend_an_unbuffed_units_buff():
+    """"Spend a buff" needs one to exist — an unbuffed ally is not a legal
+    choice, only a declined trigger is."""
+    ally = make_unit(instance_id=5, might=2, buffed=False)
+    state, card, action = play(WILDCLAW_SHAMAN, "left", (5,), board=frozenset({ally}))
+    assert not is_legal_unit_play_trigger(state, action, card)
+
+
+def test_wildclaw_shaman_trigger_appears_in_legal_actions():
+    """Confirms the optional trigger is reachable through the real action
+    space, not just through resolve_unit_play_trigger_outcomes directly."""
+    ally = make_unit(instance_id=5, might=2, buffed=True)
+    state, card, _ = play(WILDCLAW_SHAMAN, "left", (), board=frozenset({ally}))
+    cards = {WILDCLAW_SHAMAN: card}
+    actions = [a for a in legal_actions(state, cards)
+               if getattr(a, "card_id", None) == WILDCLAW_SHAMAN]
+    assert any(a.trigger_params == (5,) for a in actions), \
+        "spending the ally's buff should be an offered move"
+    assert any(a.trigger_params == () for a in actions), "declining stays legal too"
+
+
+# --- Lee Sin, Centered: "Other buffed friendly units at my battlefield
+# have +2 Might" ---
+
+from solver.engine.traits import (  # noqa: E402
+    BUFF_MIGHT_AURA_SOURCES,
+    LEE_SIN_CENTERED,
+)
+
+
+def enemy_unit(instance_id, might=3, buffed=False, card_id="e"):
+    return UnitInstance(card_id=card_id, instance_id=instance_id, controller=1, might=might,
+                         keywords=frozenset(), exhausted=False, damage=0, is_token=False,
+                         buffed=buffed)
+
+
+def test_lee_sin_centered_buffs_other_buffed_units_at_his_battlefield():
+    lee_sin = buffed_unit(LEE_SIN_CENTERED, instance_id=1, might=6)
+    ally = buffed_unit("ally", instance_id=2, might=3, buffed=True)
+    state = make_state(frozenset({lee_sin, ally}))
+    assert combat.effective_might(state, unit_at(state, 2), "left") == 6  # 3 + 1 buff + 2 aura
+
+
+def test_lee_sin_centered_does_not_buff_himself():
+    """"OTHER buffed friendly units" — even if Lee Sin himself is buffed."""
+    lee_sin = buffed_unit(LEE_SIN_CENTERED, instance_id=1, might=6, buffed=True)
+    state = make_state(frozenset({lee_sin}))
+    assert combat.effective_might(state, unit_at(state, 1), "left") == 7  # 6 + his own buff only
+
+
+def test_lee_sin_centered_does_not_affect_an_unbuffed_ally():
+    lee_sin = buffed_unit(LEE_SIN_CENTERED, instance_id=1, might=6)
+    ally = buffed_unit("ally", instance_id=2, might=3, buffed=False)
+    state = make_state(frozenset({lee_sin, ally}))
+    assert combat.effective_might(state, unit_at(state, 2), "left") == 3
+
+
+def test_lee_sin_centered_does_not_reach_another_battlefield():
+    ally = buffed_unit("ally", instance_id=2, might=3, buffed=True)
+    lee_sin = buffed_unit(LEE_SIN_CENTERED, instance_id=1, might=6)
+    state = GameState(
+        turn_player=0,
+        players=(
+            PlayerState(base_units=frozenset(), hand=(), runes=RunePool(available=()), score=0),
+            PlayerState(base_units=frozenset(), hand=(), runes=RunePool(available=()), score=0),
+        ),
+        battlefields=(
+            BattlefieldState("left", 0, frozenset({lee_sin}), None),
+            BattlefieldState("right", 0, frozenset({ally}), None),
+        ),
+        scored_this_turn=frozenset(),
+        cards_played_this_turn=0,
+    )
+    assert combat.effective_might(state, ally, "right") == 4  # buff only, no aura
+
+
+def test_lee_sin_centered_does_not_buff_a_buffed_enemy():
+    lee_sin = buffed_unit(LEE_SIN_CENTERED, instance_id=1, might=6)
+    foe = enemy_unit(2, might=3, buffed=True)
+    state = make_state(frozenset({lee_sin, foe}))
+    assert combat.effective_might(state, foe, "left") == 4  # buff only
+
+
+def test_buff_might_aura_registry_has_the_expected_source():
+    assert BUFF_MIGHT_AURA_SOURCES[LEE_SIN_CENTERED] == 2
+
+
+# --- Sett, Kingpin: "+1 Might for each buffed friendly unit at my
+# battlefield" ---
+
+from solver.engine.traits import SETT_KINGPIN  # noqa: E402
+
+
+def test_sett_kingpin_counts_buffed_friendly_units_at_his_battlefield():
+    sett = buffed_unit(SETT_KINGPIN, instance_id=1, might=5)
+    ally_a = buffed_unit("a", instance_id=2, might=2, buffed=True)
+    ally_b = buffed_unit("b", instance_id=3, might=2, buffed=True)
+    state = make_state(frozenset({sett, ally_a, ally_b}))
+    assert combat.effective_might(state, unit_at(state, 1), "left") == 7  # 5 + 2 buffed allies
+
+
+def test_sett_kingpin_counts_his_own_buff_too():
+    """The text doesn't say "other" — a buffed Sett counts himself."""
+    sett = buffed_unit(SETT_KINGPIN, instance_id=1, might=5, buffed=True)
+    state = make_state(frozenset({sett}))
+    assert combat.effective_might(state, unit_at(state, 1), "left") == 7  # +1 buff, +1 count-of-1
+
+
+def test_sett_kingpin_ignores_a_buffed_enemy():
+    sett = buffed_unit(SETT_KINGPIN, instance_id=1, might=5)
+    foe = enemy_unit(2, might=2, buffed=True)
+    state = make_state(frozenset({sett, foe}))
+    assert combat.effective_might(state, unit_at(state, 1), "left") == 5
+
+
+def test_sett_kingpin_gets_no_bonus_at_base():
+    sett = buffed_unit(SETT_KINGPIN, instance_id=1, might=5)
+    state = make_state(base_units=frozenset({sett}))
+    unit = next(iter(state.players[0].base_units))
+    assert combat.effective_might(state, unit, "base") == 5
+
+
+# --- Overt Operation: "For each friendly unit, you may spend its buff to
+# ready it. Then buff all friendly units." ---
+
+from solver.engine.abilities import (  # noqa: E402
+    OVERT_OPERATION,
+    is_legal_play_spell,
+    resolve_spell_outcomes,
+)
+from solver.engine.actions import PlaySpell, RunePayment  # noqa: E402
+
+
+def cast_overt_operation(state, params):
+    card = card_def(OVERT_OPERATION)
+    payment = RunePayment(energy_runes=("Fury",) * card.energy_cost,
+                          power_runes=(card.power_domain,) * card.power_cost)
+    action = PlaySpell(card_id=OVERT_OPERATION, params=params, rune_payment=payment)
+    assert is_legal_play_spell(state, action, card)
+    return resolve_spell_outcomes(state, action, card)[0]
+
+
+def make_spell_state(left_units=frozenset(), base_units=frozenset(),
+                      runes=("Body",) * 12, hand=(OVERT_OPERATION,)):
+    return GameState(
+        turn_player=0,
+        players=(
+            PlayerState(base_units=base_units, hand=hand, runes=RunePool(available=runes), score=0),
+            PlayerState(base_units=frozenset(), hand=(), runes=RunePool(available=()), score=0),
+        ),
+        battlefields=(
+            BattlefieldState("left", 0 if left_units else None, left_units, None),
+            BattlefieldState("right", None, frozenset(), None),
+        ),
+        scored_this_turn=frozenset(),
+        cards_played_this_turn=0,
+    )
+
+
+def test_overt_operation_buffs_every_friendly_unit_with_no_spending():
+    a = make_unit(instance_id=1, might=2, buffed=False)
+    b = make_unit(instance_id=2, might=2, buffed=False)
+    state = make_spell_state(left_units=frozenset({a, b}))
+    result = cast_overt_operation(state, ())
+    assert unit_at(result, 1).buffed is True
+    assert unit_at(result, 2).buffed is True
+
+
+def test_overt_operation_can_spend_a_subset_to_ready_them():
+    a = make_unit(instance_id=1, might=2, buffed=True, exhausted=True)
+    b = make_unit(instance_id=2, might=2, buffed=True, exhausted=True)
+    state = make_spell_state(left_units=frozenset({a, b}))
+    result = cast_overt_operation(state, (1,))
+    # 1's buff was spent to ready it, then re-buffed by "buff all" since it
+    # no longer has one; 2 was never touched by the spend, only by the buff.
+    assert unit_at(result, 1).exhausted is False
+    assert unit_at(result, 1).buffed is True
+    assert unit_at(result, 2).exhausted is True
+    assert unit_at(result, 2).buffed is True
+
+
+def test_overt_operation_cannot_spend_an_unbuffed_units_buff():
+    a = make_unit(instance_id=1, might=2, buffed=False)
+    state = make_spell_state(left_units=frozenset({a}))
+    card = card_def(OVERT_OPERATION)
+    payment = RunePayment(energy_runes=("Fury",) * card.energy_cost,
+                          power_runes=(card.power_domain,) * card.power_cost)
+    action = PlaySpell(card_id=OVERT_OPERATION, params=(1,), rune_payment=payment)
+    assert not is_legal_play_spell(state, action, card)
+
+
+def test_overt_operation_appears_in_legal_actions():
+    a = make_unit(instance_id=1, might=2, buffed=True)
+    state = make_spell_state(left_units=frozenset({a}))
+    cards = {OVERT_OPERATION: card_def(OVERT_OPERATION)}
+    actions = legal_actions(state, cards)
+    spell_actions = [a for a in actions if isinstance(a, PlaySpell) and a.card_id == OVERT_OPERATION]
+    assert any(a.params == () for a in spell_actions)
+    assert any(a.params == (1,) for a in spell_actions)

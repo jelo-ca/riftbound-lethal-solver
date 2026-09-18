@@ -9,6 +9,7 @@ cost/hand bookkeeping (apply_play_spell_cost) has already run.
 from __future__ import annotations
 
 import dataclasses
+import itertools
 from typing import Callable, Optional
 
 from . import combat, scoring, traits
@@ -734,6 +735,59 @@ def _charm_candidates(state: GameState) -> list[tuple]:
     return candidates
 
 
+OVERT_OPERATION = "ogn-153-298"  # [Action] "For each friendly unit, you may spend its buff to ready it. Then buff all friendly units."
+
+
+def _friendly_units_anywhere(state: GameState) -> list:
+    out = list(state.players[state.turn_player].base_units)
+    out += [u for bf in state.battlefields for u in bf.units if u.controller == state.turn_player]
+    return out
+
+
+def _overt_operation_is_legal(state: GameState, action: PlaySpell) -> bool:
+    """params = a subset (no repeats) of friendly units to spend-and-ready
+    — each must currently carry a buff, since "spend its buff" has nothing
+    to spend otherwise. The trailing "buff all friendly units" chooses
+    nothing of its own, so it isn't part of params at all."""
+    if len(set(action.params)) != len(action.params):
+        return False
+    buffed_ids = {u.instance_id for u in _friendly_units_anywhere(state) if u.buffed}
+    return all(target in buffed_ids for target in action.params)
+
+
+def _overt_operation_effect(state: GameState, action: PlaySpell) -> list[GameState]:
+    for target in action.params:
+        state = ready_unit(spend_buff(state, target), target)
+    for unit in _friendly_units_anywhere(state):
+        state = apply_buff(state, unit.instance_id)
+    return [state]
+
+
+def _overt_operation_candidates(state: GameState) -> list[tuple]:
+    """Every subset of currently-buffed friendly units — "for each
+    friendly unit" offers the spend-to-ready choice independently, so N
+    buffed units give 2**N legal choices, not just N+1 (contrast Kinkou
+    Monk's capped "up to two")."""
+    ids = [u.instance_id for u in sorted(_friendly_units_anywhere(state), key=lambda u: u.instance_id)
+           if u.buffed]
+    out: list[tuple] = []
+    for size in range(len(ids) + 1):
+        out.extend(itertools.combinations(ids, size))
+    return out
+
+
+# Showstopper (ogn-270-298), "Buff a friendly unit in your base, then move
+# it to a battlefield," is NOT registered here — not a text problem but a
+# data one. Its Power cost lists TWO domains (Body, Order) with no way to
+# tell which one pays; card_data.py refuses this on purpose rather than
+# guess (see its "REFUSES RATHER THAN GUESSES" docstring), so card_def()
+# returns None for it and it can never carry stats. Clearing it as HANDLED
+# would fail test_every_handled_card_has_stats_available, and hand-picking
+# a domain would be exactly the hand-transcription this project keeps
+# getting burned by. Stays BLOCKING until a canonical source settles which
+# domain is real.
+
+
 # card_id -> (is_legal(state, action), effect(state, action) -> list[GameState],
 #             generate_candidate_params(state))
 SPELL_EFFECTS: dict[str, tuple[
@@ -760,6 +814,7 @@ SPELL_EFFECTS: dict[str, tuple[
     UNCHECKED_POWER: (_unchecked_power_is_legal, _unchecked_power_effect, lambda state: [()]),
     CHALLENGE: (_challenge_is_legal, _challenge_effect, _challenge_candidates),
     EN_GARDE: (_friendly_unit_is_legal, _en_garde_effect, _friendly_unit_candidates),
+    OVERT_OPERATION: (_overt_operation_is_legal, _overt_operation_effect, _overt_operation_candidates),
 }
 
 
@@ -1267,6 +1322,43 @@ def _kinkou_monk_candidates(state: GameState, base_action: PlayUnit, card: CardD
     return out
 
 
+WILDCLAW_SHAMAN = "ogn-147-298"  # "When you play me, you may spend a buff to buff me and ready me."
+
+
+def _wildclaw_shaman_is_legal(state: GameState, action: PlayUnit, card: CardDef) -> bool:
+    """trigger_params = () to decline, or (buffed_instance_id,) naming the
+    friendly unit whose buff is spent as the cost. Wildclaw Shaman itself
+    can never be a legal choice: it has just entered and starts unbuffed,
+    so "must currently be buffed" already rules out self-targeting without
+    a separate check."""
+    if not action.trigger_params:
+        return True
+    if len(action.trigger_params) != 1:
+        return False
+    state_after_play = apply_play_unit(state, dataclasses.replace(
+        action, trigger_params=(), trigger_payment=None), card)
+    located = find_unit_anywhere(state_after_play, action.trigger_params[0])
+    return located is not None and located[0].controller == state.turn_player and located[0].buffed
+
+
+def _wildclaw_shaman_effect(state_after_play: GameState, action: PlayUnit) -> list[GameState]:
+    if not action.trigger_params:
+        return [state_after_play]
+    spent = spend_buff(state_after_play, action.trigger_params[0])
+    me = _played_unit(spent, action)
+    return [ready_unit(apply_buff(spent, me.instance_id), me.instance_id)]
+
+
+def _wildclaw_shaman_candidates(state: GameState, base_action: PlayUnit, card: CardDef) -> list[tuple]:
+    state_after_play = apply_play_unit(state, base_action, card)
+    ours = [u.instance_id for u in sorted(state_after_play.players[state.turn_player].base_units,
+                                           key=lambda u: u.instance_id) if u.buffed]
+    ours += [u.instance_id for bf in state_after_play.battlefields
+             for u in sorted(bf.units, key=lambda u: u.instance_id)
+             if u.controller == state.turn_player and u.buffed]
+    return [()] + [(a,) for a in ours]
+
+
 # NOT REGISTERED — blocked on the zone model, see engine/coverage.py.
 # "Move a unit from a battlefield to its base" is fine for our own units
 # but unrepresentable for an enemy's: Zone is "base" or a battlefield id,
@@ -1370,6 +1462,7 @@ UNIT_PLAY_TRIGGERS: dict[str, tuple[
     KINKOU_MONK: (_kinkou_monk_is_legal, _kinkou_monk_effect, _kinkou_monk_candidates),
     CARNIVOROUS_SNAPVINE: (_enemy_at_battlefield_is_legal, _snapvine_effect,
                             _enemy_at_battlefield_candidates),
+    WILDCLAW_SHAMAN: (_wildclaw_shaman_is_legal, _wildclaw_shaman_effect, _wildclaw_shaman_candidates),
 }
 
 
