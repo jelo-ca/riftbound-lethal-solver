@@ -207,6 +207,13 @@ HANDLED: dict[str, str] = {
     "ogn-295-298": "Vilemaw's Lair — \"Units can't move from here to base\" via "
                    "battlefields.BattlefieldEffect(blocks_move_to_base=True), exercised "
                    "in puzzle 7 and covered directly by test_battlefields.py",
+    # Observer triggers — "when you play ANOTHER unit," fired at whoever is
+    # already on the board watching, from actions.apply_play_unit (the one
+    # choke point every genuine unit-from-hand play routes through). See
+    # engine/observers.py.
+    "ogn-139-298": "Cithria of Cloudfield — \"when you play another unit, buff me\" "
+                   "via observers.OBSERVER_PLAY_TRIGGERS; excludes her own play via "
+                   "an instance_id check, so she never buffs off her own arrival",
     # "When I attack" triggers (RULES ANSWER, project owner, 2026-09-17): a
     # trigger that kills the defender before the Combat Damage Step removes
     # it from combat entirely — it deals no combat damage. abilities.py's

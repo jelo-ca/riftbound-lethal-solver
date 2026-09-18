@@ -402,6 +402,8 @@ def apply_play_unit(state: GameState, action: PlayUnit, card: CardDef) -> GameSt
     new_runes = consume_runes(player.runes, action.rune_payment)
     state = dataclasses.replace(state, cards_played_this_turn=state.cards_played_this_turn + 1)
 
+    from . import observers  # deferred — see observers.py's module docstring
+
     if action.target_zone == "base":
         new_player = dataclasses.replace(
             player,
@@ -409,7 +411,8 @@ def apply_play_unit(state: GameState, action: PlayUnit, card: CardDef) -> GameSt
             hand=tuple(new_hand),
             runes=new_runes,
         )
-        return replace_player(state, player_index, new_player)
+        state = replace_player(state, player_index, new_player)
+        return observers.fire_observer_play_triggers(state, new_unit)
 
     new_player = dataclasses.replace(player, hand=tuple(new_hand), runes=new_runes)
     state = replace_player(state, player_index, new_player)
@@ -420,7 +423,8 @@ def apply_play_unit(state: GameState, action: PlayUnit, card: CardDef) -> GameSt
     # controller (it's already theirs).
     new_controller = bf.controller if bf.controller is not None else player_index
     new_bf = dataclasses.replace(bf, units=bf.units | {new_unit}, controller=new_controller)
-    return replace_battlefield(state, new_bf)
+    state = replace_battlefield(state, new_bf)
+    return observers.fire_observer_play_triggers(state, new_unit)
 
 
 def mint_token_unit(state: GameState, card: CardDef, controller: int, zone: Zone) -> GameState:
