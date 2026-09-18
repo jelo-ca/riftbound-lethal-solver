@@ -18,9 +18,18 @@ about**. Puzzle *generation* is explicitly deferred — do not work on it.
 below), `solver/engine/coverage.py` (the safety mechanism and the whole
 ledger), `findings.md` and `task_plan.md` (both gitignored, on disk).
 
-**Current state:** branch `solver/coverage-ledger`, 30 commits ahead of
-`solver/correct-card-data`. 559 tests pass in ~1.2s
-(`py -m pytest solver/tests -q`). Coverage **90 of 298 cards (30.2%)**.
+**Current state:** branch `solver/coverage-ledger`, 36 commits ahead of
+`solver/correct-card-data`. 618 tests pass in ~1s
+(`py -m pytest solver/tests -q`). Coverage **115 of 298 cards (38.6%)**,
+up from 90 this pass via four parallel clusters (play-restrictions,
+conquer-triggers, buff-related, attack/defend-triggers), merged
+sequentially with conflicts resolved by hand. One real regression was
+caught at merge time, not shipped: Mageseeker Warden's old INERT
+classification depended on Dune Drake staying BLOCKING, which the
+attack-trigger cluster changed — reverted back to BLOCKING pending an
+actual model of its "can't ready enemy units" restriction. Also picked
+up two ledger-hygiene gaps (Yasuo Unforgiven, Vilemaw's Lair) that were
+fully implemented and tested but missing their HANDLED entries.
 
 **Your job:** raise coverage toward "any Origins board" without ever
 letting the engine bluff. Work in card-shape clusters, not card by card.
@@ -42,9 +51,6 @@ letting the engine bluff. Work in card-shape clusters, not card by card.
 6. The user has authoritative Riftbound rules knowledge. **Ask them**
    rather than researching or inferring. Batch questions where you can.
 7. Explain each step and get a go-ahead before large changes.
-
-**Two open questions the user must answer before the biggest remaining
-cluster can be built** — see "Open questions" below.
 
 ---
 
@@ -159,20 +165,30 @@ for live numbers. Roughly:
 *argument*, not code — cheapest coverage in the set), then Hidden and
 play-restrictions on the same basis, then conquer triggers.
 
-## Open questions for the user
+## Attack/defend trigger cluster — resolved 2026-09-17
 
-Both block the attack/defend trigger cluster. Ask before building.
+Both blocking questions answered by the project owner and built:
 
-1. **If an attack trigger kills a defender before the damage step, does
-   that defender still deal its combat damage?** This decides whether
-   combat must be restructured. Assignments are currently enumerated
-   *before* any trigger would resolve, so a trigger that kills a defender
-   voids an assignment already chosen against the pre-trigger board.
-2. **"While I'm attacking or defending alone"** (Wielder of Water, Mask
-   of Foresight) needs combat *role* inside a self-conditional.
-   `SelfConditional.condition` takes `(state, unit, zone)` and has no
-   designation. Adding one risks the Might-circularity the module
-   explicitly guards against — confirm the intended reading first.
+1. **A defender killed by an attack trigger before the damage step is
+   removed from combat entirely — it deals no combat damage.**
+   `abilities.ATTACK_TRIGGERS` forces the move through the showdown
+   mechanism with the trigger resolved before any damage-assignment
+   option is computed, so a killed defender is simply absent from the
+   live board by the time assignment happens. See
+   `search._board_actions_with_showdown_entries` and
+   `ShowdownState.attack_trigger_resolved`.
+2. **`SelfConditional.condition` now takes a fourth `designation`
+   argument** (the unit's combat role) for "while I'm attacking or
+   defending alone" (Wielder of Water). Non-circularity holds — the
+   condition reads only `designation`/board state, never `.might`.
+
+Anivia, Yasuo Remorseful, Crackshot Corsair, Dune Drake, and Wielder of
+Water are HANDLED. Volibear (damage-split composition), Ahri Inquisitive
+(defend-half only reachable via Charm/Blitzcrank redirects), Leona
+(needs a "stun" status decoupling lethal-Might from damage-dealt),
+Warwick, Teemo, Twisted Fate, and Mask of Foresight (reacts to *any*
+friendly unit's combat, not just its own) remain BLOCKING on real
+subsystem gaps — not rules questions.
 
 ## Verification checklist for any change
 
