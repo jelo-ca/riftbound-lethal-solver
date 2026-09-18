@@ -166,6 +166,49 @@ def test_gear_is_part_of_the_canonical_key():
     assert canonical_key(ready) != canonical_key(spent)
 
 
+# --- The Seals: "Exhaust: [Reaction] Add 1 [domain] rune." (RULING 2) ---
+#
+# A card that STATES its domain gets a normal, real-domain rune — none of
+# RULING 1's domain-less machinery — and nothing says "exhausted," so it
+# arrives ready, immediately able to pay Energy AND Power of its domain.
+
+
+def test_seal_of_rage_adds_a_ready_fury_rune():
+    state = make_state(gear_pieces=frozenset({ready_gear(gear.SEAL_OF_RAGE)}))
+    action = _activate(gear.SEAL_OF_RAGE, ())
+    assert gear.is_legal_gear_ability(state, action)
+    result = gear.apply_gear_ability(state, action)
+    from solver.engine.state import energy_capacity, power_capacity
+    assert result.players[0].runes.available == ("Fury",)
+    assert energy_capacity(result.players[0].runes) == 1  # ready, not exhausted
+    assert power_capacity(result.players[0].runes, "Fury") == 1
+    assert next(iter(result.players[0].gear)).exhausted is True  # its own cost is spent
+
+
+def test_every_seal_adds_its_own_stated_domain():
+    for seal_id, domain in gear.SEAL_DOMAINS.items():
+        state = make_state(gear_pieces=frozenset({ready_gear(seal_id)}))
+        result = gear.apply_gear_ability(state, _activate(seal_id, ()))
+        assert result.players[0].runes.available == (domain,)
+
+
+def test_seal_reachable_through_legal_actions():
+    """The guard against "registered but unreachable" — search.legal_actions
+    must actually offer the activation, not just gear.GEAR_ABILITIES."""
+    state = make_state(gear_pieces=frozenset({ready_gear(gear.SEAL_OF_UNITY)}))
+    actions = [a for a in search.legal_actions(state, {})
+               if isinstance(a, ActivateAbility) and a.ability_id == gear.SEAL_OF_UNITY]
+    assert len(actions) == 1
+    result = gear.apply_gear_ability(state, actions[0])
+    assert result.players[0].runes.available == ("Order",)
+
+
+def test_exhausted_seal_cannot_activate_again():
+    state = make_state(gear_pieces=frozenset({
+        GearInstance(card_id=gear.SEAL_OF_RAGE, instance_id=50, exhausted=True)}))
+    assert not gear.is_legal_gear_ability(state, _activate(gear.SEAL_OF_RAGE, ()))
+
+
 def test_playing_gear_needs_the_runes():
     state = make_state(hand=(gear.IRON_BALLISTA,), runes=("Fury",))
     action = PlayGear(card_id=gear.IRON_BALLISTA,

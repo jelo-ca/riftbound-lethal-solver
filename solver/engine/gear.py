@@ -49,7 +49,7 @@ from .actions import (
     replace_battlefield,
     replace_gear,
 )
-from .state import Domain, GameState, replace_player
+from .state import Domain, GameState, add_runes, replace_player
 
 IRON_BALLISTA = "ogn-017-298"  # "This enters exhausted. Exhaust: Deal 2 to a unit at a battlefield."
 ORB_OF_REGRET = "ogn-090-298"  # "Exhaust: Give a unit -1 Might this turn, to a minimum of 1 Might."
@@ -221,6 +221,51 @@ def _arena_bar_candidates(state: GameState) -> list[tuple]:
     return out
 
 
+# --- The Seals: "Exhaust: [Reaction] Add 1 [domain] rune." ---
+#
+# RULING 2 (project owner, 2026-09-18): a card that STATES its own domain
+# gets a normal, real-domain rune — none of RULING 1's domain-less
+# machinery applies, since there's nothing unknowable about it. Nothing
+# says "exhausted," so it arrives READY, immediately able to pay Energy
+# AND Power of its domain like any other rune. All six Seals share this
+# one shape, differing only in which domain — SEAL_DOMAINS below, not six
+# near-duplicate effect functions.
+
+SEAL_OF_RAGE = "ogn-040-298"  # "...Add 1 Fury rune."
+SEAL_OF_FOCUS = "ogn-081-298"  # "...Add 1 Calm rune."
+SEAL_OF_INSIGHT = "ogn-120-298"  # "...Add 1 Mind rune."
+SEAL_OF_STRENGTH = "ogn-163-298"  # "...Add 1 Body rune."
+SEAL_OF_DISCORD = "ogn-204-298"  # "...Add 1 Chaos rune."
+SEAL_OF_UNITY = "ogn-245-298"  # "...Add 1 Order rune."
+
+SEAL_DOMAINS: dict[str, Domain] = {
+    SEAL_OF_RAGE: "Fury",
+    SEAL_OF_FOCUS: "Calm",
+    SEAL_OF_INSIGHT: "Mind",
+    SEAL_OF_STRENGTH: "Body",
+    SEAL_OF_DISCORD: "Chaos",
+    SEAL_OF_UNITY: "Order",
+}
+
+
+def _seal_is_legal(state: GameState, action: ActivateAbility) -> bool:
+    return action.params == () and _source_is_usable(state, action)
+
+
+def _seal_effect(state: GameState, action: ActivateAbility) -> GameState:
+    state = _exhaust_source(state, action)
+    located = find_gear(state, action.source_id)
+    assert located is not None
+    _, controller = located
+    player = state.players[controller]
+    new_pool = add_runes(player.runes, (SEAL_DOMAINS[action.ability_id],))
+    return replace_player(state, controller, dataclasses.replace(player, runes=new_pool))
+
+
+def _seal_candidates(state: GameState) -> list[tuple]:
+    return [()]
+
+
 GEAR_ABILITIES: dict[str, tuple[
     Callable[[GameState, ActivateAbility], bool],
     Callable[[GameState, ActivateAbility], GameState],
@@ -230,6 +275,12 @@ GEAR_ABILITIES: dict[str, tuple[
     ORB_OF_REGRET: (_orb_is_legal, _orb_effect, _orb_candidates),
     THE_SYREN: (_syren_is_legal, _syren_effect, _syren_candidates),
     ARENA_BAR: (_arena_bar_is_legal, _arena_bar_effect, _arena_bar_candidates),
+    SEAL_OF_RAGE: (_seal_is_legal, _seal_effect, _seal_candidates),
+    SEAL_OF_FOCUS: (_seal_is_legal, _seal_effect, _seal_candidates),
+    SEAL_OF_INSIGHT: (_seal_is_legal, _seal_effect, _seal_candidates),
+    SEAL_OF_STRENGTH: (_seal_is_legal, _seal_effect, _seal_candidates),
+    SEAL_OF_DISCORD: (_seal_is_legal, _seal_effect, _seal_candidates),
+    SEAL_OF_UNITY: (_seal_is_legal, _seal_effect, _seal_candidates),
 }
 
 

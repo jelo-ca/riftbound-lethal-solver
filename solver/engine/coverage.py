@@ -342,6 +342,18 @@ HANDLED: dict[str, str] = {
                    "above; always channels",
     "ogn-138-298": "Catalyst of Aeons — \"Channel 2 runes exhausted. If you couldn't "
                    "channel 2 runes this way, draw 1.\" — same reasoning as Mobilize",
+    # The Seals — RULING 2 (project owner, 2026-09-18): "Add 1 [domain] rune"
+    # STATES its own domain, so it's a normal, real-domain rune via
+    # state.add_runes and gear.SEAL_DOMAINS — none of RULING 1's
+    # domain-less machinery applies, and nothing says "exhausted," so it
+    # arrives ready.
+    "ogn-040-298": "Seal of Rage — Gear, \"Exhaust: Add 1 Fury rune\" via "
+                   "gear.GEAR_ABILITIES and state.add_runes",
+    "ogn-081-298": "Seal of Focus — Gear, \"Exhaust: Add 1 Calm rune\", same shape",
+    "ogn-120-298": "Seal of Insight — Gear, \"Exhaust: Add 1 Mind rune\", same shape",
+    "ogn-163-298": "Seal of Strength — Gear, \"Exhaust: Add 1 Body rune\", same shape",
+    "ogn-204-298": "Seal of Discord — Gear, \"Exhaust: Add 1 Chaos rune\", same shape",
+    "ogn-245-298": "Seal of Unity — Gear, \"Exhaust: Add 1 Order rune\", same shape",
 }
 
 
