@@ -242,6 +242,70 @@ def _arena_bar_candidates(state: GameState) -> list[tuple]:
     return out
 
 
+# --- Pack of Wonders: "Exhaust: Return another friendly gear, unit, or
+# [Hidden] card to its owner's hand." ---
+#
+# [Hidden] is not modelled as a zone at all (design/00-overview.md: "no
+# hidden zones"), so there is never a hidden card standing anywhere to
+# name — an empty slice of the candidate set, not unmodelled STATE being
+# silently ignored. The gear/unit halves are ordinary bounce targets.
+
+PACK_OF_WONDERS = "ogn-181-298"
+
+
+def _pack_of_wonders_is_legal(state: GameState, action: ActivateAbility) -> bool:
+    """params = ("unit", instance_id) or ("gear", instance_id). "Another"
+    only restricts the gear half — Pack of Wonders can't return itself,
+    but nothing stops it bouncing a unit."""
+    if not _source_is_usable(state, action) or len(action.params) != 2:
+        return False
+    kind, target_id = action.params
+    if kind == "unit":
+        located = find_unit_anywhere(state, target_id)
+        return located is not None and located[0].controller == state.turn_player
+    if kind == "gear":
+        if target_id == action.source_id:
+            return False  # "another" friendly gear — not itself
+        located = find_gear(state, target_id)
+        return located is not None and located[1] == state.turn_player
+    return False
+
+
+def _pack_of_wonders_effect(state: GameState, action: ActivateAbility) -> GameState:
+    state = _exhaust_source(state, action)
+    kind, target_id = action.params
+    if kind == "gear":
+        target_gear, controller = find_gear(state, target_id)
+        player = state.players[controller]
+        return replace_player(state, controller, dataclasses.replace(
+            player, gear=player.gear - {target_gear}, hand=player.hand + (target_gear.card_id,)))
+    unit, zone = find_unit_anywhere(state, target_id)
+    if zone == "base":
+        player = state.players[unit.controller]
+        new_player = dataclasses.replace(player, base_units=player.base_units - {unit},
+                                         hand=player.hand + (unit.card_id,))
+        return replace_player(state, unit.controller, new_player)
+    from .actions import return_unit_to_hand
+    return return_unit_to_hand(state, zone, target_id)
+
+
+def _pack_of_wonders_candidates(state: GameState) -> list[tuple]:
+    """Every friendly gear (the source's own instance_id included — it's
+    filtered out by is_legal's "another" check, not withheld here, the
+    same convention as Zaunite Bouncer's self-target exclusion) plus every
+    friendly unit anywhere, Base included."""
+    out: list[tuple] = []
+    for u in sorted(state.players[state.turn_player].base_units, key=lambda u: u.instance_id):
+        out.append(("unit", u.instance_id))
+    for bf in state.battlefields:
+        for u in sorted(bf.units, key=lambda u: u.instance_id):
+            if u.controller == state.turn_player:
+                out.append(("unit", u.instance_id))
+    for g in sorted(state.players[state.turn_player].gear, key=lambda g: g.instance_id):
+        out.append(("gear", g.instance_id))
+    return out
+
+
 GEAR_ABILITIES: dict[str, tuple[
     Callable[[GameState, ActivateAbility], bool],
     Callable[[GameState, ActivateAbility], GameState],
@@ -251,6 +315,7 @@ GEAR_ABILITIES: dict[str, tuple[
     ORB_OF_REGRET: (_orb_is_legal, _orb_effect, _orb_candidates),
     THE_SYREN: (_syren_is_legal, _syren_effect, _syren_candidates),
     ARENA_BAR: (_arena_bar_is_legal, _arena_bar_effect, _arena_bar_candidates),
+    PACK_OF_WONDERS: (_pack_of_wonders_is_legal, _pack_of_wonders_effect, _pack_of_wonders_candidates),
 }
 
 

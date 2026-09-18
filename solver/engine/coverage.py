@@ -58,6 +58,11 @@ Classification = Literal["handled", "inert", "blocking"]
 ZONE_MODEL_OUT_OF_SCOPE: dict[str, str] = {
     "ogn-191-298": "Maddened Marauder — \"move a unit from a battlefield to its "
                    "base\" is unrepresentable when the unit is the opponent's",
+    "ogn-168-298": "Fight or Flight — [Hidden][Action] \"Move a unit from a battlefield to "
+                   "its base.\" Same unrestricted \"a unit... to its base\" shape as Maddened "
+                   "Marauder — unrepresentable whenever the target is the opponent's, since "
+                   "Zone can't say whose base. [Hidden] doesn't change this: the card is "
+                   "unmodelled regardless of how it would be played.",
 }
 
 
@@ -384,6 +389,89 @@ HANDLED: dict[str, str] = {
                    "open showdown\" (state.showdown) — the only place this engine's model "
                    "has two controllers' units present at once. Legal only while a "
                    "showdown is open; implemented via abilities.SPELL_EFFECTS.",
+    # [Hidden] cluster. [Hidden] itself is established as never worth
+    # using (see INERT_FOR_LETHAL's Pakaa Cub entry) — hiding spends a
+    # rune now to save Energy later, strictly worse in a single turn. Each
+    # card below ALSO carries an ordinary [Action] speed marker (or, for
+    # Teemo/Pack of Wonders, has a trigger that fires the same whether or
+    # not Hidden was ever used), so it can simply be cast/played/activated
+    # normally at its printed cost — Hidden changes nothing about whether
+    # the engine understands the effect, only about one (never-correct)
+    # way to have paid for it.
+    "ogn-057-298": "Block — [Hidden][Action] \"Give a unit [Shield 3] and [Tank] this turn.\" "
+                   "via abilities.SPELL_EFFECTS and grant_trait, reusing TRAIT_REGISTRY's "
+                   "generic numeric form the same way Cleave's [Assault 3] already does",
+    "ogn-213-298": "Hidden Blade — [Hidden][Action] \"Kill a unit at a battlefield. Its "
+                   "controller draws 2.\" via abilities.SPELL_EFFECTS and kill_unit; the draw "
+                   "is a no-op",
+    "ogn-197-298": "Teemo, Scout — [Hidden] mandatory \"when you play me, give me +3 Might "
+                   "this turn.\" via abilities.UNIT_PLAY_TRIGGERS; the trigger fires on being "
+                   "played at all, not specifically \"from Hidden,\" so it's a plain mandatory "
+                   "self-buff (same shape as Trifarian Gloryseeker) regardless of Hidden",
+    "ogn-197a-298": "Teemo, Scout — same card as ogn-197-298, alternate printing",
+    "ogn-181-298": "Pack of Wonders — Gear, \"Exhaust: Return another friendly gear, unit, or "
+                   "[Hidden] card to its owner's hand.\" via gear.GEAR_ABILITIES; the [Hidden] "
+                   "half of the target set is always empty since Hidden isn't modelled as a "
+                   "zone at all (design/00-overview.md), which is an empty candidate slice, "
+                   "not unmodelled state being ignored — the gear/unit halves are fully "
+                   "implemented for real, matching Zaunite Bouncer's/Arena Bar's bounce shapes",
+    "ogn-167-298": "Ember Monk — \"when you play a card from [Hidden], give me +2 Might this "
+                   "turn.\" There is no PlayFromHidden action anywhere in this engine's action "
+                   "space at all — Hidden is not modelled as a zone (design/00-overview.md), so "
+                   "no card is ever placed there and no such play can ever be generated. This "
+                   "trigger is therefore dead by CONSTRUCTION, independent of whether hiding "
+                   "would ever be strategically worth it — it doesn't reopen the \"[Hidden] is "
+                   "never correct\" argument, because the premise (a from-Hidden play existing "
+                   "at all) is already false regardless of strategy.",
+    # Generic discard mechanism (actions.discard_from_hand) — a card
+    # leaving hand for trash by discard, real (never a no-op: it shrinks a
+    # resource-limited hand) unlike "draw," which has no Main Deck to draw
+    # from. observers.fire_observer_discard_triggers fires "when you
+    # discard" watchers off the same choke point apply_play_unit's
+    # observer call already uses for "when you play."
+    "ogn-003-298": "Chemtech Enforcer — [Assault 2] (numeric TRAIT_REGISTRY form), mandatory "
+                   "\"when you play me, discard 1\" via abilities.UNIT_PLAY_TRIGGERS and "
+                   "actions.discard_from_hand",
+    "ogn-020-298": "Scrapyard Champion — [Legion]-gated mandatory \"discard 2, then draw 2\"; "
+                   "Legion suppresses the WHOLE effect when unmet (no discard at all), same "
+                   "reading as Vanguard Captain's token count going to zero rather than one; "
+                   "the draw is a no-op (no Main Deck), the discard is real via "
+                   "actions.discard_from_hand",
+    "ogn-202-298": "Jinx, Rebel — \"when you discard one or more cards, ready me and give me "
+                   "+1 Might this turn\" via observers.OBSERVER_DISCARD_TRIGGERS, fired once per "
+                   "discard EVENT (not once per card) from actions.discard_from_hand's callers",
+    "ogn-202a-298": "Jinx, Rebel — same card as ogn-202-298, alternate art",
+    "ogn-019-298": "Raging Soul — \"if you've discarded a card this turn, I have [Assault] and "
+                   "[Ganking]\" via traits.SELF_CONDITIONALS reading state.cards_discarded_this_turn "
+                   "(new GameState field, bumped by actions.discard_from_hand, same shape as "
+                   "cards_played_this_turn feeding legion_condition_met)",
+    "ogn-008-298": "Get Excited! — [Action] \"Discard 1. Deal its Energy cost as damage to a unit "
+                   "at a battlefield.\" via abilities.SPELL_EFFECTS and actions.discard_from_hand; "
+                   "the damage amount is read off the DISCARDED card's own printed Energy cost "
+                   "(card_pool.card_def), so which card is discarded is a real, scored choice, "
+                   "not free to ignore the way a no-op draw is",
+    # "Draw" or "if killed, draw" is a no-op (no Main Deck) with nothing
+    # else worth modelling on top; each reduces to an existing generic
+    # spell shape (abilities.FLAT_DAMAGE_SPELLS / the unrestricted-target
+    # Might-grant pattern), same convention as Watchful Sentry's draw.
+    "ogn-005-298": "Disintegrate — [Action] \"Deal 3 to a unit at a battlefield.\" via "
+                   "abilities.FLAT_DAMAGE_SPELLS; \"if this kills it, draw 1\" is a no-op "
+                   "regardless of the kill (no Main Deck)",
+    "ogn-024-298": "Void Seeker — [Action] \"Deal 4 to a unit at a battlefield.\" via "
+                   "abilities.FLAT_DAMAGE_SPELLS; \"draw 1\" is a no-op",
+    "ogn-058-298": "Discipline — [Reaction] \"Give a unit +2 Might this turn.\" via "
+                   "abilities.SPELL_EFFECTS, same unrestricted-anywhere target shape as "
+                   "Primal Strength; \"draw 1\" is a no-op",
+    "ogn-095-298": "Stupefy — [Reaction] \"Give a unit -1 Might this turn, to a minimum of 1 "
+                   "Might.\" via abilities.SPELL_EFFECTS, same shape as Smoke Screen; \"draw 1\" "
+                   "is a no-op",
+    "ogn-192-298": "Mindsplitter — mandatory \"when you play me, choose an opponent, they reveal "
+                   "their hand, choose a card from it, they discard it\" via UNIT_PLAY_TRIGGERS and "
+                   "actions.discard_from_hand applied to the OPPONENT's hand/controller — reusing "
+                   "the real mechanism rather than arguing it inert matters here specifically "
+                   "because it correctly fires an enemy-controlled \"when you discard\" watcher "
+                   "(a hypothetical enemy Jinx, Rebel) exactly as the real rules would, instead of "
+                   "silently under-crediting the opponent's board",
 }
 
 
@@ -403,6 +491,9 @@ INERT_FOR_LETHAL: dict[str, str] = {
                    "draw is empty; the discard only shrinks our own hand, which "
                    "a solver would never choose and which cannot create lethal.",
     "ogn-083-298": "Consult the Past — Draw 2. No deck.",
+    "ogn-087-298": "Lecturing Yordle — [Tank] (generic TRAIT_REGISTRY keyword) plus a mandatory "
+                   "\"when you play me, draw 1\"; the only non-keyword text is that draw, a "
+                   "no-op with no Main Deck, so nothing is left half-covered",
     "ogn-099-298": "Garbage Grabber — an activated ability whose whole effect is "
                    "Draw 1. With no deck it does nothing, so it is never worth "
                    "activating regardless of its trash cost.",
@@ -582,6 +673,16 @@ INERT_FOR_LETHAL: dict[str, str] = {
     "ogn-291-298": "The Candlelit Sanctum — \"when you conquer here, look at the top "
                    "two cards of your Main Deck. You may recycle one or both.\" No "
                    "Main Deck, so there is nothing to look at and nothing to recycle.",
+    "ogn-071-298": "Party Favors — \"Each OTHER player chooses Cards or Runes. For each "
+                   "player that chooses Cards, you and that player each draw 1. For each "
+                   "player that chooses Runes, you and that player each channel 1 rune "
+                   "exhausted.\" Every branch is gated on the OPPONENT making a choice, and "
+                   "the opponent never acts in this model — there is no decision node for "
+                   "them at all, so neither branch is ever entered, for either player. "
+                   "Distinct from the play-restriction cluster above (a restriction on the "
+                   "opponent that holds vacuously): here the gate is on an opponent CHOICE "
+                   "that never happens, so the whole spell — including our own half of the "
+                   "payoff — simply never resolves.",
     "ogn-282-298": "Monastery of Hirana — \"when you conquer here, you may spend a "
                    "buff to draw 1.\" Spending a buff is a real cost (a genuine "
                    "-1 Might) for a draw that does nothing with no Main Deck, so a "
@@ -605,6 +706,82 @@ INERT_FOR_LETHAL: dict[str, str] = {
                    "its trigger rather than help it. Any winning line that casts this can "
                    "drop the cast (and whichever of its own spells it was shielding "
                    "against) and still win, so it cannot change whether lethal exists.",
+    # Deck/rune-deck cluster: every clause here reads a zone (the Main
+    # Deck, or — Twisted Fate's case — the Rune Deck) that this engine
+    # never models, so there is nothing for any of these effects to act
+    # on regardless of how elaborate the printed text looks.
+    "ogn-062-298": "Reinforce — \"Look at the top 5 cards of your Main Deck. You may banish "
+                   "a unit from among them, then play it... Recycle the remaining cards.\" No "
+                   "Main Deck, so there are no top 5 cards to look at, nothing to banish or "
+                   "play, and nothing to recycle.",
+    "ogn-115-298": "Promising Future — \"Each player looks at the top 5 cards of their Main "
+                   "Deck, chooses one, then recycles the rest. Starting with the next player, "
+                   "each player plays those cards...\" No Main Deck for either player, so "
+                   "there is nothing to look at, choose, recycle, or subsequently play.",
+    "ogn-183-298": "Stacked Deck — [Action] \"Look at the top 3 cards of your Main Deck. Put "
+                   "1 into your hand and recycle the rest.\" No Main Deck, so there is "
+                   "nothing to look at, put into hand, or recycle.",
+    "ogn-160-298": "Dazzling Aurora — Gear, \"At the end of your turn, reveal cards from the "
+                   "top of your Main Deck until you reveal a unit. Play it... and recycle the "
+                   "rest.\" Doubly dead: it fires AFTER the turn this engine searches ends "
+                   "(same argument as Sona/Targon's Peak), and there is no Main Deck to reveal "
+                   "from even if it fired mid-turn. Playing the Gear itself is fully generic "
+                   "(no \"when you play this\" text, no activated ability).",
+    "ogn-194-298": "Nocturne, Horrifying — [Ganking] (generic TRAIT_REGISTRY keyword) plus "
+                   "\"When you look at cards from the top of your deck (and don't draw them) "
+                   "and see me, you may play me for rainbow.\" No Main Deck, so a player never "
+                   "looks at cards from the top of it — this alternate-play trigger can never "
+                   "fire, regardless of whether any OTHER card's deck-look effect exists on "
+                   "the board (they're all no-ops for the identical reason).",
+    "ogn-200-298": "Twisted Fate, Gambler — mandatory \"when I attack, reveal the top rune of "
+                   "your rune deck, then recycle it. Do one of the following based on its "
+                   "domain...\" There is no Rune Deck in this model (state.RunePool holds the "
+                   "runes a player channelled during the already-resolved Beginning Phase, not "
+                   "a deck to reveal from — see state.ready_runes's docstring), so there is no "
+                   "top rune to reveal and none of the three domain branches (including a Stun "
+                   "branch — the parallel stun-mechanic work is not needed here) can ever "
+                   "execute. Not registered in abilities.ATTACK_TRIGGERS: since the trigger "
+                   "produces no observable effect under any domain, forcing the showdown "
+                   "through the trigger-resolution machinery would change nothing, so leaving "
+                   "her unregistered is exactly as correct as registering a no-op would be.",
+    "ogn-242-298": "Baited Hook — Gear, whose entire text is one activated ability: \"Kill a "
+                   "friendly unit. Look at the top 5 cards of your Main Deck. You may banish a "
+                   "unit from among them... and play it... Then recycle the rest.\" Killing your "
+                   "own unit is a real, strictly negative cost; the payoff is entirely a "
+                   "Main-Deck look with no deck to look into. A solver would never activate it, "
+                   "same reasoning as Garbage Grabber's activated Draw 1 — left unregistered "
+                   "in gear.GEAR_ABILITIES, which is never offered as a legal action.",
+    # ogn-101-298 Mushroom Pouch and ogn-182-298 Scrapheap already cleared
+    # above (Gear-removal cluster's sweep) — same cards, found independently.
+    "ogn-118-298": "Wraith of Echoes — \"The first time a friendly unit dies each turn, draw "
+                   "1.\" No-op regardless of the \"first time\" gating, since the draw itself "
+                   "does nothing.",
+    "ogn-292-298": "The Dreaming Tree — Battlefield, \"When a player chooses a friendly unit "
+                   "here with a spell for the first time each turn, they draw 1.\" No-op "
+                   "regardless of the triggering spell; battlefields.py has no entry for this "
+                   "effect_id, and an unregistered effect_id correctly grants nothing (see "
+                   "battlefields._effect's None-returning default), so leaving it unregistered "
+                   "is the right call, not a gap.",
+    "ogn-201-298": "Invert Timelines — \"Each player discards their hand, then draws 4.\" The "
+                   "draw is a no-op (no Main Deck), but discarding OUR OWN entire hand is a "
+                   "real, strictly negative cost with no offsetting benefit — no card in the "
+                   "pool reads hand size or rewards an empty hand. So this card is never a "
+                   "necessary part of a winning line: any strategy that plays it is dominated "
+                   "by the same strategy without it, same shape as Monastery of Hirana's "
+                   "buff-for-nothing. (The OPPONENT's hand also empties and refills with 4 "
+                   "no-op draws, which changes nothing either, per \"opponent never acts.\")",
+    "ogn-044-298": "Clockwork Keeper — \"As you play me, you may pay a Calm rune as an "
+                   "additional cost. If you do, draw 1.\" An optional extra rune payment for a "
+                   "no-op payoff (no Main Deck) — a solver would never pay it, and declining "
+                   "is always legal, same dominance shape as Monastery of Hirana.",
+    "ogn-156-298": "Sabotage — \"Choose an opponent. They reveal their hand. Choose a "
+                   "non-unit card from it, and recycle that card.\" \"Recycle\" means returning "
+                   "the card to the (nonexistent) Main Deck — the same no-op zone transition as "
+                   "every other \"recycle\" text in the pool — so the card leaves the opponent's "
+                   "hand into nowhere tracked, unlike a real discard (contrast Mindsplitter, "
+                   "which uses the word \"discard\" and IS modelled for real via "
+                   "actions.discard_from_hand, precisely because a real discard can trigger an "
+                   "enemy \"when you discard\" watcher and recycling cannot).",
 }
 
 
@@ -633,6 +810,24 @@ def _vision_inert_unless_karma(present: set[str]) -> bool:
 CONDITIONALLY_CLEARED: dict[str, tuple[str, "object"]] = {
     "ogn-171-298": ("Mystic Poro — [Vision] only", _vision_inert_unless_karma),
     "ogn-086-298": ("Jeweled Colossus — [Shield] implemented, [Vision] dead without Karma",
+                    _vision_inert_unless_karma),
+    "ogn-174-298": ("Sai Scout — [Vision] dead without Karma; \"you may play me to an open "
+                    "battlefield\" via CardDef.can_play_to_open_battlefield (auto-derived from "
+                    "the printed text, same generic mechanism as Sneaky Deckhand)",
+                    _vision_inert_unless_karma),
+    # Gemcraft Seer's printed text is "[Vision]... Other friendly units
+    # have [Vision]" (verified against the cache directly — an earlier
+    # scoping pass for this sweep described the aura as granting [Shield],
+    # which the actual printing does not say). Vision is never a coded
+    # mechanic in this engine either way (nothing reads the keyword for
+    # combat/movement), so the aura granting it to other units collapses
+    # into exactly the same "no Main Deck, unless Karma" question as her
+    # own copy — no separate aura wiring needed, unlike Taric/Captain
+    # Farron's genuinely combat-relevant [Shield]/[Assault] auras.
+    "ogn-100-298": ("Gemcraft Seer — [Vision] (own copy, dead without Karma) plus \"other "
+                    "friendly units have [Vision]\" — an aura granting the SAME "
+                    "provably-inert-unless-Karma keyword, not a combat-relevant trait, so "
+                    "the whole card reduces to the one condition",
                     _vision_inert_unless_karma),
 }
 

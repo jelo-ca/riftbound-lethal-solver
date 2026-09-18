@@ -649,6 +649,43 @@ def apply_play_spell_cost(state: GameState, action: PlaySpell) -> GameState:
     return replace_player(state, player_index, new_player)
 
 
+# --- Discard: generic "discard 1" cost/effect ------------------------------
+#
+# A card leaving hand and landing in trash by discard is the same zone
+# transition apply_play_spell_cost already gives a resolved spell, and
+# deaths._send_to_trash gives a dying unit — this is the third and last
+# way a card reaches trash. Unlike "draw" (a no-op with no Main Deck),
+# discard is ALWAYS a real cost: it shrinks a resource-limited hand, so it
+# can never be assumed away.
+#
+# Deliberately pure board mechanics, with no observer-firing baked in
+# (contrast apply_play_unit, which calls observers.fire_observer_play_
+# triggers itself) — a single card-effect can discard more than one card
+# in one event (Scrapyard Champion's "discard 2"), and Jinx Rebel's "when
+# you discard ONE OR MORE cards" is one trigger per EVENT, not per card.
+# So callers discard every card for one effect via repeated calls to this
+# function, then fire observers.fire_observer_discard_triggers themselves
+# exactly once for that whole effect.
+
+
+def discard_from_hand(state: GameState, controller: int, card_id: str) -> GameState:
+    """Removes ONE copy of `card_id` from `controller`'s hand and sends it
+    to trash, bumping `cards_discarded_this_turn` (Raging Soul's
+    self-conditional reads it). `controller` is a parameter rather than
+    always `state.turn_player` because a card can force the OPPONENT to
+    discard from their own hand (Mindsplitter) — and it must be a real
+    zone transition on whichever hand it came from, since an enemy watcher
+    keyed to "when you discard" (a hypothetical enemy Jinx Rebel) has to
+    see it too."""
+    player = state.players[controller]
+    new_hand = list(player.hand)
+    new_hand.remove(card_id)
+    new_player = dataclasses.replace(player, hand=tuple(new_hand),
+                                     trash=player.trash + (card_id,))
+    state = replace_player(state, controller, new_player)
+    return dataclasses.replace(state, cards_discarded_this_turn=state.cards_discarded_this_turn + 1)
+
+
 # --- MoveUnit ---------------------------------------------------------------
 
 

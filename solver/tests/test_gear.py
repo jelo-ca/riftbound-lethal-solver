@@ -382,3 +382,54 @@ def test_a_gear_ability_is_generated_once_the_gear_is_on_the_board():
     acts = [a for a in legal_actions(state, {orb: card_def(orb)})
             if isinstance(a, ActivateAbility) and a.ability_id == orb]
     assert acts, "gear abilities are not being generated"
+
+
+# --- Pack of Wonders: "Exhaust: Return another friendly gear, unit, or
+# [Hidden] card to its owner's hand." ---
+
+
+def test_pack_of_wonders_returns_a_friendly_unit_at_base_to_hand():
+    unit = make_unit(1, controller=0)
+    state = make_state(gear_pieces=frozenset({ready_gear(gear.PACK_OF_WONDERS)}),
+                        base_units=frozenset({unit}))
+    action = ActivateAbility(source_id=50, ability_id=gear.PACK_OF_WONDERS,
+                              params=("unit", 1), rune_payment=None)
+    assert gear.is_legal_gear_ability(state, action)
+    out = gear.apply_gear_ability(state, action)
+    assert out.players[0].base_units == frozenset()
+    assert out.players[0].hand == ("u",)
+    assert next(g for g in out.players[0].gear).exhausted is True
+
+
+def test_pack_of_wonders_returns_another_friendly_gear_not_itself():
+    orb = GearInstance(card_id=gear.ORB_OF_REGRET, instance_id=51, exhausted=False)
+    state = make_state(gear_pieces=frozenset({ready_gear(gear.PACK_OF_WONDERS), orb}))
+
+    self_target = ActivateAbility(source_id=50, ability_id=gear.PACK_OF_WONDERS,
+                                   params=("gear", 50), rune_payment=None)
+    assert not gear.is_legal_gear_ability(state, self_target)
+
+    other_target = ActivateAbility(source_id=50, ability_id=gear.PACK_OF_WONDERS,
+                                    params=("gear", 51), rune_payment=None)
+    assert gear.is_legal_gear_ability(state, other_target)
+    out = gear.apply_gear_ability(state, other_target)
+    remaining_ids = {g.card_id for g in out.players[0].gear}
+    assert remaining_ids == {gear.PACK_OF_WONDERS}
+    assert out.players[0].hand == (gear.ORB_OF_REGRET,)
+
+
+def test_pack_of_wonders_reachable_through_legal_actions():
+    """End-to-end proof through search.legal_actions, same as Ballista's
+    own reachability test above — a new Gear ability is exactly the class
+    of thing that has shipped "registered but unreachable" before."""
+    from solver.engine.actions import ActivateAbility
+    from solver.engine.card_pool import card_def
+    from solver.search import legal_actions
+
+    unit = make_unit(1, controller=0)
+    state = make_state(gear_pieces=frozenset({ready_gear(gear.PACK_OF_WONDERS)}),
+                        base_units=frozenset({unit}))
+    acts = [a for a in legal_actions(state, {gear.PACK_OF_WONDERS: card_def(gear.PACK_OF_WONDERS)})
+            if isinstance(a, ActivateAbility) and a.ability_id == gear.PACK_OF_WONDERS]
+    assert acts, "Pack of Wonders' ability is not being generated"
+    assert ("unit", 1) in {a.params for a in acts}

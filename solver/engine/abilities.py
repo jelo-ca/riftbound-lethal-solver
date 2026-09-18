@@ -23,6 +23,7 @@ from .actions import (
     apply_play_gear,
     apply_play_spell_cost,
     apply_play_unit,
+    discard_from_hand,
     find_gear,
     find_unit,
     find_unit_anywhere,
@@ -165,6 +166,54 @@ def _vengeance_candidates(state: GameState) -> list[tuple[int]]:
     for bf in state.battlefields:
         candidates += [(u.instance_id,) for u in sorted(bf.units, key=lambda u: u.instance_id)]
     return candidates
+
+
+GET_EXCITED = "ogn-008-298"  # [Action] "Discard 1. Deal its Energy cost as damage to a unit at a battlefield."
+
+
+def _get_excited_is_legal(state: GameState, action: PlaySpell) -> bool:
+    """params = (discard_card_id, target_instance_id). is_legal_play_spell
+    checks this against the PRE-cost state, where Get Excited! himself is
+    still physically in hand (apply_play_spell_cost hasn't run yet) — so
+    the discard candidate must exclude THIS copy explicitly, not just any
+    card matching GET_EXCITED's id, in case a second copy is also in
+    hand."""
+    if len(action.params) != 2:
+        return False
+    discard_id, target_id = action.params
+    hand = list(state.players[state.turn_player].hand)
+    if GET_EXCITED not in hand:
+        return False
+    hand.remove(GET_EXCITED)  # this copy is the one being cast, not discarded
+    if discard_id not in hand:
+        return False
+    if find_unit_at_any_battlefield(state, target_id) is None:
+        return False
+    from . import card_pool  # deferred: card_pool imports this module
+    # The damage amount is read off the discarded card's own Energy cost,
+    # so a card the engine can't describe can't be validly chosen.
+    return card_pool.card_def(discard_id) is not None
+
+
+def _get_excited_effect(state: GameState, action: PlaySpell) -> list[GameState]:
+    from . import card_pool, observers  # deferred
+    discard_id, target_id = action.params
+    amount = card_pool.card_def(discard_id).energy_cost
+    controller = state.turn_player
+    state = discard_from_hand(state, controller, discard_id)
+    state = observers.fire_observer_discard_triggers(state, controller)
+    _, bf_id = find_unit_at_any_battlefield(state, target_id)
+    return [combat.deal_damage_to_unit(state, bf_id, target_id, amount)]
+
+
+def _get_excited_candidates(state: GameState) -> list[tuple]:
+    from . import card_pool  # deferred
+    hand = list(state.players[state.turn_player].hand)
+    hand.remove(GET_EXCITED)
+    discardable = sorted({c for c in set(hand) if card_pool.card_def(c) is not None})
+    targets = [u.instance_id for bf in state.battlefields
+               for u in sorted(bf.units, key=lambda u: u.instance_id)]
+    return [(c, t) for c in discardable for t in targets]
 
 
 PRIMAL_STRENGTH = "ogn-154-298"  # 4 Energy, 1 Body Power, [Action]: "Give a unit +7 Might this turn."
@@ -373,6 +422,53 @@ def _smoke_screen_candidates(state: GameState) -> list[tuple]:
     return candidates
 
 
+DISCIPLINE = "ogn-058-298"  # [Reaction] "Give a unit +2 Might this turn. Draw 1."
+STUPEFY = "ogn-095-298"  # [Reaction] "Give a unit -1 Might this turn, to a minimum of 1 Might. Draw 1."
+
+
+def _discipline_effect(state: GameState, action: PlaySpell) -> list[GameState]:
+    """Draw 1 is a no-op (no Main Deck) — see coverage.py — so this
+    reduces to Primal Strength's exact shape, just +2 instead of +7."""
+    return [_grant_might(state, action.params[0], 2)]
+
+
+def _stupefy_effect(state: GameState, action: PlaySpell) -> list[GameState]:
+    """-1 Might with the printed floor of 1, same shape as Smoke Screen's
+    -4/floor-1 (also a no-op draw on top)."""
+    located = find_unit_anywhere(state, action.params[0])
+    unit, _ = located
+    reduction = min(1, max(0, unit.might - 1))
+    return [_grant_might(state, action.params[0], -reduction)]
+
+
+BLOCK = "ogn-057-298"  # [Hidden][Action] "Give a unit [Shield 3] and [Tank] this turn."
+HIDDEN_BLADE = "ogn-213-298"  # [Hidden][Action] "Kill a unit at a battlefield. Its controller draws 2."
+
+# [Hidden] is established as never worth using (coverage.py's INERT_FOR_
+# LETHAL section) — hiding spends a rune now to save Energy later, which
+# is strictly worse within a single turn. Every card below also carries
+# an ordinary [Action] speed marker, so it can simply be cast normally at
+# its printed cost like any other spell; Hidden is irrelevant to whether
+# the ENGINE can reason about the effect itself, only to how it could
+# have been paid for.
+
+
+def _block_effect(state: GameState, action: PlaySpell) -> list[GameState]:
+    """Both grants use TRAIT_REGISTRY's generic numeric/bare forms
+    (Cleave already proves "Shield 3"-shaped grants work the same as
+    "Assault 3"), so this needs no new trait machinery."""
+    target = action.params[0]
+    state = grant_trait(state, target, "Shield 3")
+    return [grant_trait(state, target, "Tank")]
+
+
+def _hidden_blade_effect(state: GameState, action: PlaySpell) -> list[GameState]:
+    """"Its controller draws 2" is a no-op (no Main Deck); the kill is the
+    only observable half, same shape as Vengeance but narrowed to a unit
+    AT A BATTLEFIELD (not Base) — see _single_battlefield_target_is_legal."""
+    return [kill_unit(state, action.params[0])]
+
+
 # --- Direct-damage and removal spells -------------------------------------
 #
 # All of these are the same two shapes with different numbers, so they
@@ -383,9 +479,16 @@ FALLING_COMET = "ogn-085-298"  # [Action] "Deal 6 to a unit at a battlefield."
 FALLING_STAR = "ogn-029-298"  # "Deal 3 to a unit. Deal 3 to a unit."
 REBUKE = "ogn-172-298"  # [Action] "Return a unit at a battlefield to its owner's hand."
 GRAND_STRATEGEM = "ogn-233-298"  # [Action] "Give friendly units +5 Might this turn."
+DISINTEGRATE = "ogn-005-298"  # [Action] "Deal 3 to a unit at a battlefield. If this kills it, draw 1."
+VOID_SEEKER = "ogn-024-298"  # [Action] "Deal 4 to a unit at a battlefield. Draw 1."
 
-# card_id -> damage dealt to a single unit at a battlefield.
-FLAT_DAMAGE_SPELLS: dict[str, int] = {HEXTECH_RAY: 3, FALLING_COMET: 6}
+# card_id -> damage dealt to a single unit at a battlefield. Disintegrate's
+# "if this kills it, draw 1" and Void Seeker's unconditional "draw 1" are
+# both no-ops regardless of the kill (no Main Deck) — see coverage.py —
+# so both spells reduce to exactly this shape, same as Hextech Ray/Falling
+# Comet.
+FLAT_DAMAGE_SPELLS: dict[str, int] = {HEXTECH_RAY: 3, FALLING_COMET: 6,
+                                       DISINTEGRATE: 3, VOID_SEEKER: 4}
 
 
 def _units_at_battlefields(state: GameState) -> list[tuple]:
@@ -1394,6 +1497,8 @@ SPELL_EFFECTS: dict[str, tuple[
     SMOKE_SCREEN: (_smoke_screen_is_legal, _smoke_screen_effect, _smoke_screen_candidates),
     HEXTECH_RAY: (_single_battlefield_target_is_legal, _flat_damage_effect, _units_at_battlefields),
     FALLING_COMET: (_single_battlefield_target_is_legal, _flat_damage_effect, _units_at_battlefields),
+    DISINTEGRATE: (_single_battlefield_target_is_legal, _flat_damage_effect, _units_at_battlefields),
+    VOID_SEEKER: (_single_battlefield_target_is_legal, _flat_damage_effect, _units_at_battlefields),
     FALLING_STAR: (_falling_star_is_legal, _falling_star_effect, _falling_star_candidates),
     REBUKE: (_single_battlefield_target_is_legal, _rebuke_effect, _units_at_battlefields),
     GRAND_STRATEGEM: (_grand_strategem_is_legal, _grand_strategem_effect, lambda state: [()]),
@@ -1413,6 +1518,11 @@ SPELL_EFFECTS: dict[str, tuple[
     CONVERGENT_MUTATION: (_convergent_mutation_is_legal, _convergent_mutation_effect,
                            _convergent_mutation_candidates),
     CANNON_BARRAGE: (_cannon_barrage_is_legal, _cannon_barrage_effect, _cannon_barrage_candidates),
+    GET_EXCITED: (_get_excited_is_legal, _get_excited_effect, _get_excited_candidates),
+    DISCIPLINE: (_primal_strength_is_legal, _discipline_effect, _primal_strength_candidates),
+    STUPEFY: (_smoke_screen_is_legal, _stupefy_effect, _smoke_screen_candidates),
+    BLOCK: (_primal_strength_is_legal, _block_effect, _primal_strength_candidates),
+    HIDDEN_BLADE: (_single_battlefield_target_is_legal, _hidden_blade_effect, _units_at_battlefields),
 }
 
 
@@ -1762,6 +1872,11 @@ MADDENED_MARAUDER = "ogn-191-298"  # [Tank] "When you play me, move a unit from 
 RIPTIDE_REX = "ogn-092-298"  # "When you play me, deal 6 to an enemy unit at a battlefield."
 HARNESSED_DRAGON = "ogn-234-298"  # "When you play me, kill an enemy unit."
 PIT_ROOKIE = "ogn-136-298"  # "When you play me, buff another friendly unit."
+CHEMTECH_ENFORCER = "ogn-003-298"  # [Assault 2] "When you play me, discard 1."
+SCRAPYARD_CHAMPION = "ogn-020-298"  # [Legion] "When you play me, discard 2, then draw 2."
+MINDSPLITTER = "ogn-192-298"  # "When you play me, choose an opponent... they discard that card."
+TEEMO_SCOUT = "ogn-197-298"  # [Hidden] "When you play me, give me +3 Might this turn."
+TEEMO_SCOUT_ALT = "ogn-197a-298"  # same card, alternate printing
 TRIFARIAN_GLORYSEEKER = "ogn-217-298"  # [Legion] "When you play me, buff me."
 PEAK_GUARDIAN = "ogn-223-298"  # "When you play me, buff me. Then, if I am at a battlefield, buff all other friendly units there."
 RECRUIT_TOKEN = "ogn-271-298"  # one of three same-stat printings (see card_pool.py); this one
@@ -1779,7 +1894,9 @@ MANDATORY_PLAY_TRIGGERS = frozenset({FAITHFUL_MANUFACTOR, VANGUARD_CAPTAIN, WHIT
                                      PIT_ROOKIE, TRIFARIAN_GLORYSEEKER, PEAK_GUARDIAN,
                                      RIPTIDE_REX, HARNESSED_DRAGON, DANGEROUS_DUO,
                                      FIRST_MATE, KINKOU_MONK, CARNIVOROUS_SNAPVINE,
-                                     SETT_BRAWLER, SETT_BRAWLER_ALT, CEMETERY_ATTENDANT})
+                                     SETT_BRAWLER, SETT_BRAWLER_ALT, CEMETERY_ATTENDANT,
+                                     CHEMTECH_ENFORCER, SCRAPYARD_CHAMPION, MINDSPLITTER,
+                                     TEEMO_SCOUT, TEEMO_SCOUT_ALT})
 
 
 def _charm_deflect_targets(state: GameState, params: tuple) -> list[tuple]:
@@ -2191,6 +2308,124 @@ def _zaunite_bouncer_candidates(state: GameState, base_action: PlayUnit, card: C
     return candidates
 
 
+def _chemtech_enforcer_is_legal(state: GameState, action: PlayUnit, card: CardDef) -> bool:
+    """trigger_params = (card_id_to_discard,). Mandatory ("discard 1" is
+    not "you may") — see MANDATORY_PLAY_TRIGGERS, which withholds the
+    empty-tuple decline form Blitzcrank/Zaunite Bouncer offer. The
+    candidate is checked against the hand AFTER Chemtech Enforcer himself
+    has already left it via the normal PlayUnit mechanism, same timing as
+    Whiteflame/Pit Rookie's target checks."""
+    if len(action.trigger_params) != 1:
+        return False
+    state_after_play = apply_play_unit(state, dataclasses.replace(
+        action, trigger_params=(), trigger_payment=None), card)
+    return action.trigger_params[0] in state_after_play.players[state.turn_player].hand
+
+
+def _chemtech_enforcer_effect(state_after_play: GameState, action: PlayUnit) -> list[GameState]:
+    from . import observers  # deferred — see observers.py's module docstring
+    controller = state_after_play.turn_player
+    state = discard_from_hand(state_after_play, controller, action.trigger_params[0])
+    return [observers.fire_observer_discard_triggers(state, controller)]
+
+
+def _chemtech_enforcer_candidates(state: GameState, base_action: PlayUnit, card: CardDef) -> list[tuple]:
+    """One candidate per DISTINCT card_id left in hand once Chemtech
+    Enforcer's own play has removed him from it — two copies of the same
+    card_id are interchangeable, same dedup reasoning generate_rune_
+    payments applies to identical rune domains."""
+    state_after_play = apply_play_unit(state, base_action, card)
+    hand = state_after_play.players[state.turn_player].hand
+    return [(card_id,) for card_id in sorted(set(hand))]
+
+
+def _scrapyard_champion_is_legal(state: GameState, action: PlayUnit, card: CardDef) -> bool:
+    """trigger_params = ("discard", card_id_a, card_id_b) when [Legion]'s
+    condition is met (two DISTINCT cards — "discard 2" needs two to
+    discard, not one card counted twice), or ("skip",) when it isn't:
+    Legion suppresses the WHOLE effect rather than shrinking it to "discard
+    1" (same reading as Vanguard Captain's token count going to zero, not
+    one) — so no discard, and the no-op draw doesn't matter either way."""
+    state_after_play = apply_play_unit(state, dataclasses.replace(
+        action, trigger_params=(), trigger_payment=None), card)
+    met = legion_condition_met(state_after_play)
+    if not met:
+        return action.trigger_params == ("skip",)
+    if len(action.trigger_params) != 3 or action.trigger_params[0] != "discard":
+        return False
+    a, b = action.trigger_params[1], action.trigger_params[2]
+    if a == b:
+        return False
+    hand = list(state_after_play.players[state.turn_player].hand)
+    if a not in hand:
+        return False
+    hand.remove(a)
+    return b in hand
+
+
+def _scrapyard_champion_effect(state_after_play: GameState, action: PlayUnit) -> list[GameState]:
+    if action.trigger_params == ("skip",):
+        return [state_after_play]
+    from . import observers  # deferred — see observers.py's module docstring
+    controller = state_after_play.turn_player
+    state = state_after_play
+    for card_id in action.trigger_params[1:]:
+        state = discard_from_hand(state, controller, card_id)
+    return [observers.fire_observer_discard_triggers(state, controller)]
+
+
+def _scrapyard_champion_candidates(state: GameState, base_action: PlayUnit, card: CardDef) -> list[tuple]:
+    state_after_play = apply_play_unit(state, base_action, card)
+    if not legion_condition_met(state_after_play):
+        return [("skip",)]
+    hand = sorted(set(state_after_play.players[state.turn_player].hand))
+    return [("discard", a, b) for i, a in enumerate(hand) for b in hand[i + 1:]]
+
+
+def _mindsplitter_is_legal(state: GameState, action: PlayUnit, card: CardDef) -> bool:
+    """trigger_params = (opponent_card_id,). Only one opponent exists in
+    this model, so "choose an opponent" has no real branch; "choose a card
+    from it" prints no "opponent chooses" wording, so — same default
+    reading as every other card in the pool that picks a target from a
+    revealed set (Sabotage, The Harrowing's trash pick) — it's OUR choice,
+    checked against the opponent's hand once Mindsplitter's own play has
+    resolved."""
+    if len(action.trigger_params) != 1:
+        return False
+    opponent = 1 - state.turn_player
+    state_after_play = apply_play_unit(state, dataclasses.replace(
+        action, trigger_params=(), trigger_payment=None), card)
+    return action.trigger_params[0] in state_after_play.players[opponent].hand
+
+
+def _mindsplitter_effect(state_after_play: GameState, action: PlayUnit) -> list[GameState]:
+    """Forces the OPPONENT's own discard, via the same real mechanism as
+    our own — not argued inert, because "they discard" fires THEIR "when
+    you discard" watchers (an enemy Jinx, Rebel would ready and buff
+    herself off this), and treating it as a no-op would silently
+    under-credit the opponent's board on exactly that case."""
+    from . import observers  # deferred — see observers.py's module docstring
+    opponent = 1 - state_after_play.turn_player
+    state = discard_from_hand(state_after_play, opponent, action.trigger_params[0])
+    return [observers.fire_observer_discard_triggers(state, opponent)]
+
+
+def _mindsplitter_candidates(state: GameState, base_action: PlayUnit, card: CardDef) -> list[tuple]:
+    state_after_play = apply_play_unit(state, base_action, card)
+    opponent = 1 - state.turn_player
+    return [(c,) for c in sorted(set(state_after_play.players[opponent].hand))]
+
+
+def _teemo_scout_effect(state_after_play: GameState, action: PlayUnit) -> list[GameState]:
+    """"When you play me" fires the same whether Teemo was played normally
+    or (hypothetically) from Hidden — the trigger doesn't say "from
+    Hidden" — so this is a plain mandatory self-buff, same shape as
+    Trifarian Gloryseeker/Peak Guardian's ("buff",) sentinel, just flat
+    Might via _grant_might rather than the binary apply_buff."""
+    played = _played_unit(state_after_play, action)
+    return [_grant_might(state_after_play, played.instance_id, 3)]
+
+
 # card_id -> (is_legal(state, action, card), effect(state_after_play, action) -> list[GameState],
 #             generate_candidate_params(state, base_action, card))
 UNIT_PLAY_TRIGGERS: dict[str, tuple[
@@ -2222,6 +2457,13 @@ UNIT_PLAY_TRIGGERS: dict[str, tuple[
                           _cemetery_attendant_candidates),
     SOULGORGER: (_soulgorger_is_legal, _soulgorger_effect, _soulgorger_candidates),
     SPECTRAL_MATRON: (_spectral_matron_is_legal, _spectral_matron_effect, _spectral_matron_candidates),
+    CHEMTECH_ENFORCER: (_chemtech_enforcer_is_legal, _chemtech_enforcer_effect,
+                         _chemtech_enforcer_candidates),
+    SCRAPYARD_CHAMPION: (_scrapyard_champion_is_legal, _scrapyard_champion_effect,
+                          _scrapyard_champion_candidates),
+    MINDSPLITTER: (_mindsplitter_is_legal, _mindsplitter_effect, _mindsplitter_candidates),
+    TEEMO_SCOUT: (_self_buff_is_legal, _teemo_scout_effect, _self_buff_candidates),
+    TEEMO_SCOUT_ALT: (_self_buff_is_legal, _teemo_scout_effect, _self_buff_candidates),
 }
 
 

@@ -108,6 +108,40 @@ def test_conditional_inertness_defaults_to_blocking_without_a_board():
     assert coverage.classify("ogn-171-298", present={"ogn-171-298"}) == "inert"
 
 
+def test_sai_scout_and_gemcraft_seer_are_inert_without_karma():
+    """Both carry [Vision] plus a second clause that isn't Vision at all
+    (Sai Scout's open-battlefield play, Gemcraft Seer's aura granting
+    [Vision] to others) — neither clause is combat/movement-relevant on
+    its own, so both collapse to the same Karma-conditional question."""
+    state = make_state(left_units=frozenset({
+        make_unit("ogn-174-298", 1), make_unit("ogn-100-298", 2),
+    }))
+    assert coverage.blocking_cards(state) == []
+
+
+def test_sai_scout_and_gemcraft_seer_become_blocking_next_to_karma():
+    state = make_state(left_units=frozenset({
+        make_unit("ogn-174-298", 1), make_unit("ogn-100-298", 2),
+        make_unit(coverage.KARMA_CHANNELER, 3),
+    }))
+    reasons = coverage.blocking_cards(state)
+    assert any("ogn-174-298" in r for r in reasons)
+    assert any("ogn-100-298" in r for r in reasons)
+
+
+def test_karma_channeler_herself_stays_blocking():
+    """Karma is always present when evaluating her own board (trivially -
+    she IS herself), so the same "blocking whenever Karma is present"
+    reasoning that guards every OTHER [Vision] card applies to her own
+    [Vision] clause too: her presence is exactly what makes Vision
+    unprovably inert, so she can never clear via that predicate. She has
+    no HANDLED or unconditional INERT_FOR_LETHAL entry, so she stays the
+    default: blocking."""
+    state = make_state(left_units=frozenset({make_unit(coverage.KARMA_CHANNELER, 1)}))
+    reasons = coverage.blocking_cards(state)
+    assert any(coverage.KARMA_CHANNELER in r for r in reasons)
+
+
 def test_no_card_is_both_handled_and_inert():
     assert not set(coverage.HANDLED) & set(coverage.INERT_FOR_LETHAL)
 

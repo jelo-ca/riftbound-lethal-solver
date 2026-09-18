@@ -106,6 +106,7 @@ class SelfConditional:
 WIZENED_ELDER = "ogn-065-298"  # "While I'm buffed, I have an additional +1 Might."
 BILGEWATER_BULLY = "ogn-125-298"  # "While I'm buffed, I have [Ganking]."
 WIELDER_OF_WATER = "ogn-055-298"  # "While I'm attacking or defending alone, I have +2 Might."
+RAGING_SOUL = "ogn-019-298"  # "If you've discarded a card this turn, I have [Assault] and [Ganking]."
 
 
 def _is_buffed(state: GameState, unit: UnitInstance, zone: Zone, designation: Optional[str] = None) -> bool:
@@ -141,10 +142,20 @@ def _attacking_or_defending_alone(state: GameState, unit: UnitInstance, zone: Zo
     return sum(1 for u in bf.units if u.controller == unit.controller) == 1
 
 
+def _discarded_a_card_this_turn(state: GameState, unit: UnitInstance, zone: Zone,
+                                 designation: Optional[str] = None) -> bool:
+    """Reads state.cards_discarded_this_turn (a plain counter, never
+    Might), so the module's non-circularity invariant holds the same way
+    _is_buffed's read of unit.buffed does."""
+    return state.cards_discarded_this_turn > 0
+
+
 SELF_CONDITIONALS: dict[str, SelfConditional] = {
     WIZENED_ELDER: SelfConditional(condition=_is_buffed, might_delta=1),
     BILGEWATER_BULLY: SelfConditional(condition=_is_buffed, grants=frozenset({"Ganking"})),
     WIELDER_OF_WATER: SelfConditional(condition=_attacking_or_defending_alone, might_delta=2),
+    RAGING_SOUL: SelfConditional(condition=_discarded_a_card_this_turn,
+                                  grants=frozenset({"Assault", "Ganking"})),
 }
 
 
