@@ -638,6 +638,79 @@ HANDLED: dict[str, str] = {
 # of scope for this pass. Per coverage.py's own rule, a half-covered card
 # stays BLOCKING; clearing just the conquer clause here would be exactly
 # the kind of partial-credit claim this ledger exists to prevent.
+#
+# DEFEND-TRIGGER CLUSTER (2026-09-18) — Fortified Position (ogn-279-298)
+# and Reaver's Row (ogn-285-298) investigated together, left BLOCKING:
+#
+# ogn-279-298 Fortified Position — "When you defend here, choose a unit.
+# It gains [Shield 2] this combat." ogn-285-298 Reaver's Row — "When you
+# defend here, you may move a friendly unit here to base." Both need a
+# "when you defend here" hook that doesn't exist: abilities.ATTACK_TRIGGERS
+# is the only combat-timing trigger machinery built so far, and it only
+# ever handles OUR OWN mandatory choice, because in every attack this
+# engine can generate, the mover (and so the attacker) is always
+# state.turn_player — the opponent never acts, so it never initiates a
+# Standard Move. A DEFEND trigger inverts that: combat.determine_sides
+# assigns the DEFENDER role to whoever DIDN'T move, which in the
+# overwhelmingly common case (we attack into an enemy-held battlefield) is
+# the OPPONENT, not us. So "choose a unit" / "you may move a friendly unit
+# to base" would be the OPPONENT's choice in the case that actually comes
+# up whenever we attack a Fortified Position/Reaver's Row the enemy holds
+# — and an opponent choice has to be searched ADVERSARIALLY (an AND-branch
+# over every candidate, the solver must still win regardless of which one
+# they'd pick), the opposite of every choice-bearing mechanism built so
+# far (ATTACK_TRIGGERS, CONQUER_TRIGGERS_WITH_CHOICE,
+# BATTLEFIELD_CONQUER_TRIGGERS all resolve OUR OWN choice via an OR-branch,
+# reusing search._dfs's ordinary loop). Reaver's Row is worse still: "you
+# may move a friendly unit here to base" lets the DEFENDING player pull
+# their own unit out of the fight entirely — a real, adversarial
+# retreat/rescue option the solver would need to prove a lethal survives
+# either way.
+#
+# A second, narrower path exists where WE'D be the defender instead:
+# Blitzcrank's "move an enemy unit to here" (and Charm's redirect) can
+# make an ENEMY unit the mover, flipping combat.determine_sides so OUR
+# units become the defenders — reachable, and there the choice genuinely
+# would be ours (OR-branch, same shape as every other trigger here). But
+# Blitzcrank/Charm bypass ShowdownState entirely
+# (combat.enumerate_combat_outcomes resolves atomically, with no "open
+# showdown, then trigger" window the way open_showdown/ResolveShowdown
+# gives ATTACK_TRIGGERS) — so even the reachable half would need its own
+# hook, separate from whatever handles the common enemy-defends case.
+# Building only the Blitzcrank-reachable half while leaving the far more
+# frequent "we attack an enemy holding this battlefield" case unhandled
+# would silently under-count the enemy's toughness in the common case —
+# exactly the half-covered-card risk this ledger exists to catch. A full,
+# correct defend-trigger subsystem needs BOTH an adversarial-choice
+# AND-branch (new — nothing in search.py does this today, closer in shape
+# to combat.enumerate_assignments' opponent-response enumeration than to
+# any existing trigger registry) and a second hook for the atomic
+# Blitzcrank/Charm path. That is a larger, differently-shaped subsystem
+# than ATTACK_TRIGGERS, not a comparable extension of it, so both cards
+# stay BLOCKING rather than risk an incorrect or one-sided partial model.
+#
+# ogn-296-298 Void Gate — "Spells and abilities affecting units here each
+# deal 1 Bonus Damage. (Each instance of damage the spell deals is
+# increased by 1.)" A genuinely new damage-modifier concept: "Bonus
+# Damage" appears on exactly one OTHER card in the whole pool
+# (ogn-032-298 Ravenborn Tome, a Gear: "Exhaust: The next spell you play
+# this turn deals 1 Bonus Damage," same reminder text) and nowhere else —
+# so this isn't Void Gate's own one-off text, it's a shared mechanic
+# neither card currently has anywhere to plug into. Doing it correctly
+# means adding +1 to EVERY damage INSTANCE a spell/ability deals to a unit
+# standing at the affected battlefield — not a flat total, per the
+# reminder text ("each instance"), so a card like Falling Star (two
+# separate 3-damage instances) or Singularity (up to two units) would need
+# the bonus applied per-instance, per-target, which means threading a
+# "how much Bonus Damage applies here" parameter through every
+# damage-dealing call site combat.py and abilities.py have (flat-damage
+# spells, ATTACK_TRIGGERS' damage effects, deal_damage_to_all_at, on top
+# of Void Gate's own positional gate) rather than adding one line to a
+# single function. Scoped as a real, moderate-sized cross-cutting change,
+# not a small hack — left BLOCKING with this writeup rather than force a
+# partial version that only covers some damage sources. Worth revisiting
+# together with Ravenborn Tome in a future pass, since building the
+# concept once would clear both.
 
 
 # card_id -> why its text cannot change whether lethal exists this turn.
