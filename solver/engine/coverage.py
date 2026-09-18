@@ -449,6 +449,23 @@ INERT_FOR_LETHAL: dict[str, str] = {
                    "solver would never take the option; it's optional (\"you may\"), "
                    "so declining it is always legal, and the option can never help "
                    "find a lethal that declining it wouldn't also find.",
+    "ogn-144-298": "Spoils of War — [Reaction] \"If an enemy unit has died this turn, "
+                   "this costs 2 Energy less. Draw 2.\" The draw is a no-op with no Main "
+                   "Deck regardless of what it cost to get there — a cheaper price on "
+                   "nothing is still nothing, so the cost-reduction condition can never "
+                   "matter for lethal either.",
+    "ogn-145-298": "Unyielding Spirit — [Reaction] \"Prevent all spell and ability damage "
+                   "this turn.\" The opponent never acts, so every spell/ability damage "
+                   "source this prevention could ever apply to is OUR OWN — there is no "
+                   "opposing damage to defend against. Casting it can only suppress "
+                   "damage a solver chose to deal in the first place, which is strictly "
+                   "worse than simply not dealing that damage (same final board, minus "
+                   "the Energy/Body Power this costs) — including the one interaction "
+                   "worth naming: preventing a kill would also stop it from being a kill, "
+                   "which would deny Immortal Phoenix's spell-kill reaction (ogn-037-298) "
+                   "its trigger rather than help it. Any winning line that casts this can "
+                   "drop the cast (and whichever of its own spells it was shielding "
+                   "against) and still win, so it cannot change whether lethal exists.",
 }
 
 
