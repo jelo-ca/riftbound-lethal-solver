@@ -366,12 +366,12 @@ def test_a_pre_placed_gear_is_not_invisible_to_the_scan():
     mechanism before card_ids_present looked at player.gear."""
     from solver.engine.state import GearInstance
 
-    sun_disc = "ogn-021-298"  # unclassified — real Gear, still blocking
+    mask_of_foresight = "ogn-060-298"  # unclassified — real Gear, still blocking
     state = GameState(
         turn_player=0,
         players=(
             PlayerState(base_units=frozenset(), hand=(), runes=RunePool(available=()), score=0,
-                        gear=frozenset({GearInstance(card_id=sun_disc, instance_id=1,
+                        gear=frozenset({GearInstance(card_id=mask_of_foresight, instance_id=1,
                                                       exhausted=False)})),
             PlayerState(base_units=frozenset(), hand=(), runes=RunePool(available=()), score=0),
         ),
@@ -382,8 +382,8 @@ def test_a_pre_placed_gear_is_not_invisible_to_the_scan():
         scored_this_turn=frozenset(),
         cards_played_this_turn=0,
     )
-    assert sun_disc in coverage.card_ids_present(state)
-    assert any(sun_disc in reason for reason in coverage.blocking_cards(state))
+    assert mask_of_foresight in coverage.card_ids_present(state)
+    assert any(mask_of_foresight in reason for reason in coverage.blocking_cards(state))
 
 
 def test_the_synthetic_opponent_body_is_not_treated_as_an_unmodelled_card():

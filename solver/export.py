@@ -108,6 +108,12 @@ def render_player(player: PlayerState) -> dict:
         # In canonical_key as a multiset, so rendered the same way — not
         # deduplicated.
         "trash": sorted(player.trash),
+        # Both in canonical_key (see state.py) — Sun Disc's and Ravenborn
+        # Tome's one-shot "next play" flags change what the very next
+        # PlayUnit/PlaySpell produces, so they have to render or two
+        # genuinely different positions would look identical here.
+        "next_unit_enters_ready": player.next_unit_enters_ready,
+        "next_spell_bonus_damage": player.next_spell_bonus_damage,
     }
 
 

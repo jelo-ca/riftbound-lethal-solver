@@ -226,14 +226,10 @@ HANDLED: dict[str, str] = {
                    "abilities.SALVAGE/actions.kill_gear. \"A gear\" is unqualified — "
                    "either player's, same convention as Orb of Regret's unqualified "
                    "\"a unit\" (engine/gear.py's module docstring). Draw is a no-op, no "
-                   "Main Deck. Optional, so declining is always legal. Cannot target "
-                   "Treasure Trove specifically (gear.GEAR_DEATH_REACTIONS): its own "
-                   "\"when this leaves the board\" reaction needs a RunePool change out "
-                   "of scope here — restrictive, not permissive, same convention as "
-                   "play_unit_from_trash excluding trash units with their own "
-                   "UNIT_PLAY_TRIGGERS. Scrapheap has no such restriction — its own "
-                   "on-death reaction is separately proven inert (see below), so "
-                   "killing it through Salvage is unrestricted.",
+                   "Main Deck. Optional, so declining is always legal. Every Gear is now "
+                   "a legal target, Treasure Trove included (gear-cluster-2, this pass): "
+                   "actions.kill_gear fires gear.fire_gear_leaves_board_reactions itself, "
+                   "so its \"when this leaves the board\" reaction is no longer dropped.",
     # [Conquer] triggers — engine/conquer.py, hooked into
     # scoring.resolve_control_change.
     "ogn-164-298": "Sett, Brawler — \"when I'm played and when I conquer, buff me\" "
@@ -604,7 +600,196 @@ HANDLED: dict[str, str] = {
     "ogn-163-298": "Seal of Strength — Gear, \"Exhaust: Add 1 Body rune\", same shape",
     "ogn-204-298": "Seal of Discord — Gear, \"Exhaust: Add 1 Chaos rune\", same shape",
     "ogn-245-298": "Seal of Unity — Gear, \"Exhaust: Add 1 Order rune\", same shape",
+    # Gear-cluster-2 (this pass). See gear.py/abilities.py/traits.py for the
+    # per-card sections these entries point at.
+    "ogn-063-298": "Spirit's Refuge — Gear, \"When you play this, buff a friendly unit.\" via "
+                   "abilities.GEAR_PLAY_TRIGGERS (the second registrant after Forge of the "
+                   "Future); \"Friendly buffed units have [Deflect] if they didn't already\" "
+                   "via traits.GEAR_CONDITIONAL_GRANTS, a new Gear-sourced, position-unscoped "
+                   "conditional trait grant (Gear never occupies a battlefield, so this can't "
+                   "be a co-located AURA_SOURCES-style grant) — checked in "
+                   "traits.resolved_traits for every friendly unit, base included, not just "
+                   "whichever one the play trigger buffed.",
+    "ogn-021-298": "Sun Disc — Gear, \"[Legion] Exhaust: The next unit you play this turn "
+                   "enters ready.\" via gear.GEAR_ABILITIES. [Legion]'s gate lives in the "
+                   "EFFECT (no effect at all if cards_played_this_turn is 0 when activated), "
+                   "not in is_legal — same convention as Dangerous Duo/Trifarian Gloryseeker: "
+                   "activating a Gear ability for nothing is a legal, merely bad, play. The "
+                   ">0 threshold (not abilities.legion_condition_met's >1) is that helper's "
+                   "own documented \"cost-time Legion\" case: Sun Disc's Exhaust is an "
+                   "ACTIVATED ability, not itself a play, so it never bumps "
+                   "cards_played_this_turn the way a played card counts its own play as one "
+                   "of the two. The one-shot \"next unit enters ready\" is a new "
+                   "PlayerState.next_unit_enters_ready flag, consumed by the very next "
+                   "actions.apply_play_unit call for that player (any unit, accelerated or "
+                   "not) regardless of whether it actually changed anything observable.",
+    "ogn-143-298": "Pirate's Haven — Gear, \"When you ready a friendly unit, give it +1 "
+                   "Might this turn.\" Hooked directly into abilities.ready_unit — the one "
+                   "shared operation every registered readying effect already routes through "
+                   "(First Mate, Wildclaw Shaman, Overt Operation, Udyr's Ready mode), so no "
+                   "call site needed touching. Fires only on a REAL exhausted-to-ready "
+                   "transition (ready_unit's own no-op guard), matching \"when you ready\" — "
+                   "readying an already-ready unit is not a second readying.",
+    "ogn-032-298": "Ravenborn Tome — Gear, \"Exhaust: The next spell you play this turn "
+                   "deals 1 Bonus Damage. (Each instance of damage the spell deals is "
+                   "increased by 1.)\" \"Bonus Damage\" (also printed on Void Gate, "
+                   "ogn-296-298, a Battlefield outside this pass's scope — a parallel agent "
+                   "was working Battlefield cards concurrently and may have built shared "
+                   "infrastructure for it; this entry's PlayerState.next_spell_bonus_damage "
+                   "is scoped narrowly to Ravenborn Tome's OWN one-shot \"next spell\" "
+                   "reading and does not assume or depend on whatever Void Gate needed) reads "
+                   "here as: a one-shot flag (gear.GEAR_ABILITIES' activation sets it), added "
+                   "to EVERY damage instance the next PlaySpell's registered effect deals — "
+                   "abilities._bonus_damage is read at each of the SPELL_EFFECTS damage call "
+                   "sites that deal damage at all (_flat_damage_effect, _falling_star_effect, "
+                   "_singularity_effect, _unchecked_power_effect, _flurry_effect, "
+                   "_shakedown_effect, _cannon_barrage_effect, _get_excited_effect, and "
+                   "_mutual_damage's Challenge caller only — Carnivorous Snapvine's own call "
+                   "into _mutual_damage is a UNIT_PLAY_TRIGGERS effect, not a spell, and "
+                   "passes no bonus), then unconditionally cleared once per spell play in "
+                   "resolve_spell_outcomes (the single choke point both PlaySpell resolution "
+                   "paths already share) — consumed by the next spell whether or not it dealt "
+                   "any damage, matching \"the next spell you play\" rather than \"the next "
+                   "damage spell.\"",
+    "ogn-186-298": "Treasure Trove — Gear, \"When this leaves the board, draw 1 and channel "
+                   "1 rune exhausted. [Chaos rune], Exhaust: Kill this.\" Re-investigated "
+                   "this pass (previously excluded from Salvage's kill-target candidates as "
+                   "an unbuilt reaction — see the Salvage entry above): the rune-channel "
+                   "subsystem this needed already exists (state.add_runes), and "
+                   "gear.fire_gear_leaves_board_reactions is the new missing hook, called "
+                   "from actions.kill_gear AND this module's own Pack of Wonders bounce "
+                   "effect (both are \"leaves the board\" — a kill and a bounce). Draw is a "
+                   "no-op; the channel is real (RULING 1: domain-less, Energy-only, arrives "
+                   "already-exhausted). Its own \"[Chaos rune], Exhaust: Kill this\" is a "
+                   "plain gear.GEAR_ABILITIES entry that calls actions.kill_gear on itself, "
+                   "which correctly fires its own leaves-board reaction in turn.",
 }
+
+# Investigated during the gear-cluster-2 pass (2026-09-18) and left
+# BLOCKING, on purpose — not merely not-yet-done. Each is a real subsystem
+# gap, not a rules question; per this ledger's own rule, a half-covered
+# card stays blocking rather than being shipped partially.
+#
+# ogn-098-298 Energy Conduit — "Exhaust: [Reaction] Add 1 Energy.
+# (Abilities that add resources can't be reacted to.)" The natural
+# encoding — a domain-less rune via state.add_runes, arriving READY (the
+# text says nothing about "exhausted") — is UNSOUND, not merely
+# unbuilt: a rune is a standing object that persists and can be readied
+# by any later-this-turn effect (Ekko, Recurrent's Deathknell; Overt
+# Operation; Udyr's Ready mode), so modelling "Add 1 Energy" as a rune
+# would let a single activation be milked for MULTIPLE Energy across a
+# turn with enough readying on the board — a resource the card never
+# promised. "Add 1 [domain] RUNE" (the Seals, RULING 2) explicitly says
+# "rune" and is meant to persist; this card doesn't. A correct model
+# needs a genuinely separate, non-rune, un-readyable Energy counter
+# threaded through actions.generate_rune_payments/payment_is_affordable/
+# consume_runes — the core payment engine every action in the game pays
+# through — which is a materially larger change than one card justifies
+# this pass. (A Legend with the identical printed text, Hand of Noxus,
+# exists in data/cards-ogn.json but has no entry anywhere in this
+# codebase — legends.py, coverage.py, or elsewhere — despite this task's
+# briefing describing it as "already investigated in a prior pass." No
+# such investigation is present to reuse; this reasoning was derived
+# fresh and would apply identically to Hand of Noxus if it's picked up
+# later.) Left BLOCKING.
+#
+# ogn-060-298 Mask of Foresight — "When a friendly unit attacks or
+# defends alone, give it +1 Might this turn." Genuinely different from
+# Wielder of Water's already-HANDLED "while I'm attacking/defending
+# alone" (traits.SELF_CONDITIONALS): that's a unit reading its OWN
+# combat role, resolved fresh every effective_might call with no state
+# to maintain. This card reacts to ANY friendly unit's combat as an
+# EVENT (a one-time Might grant at the moment combat starts, not a
+# standing condition), from a Gear with no board position of its own —
+# nothing in this engine currently observes "a combat just started" as
+# an event a non-participant can react to. abilities.ATTACK_TRIGGERS
+# comes closest (Anivia, Yasuo Remorseful, Leona) but is keyed to the
+# ATTACKING unit's own registered trigger, forced through the showdown
+# mechanism specifically because that unit's mandatory trigger can kill
+# the defender before damage assignment — Mask of Foresight would need
+# EVERY combat (registered trigger or not) to pause and check "does the
+# combatant's controller hold a Mask of Foresight," a broader hook than
+# anything built for attack/defend triggers so far. A parallel agent may
+# be building defend-triggers for Battlefield cards concurrently; this
+# call was made independently since no coordination channel exists —
+# worth checking whether that work already generalized ATTACK_TRIGGERS
+# into a real "combat started" observer before rebuilding one. Left
+# BLOCKING.
+#
+# ogn-077-298 Zhonya's Hourglass — "[Hidden] The next time a friendly
+# unit would die, kill this instead. Recall that unit exhausted." (Note:
+# NOT "prevent it, gains [Temporary]" — verified against the exact
+# printed text, which differs from an earlier paraphrase.) This is a
+# death-REPLACEMENT effect: every unit-removal call site (combat.py's
+# apply_combat/resolve_showdown/deal_damage_to_unit, actions.kill_unit)
+# would need to check, BEFORE removing a unit, whether this pending
+# effect is armed, and if so redirect the whole removal (kill Zhonya's
+# Hourglass instead, send the WOULD-be-dead unit to base exhausted, no
+# move) rather than removing it as a normal death. Every prior "reacts to
+# a death" mechanism in this engine (deaths.DEATH_TRIGGERS, Vanguard
+# Helm below) fires AFTER removal, reading a state the death already
+# produced — this needs to intercept BEFORE removal happens at all,
+# which is a new class of hook, not an extension of an existing one, and
+# touches every one of those call sites individually since none of them
+# currently pauses to ask permission before killing. Left BLOCKING.
+#
+# ogn-152-298 Mistfall — "When you buff a friendly unit, you may pay
+# Body and exhaust this to ready it." abilities.apply_buff is a genuine
+# single choke point (14 call sites route through it: SPELL_EFFECTS,
+# UNIT_PLAY_TRIGGERS, CONQUER_TRIGGERS, ABILITY_EFFECTS, Gear abilities,
+# Legend abilities, observers), so detecting "a buff just happened" is
+# not itself the hard part. What's hard: the reaction is OPTIONAL and
+# must be offered right at that moment, on that specific just-buffed
+# unit — not "any time later this turn," which is what a stray
+# persistent state marker would risk becoming if left un-cleared while
+# other actions happen in between; and unlike Radiant Dawn's stun
+# observer (abilities._stun_buff_choice_active, wired into exactly TWO
+# registered stunners), Mistfall's trigger is UNRESTRICTED by source —
+# every one of apply_buff's 14 callers would need its own candidate
+# generator extended with an "and also spend Mistfall" dimension, or a
+# new generic "pending reaction window" abstraction (comparable in size
+# to ShowdownState.attack_trigger_resolved or PendingConquerChoice) built
+# from scratch for a trigger with no adversarial timing question behind
+# it. Building that machinery for one card was judged out of scope this
+# pass. Left BLOCKING.
+#
+# ogn-227-298 Symbol of the Solari — "If a combat where you are the
+# attacker ends in a tie, recall ALL units instead. (Send them to base.
+# Ties are calculated after combat damage is dealt.)" Tie DETECTION is
+# genuinely small — combat.py's damage-assignment path already computes
+# each side's resulting Might/damage, so "did both sides end this combat
+# dead (or otherwise account for a tie by the rules' own definition)" is
+# a cheap read after the fact. RECALL-INSTEAD-OF-DEATH is not: it is a
+# full alternate resolution branch for the Combat Damage Step — instead
+# of applying lethal damage and removing units normally, every unit in
+# that combat (both sides, not just the loser) needs to be redirected to
+# base, undoing whatever apply_combat/resolve_showdown already did or
+# intercepting before it happens. This is real new combat surface, not a
+# small addition bolted onto the existing damage-assignment path — being
+# honest about the size rather than forcing a partial fit. Left BLOCKING.
+#
+# ogn-228-298 Vanguard Helm — "When a buffed friendly unit dies, buff
+# another friendly unit." Needs BOTH an observer hook (reacts to ANY
+# buffed unit dying, not just a card watching its own death) AND a
+# choice (which OTHER friendly unit to buff). The conquer-trigger choice
+# fan-out (conquer.py's PendingConquerChoice/ResolveConquerTrigger,
+# generalizing past deterministic-only CONQUER_TRIGGERS) is a real
+# candidate template for "a choice-bearing reaction to an event" and IS
+# more tractable now than before that infrastructure existed — but
+# conquer.py's pending-choice field is keyed to ONE specific event
+# grammar (a control change at a named battlefield) and deliberately
+# supports only one pending choice at a time; adapting the same SHAPE
+# for "a unit died" would mean building an analogous
+# PendingDeathReactionChoice hooked into deaths.fire_death_triggers (the
+# unit-removal choke point, parallel to conquer's resolve_control_change)
+# rather than reusing conquer.py's own field, since a board could
+# plausibly need both a pending conquer choice and a pending death-
+# reaction choice from unrelated events. That is a new, adjacent
+# instance of the pattern, not literally hooking into existing conquer
+# machinery — still a meaningful chunk of new state-machine surface for
+# one card. Left BLOCKING with this updated note (previously blocking for
+# "no template exists"; now blocking for "the template exists but still
+# needs a parallel instance built, which this pass judged out of scope").
 
 # Investigated alongside the choice-bearing [Conquer] cluster above and
 # left BLOCKING, on purpose — not merely not-yet-done:

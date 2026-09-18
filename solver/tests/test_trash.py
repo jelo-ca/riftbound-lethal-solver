@@ -280,16 +280,27 @@ def test_salvage_can_kill_the_opponents_gear():
     assert gear_module.THE_SYREN in result.players[1].trash
 
 
-def test_salvage_cannot_target_gear_with_an_unbuilt_death_reaction():
-    """Treasure Trove reacts to its own death with an effect this engine
-    can't fire yet (a RunePool change), so it's excluded from candidates
-    rather than silently dropped — see gear.GEAR_DEATH_REACTIONS."""
+def test_salvage_can_target_treasure_trove_and_fires_its_leaves_board_reaction():
+    """Treasure Trove's "when this leaves the board, ...channel 1 rune
+    exhausted" used to be dropped on the floor (no hook existed to fire
+    it), so Salvage excluded it as a kill target. Both gaps are closed
+    now (gear.fire_gear_leaves_board_reactions, called from
+    actions.kill_gear) — Salvage can target it like any other Gear, and
+    the reaction actually fires."""
     card = card_def(SALVAGE)
     piece = _ready_gear(gear_module.TREASURE_TROVE, 70)
     state = make_state(hand=(SALVAGE,), runes=("Fury", "Fury", "Order"), gear=frozenset({piece}))
     action = PlaySpell(card_id=SALVAGE, params=(70,),
                         rune_payment=RunePayment(energy_runes=("Fury", "Fury"), power_runes=("Order",)))
-    assert not abilities.is_legal_play_spell(state, action, card)
+    assert abilities.is_legal_play_spell(state, action, card)
+    [result] = abilities.resolve_spell_outcomes(state, action, card)
+    assert result.players[0].gear == frozenset()
+    assert gear_module.TREASURE_TROVE in result.players[0].trash
+    # One new domain-less rune joined the pool (RULING 1), arriving
+    # already-exhausted — the starting three runes are untouched here.
+    assert len(result.players[0].runes.available) == 4
+    assert None in result.players[0].runes.available
+    assert result.players[0].runes.energy_spent >= 1  # the new rune's own Energy is spent
 
 
 def test_salvage_can_target_scrapheap_since_its_own_reaction_is_proven_inert():

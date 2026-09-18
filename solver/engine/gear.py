@@ -43,6 +43,7 @@ from .actions import (
     find_gear,
     find_unit_anywhere,
     find_unit_at_any_battlefield,
+    kill_gear,
     payment_is_affordable,
     consume_runes,
     relocate_unit,
@@ -67,25 +68,80 @@ def ability_cost(card_id: str) -> tuple[int, int, Optional[Domain]]:
     return ABILITY_COSTS.get(card_id, (0, 0, None))
 
 
-TREASURE_TROVE = "ogn-186-298"  # "When this leaves the board, draw 1 and channel 1 rune exhausted."
-
-# Gear whose OWN printed text reacts to it leaving the board — surfaced by
-# actions.kill_gear's introduction, since until it existed nothing could
-# ever kill someone else's Gear and this question never came up. No
-# generic "on Gear death" hook exists (deaths.py's DEATH_TRIGGERS is
-# unit-only); a caller offering "kill a gear" as a candidate MUST exclude
-# these card_ids rather than silently drop the reaction — restrictive, not
-# permissive, same convention as play_unit_from_trash excluding units with
-# their own UNIT_PLAY_TRIGGERS.
+TREASURE_TROVE = "ogn-186-298"  # "When this leaves the board, draw 1 and channel 1
+# rune exhausted. [Chaos rune], Exhaust: Kill this."
 #
-# Scrapheap ALSO reacts to its own death ("...or killed, draw 1") but is
-# NOT here: coverage.INERT_FOR_LETHAL clears its whole card on the
-# argument that all three of its triggers are the same no-op draw, so
-# whether kill_gear fires that reaction or not can never change the
-# answer — nothing is being silently dropped. Treasure Trove stays
-# excluded because its reaction additionally needs "channel 1 rune
-# exhausted", a real RunePool change out of scope for this pass.
-GEAR_DEATH_REACTIONS = frozenset({TREASURE_TROVE})
+# Re-investigated this pass: previously excluded from every "kill a gear"
+# candidate list (Salvage) because nothing could fire its "leaves the
+# board" reaction at all — no generic "on Gear death" hook existed
+# (deaths.py's DEATH_TRIGGERS is unit-only), and the reaction's OTHER
+# half ("channel 1 rune exhausted") needed a RunePool change that didn't
+# exist yet either. Both gaps are now closed: the rune-channel subsystem
+# landed in an earlier pass (state.add_runes), and
+# fire_gear_leaves_board_reactions below is the missing generic hook,
+# called from every path that removes a Gear from the board — a kill
+# (actions.kill_gear) or a bounce (this module's own Pack of Wonders
+# effect). Scrapheap ALSO reacts to its own death ("...or killed, draw
+# 1") but needs no entry here: coverage.INERT_FOR_LETHAL already clears
+# its whole card (every one of its triggers is the same no-op draw), so
+# whether this hook fires that reaction or not can never change the
+# answer.
+
+
+def _treasure_trove_leaves_board_effect(state: GameState, controller: int) -> GameState:
+    """"Draw 1" is a no-op (no Main Deck); "channel 1 rune exhausted" is
+    real via state.add_runes (RULING 1: domain-less, Energy-only, arrives
+    already-exhausted) — same shape as Soaring Scout's identical Deathknell
+    text (deaths.py), just for a Gear leaving the board instead of a unit
+    dying."""
+    player = state.players[controller]
+    return replace_player(state, controller, dataclasses.replace(
+        player, runes=add_runes(player.runes, (None,), exhausted=True)))
+
+
+# card_id -> effect(state, controller) -> GameState, for Gear whose OWN
+# printed text reacts to leaving the board. A second registrant costs one
+# line, same convention as GEAR_ABILITIES/GEAR_CONDITIONAL_GRANTS above.
+GEAR_LEAVES_BOARD_REACTIONS: dict[str, Callable[[GameState, int], GameState]] = {
+    TREASURE_TROVE: _treasure_trove_leaves_board_effect,
+}
+
+
+def fire_gear_leaves_board_reactions(state: GameState, card_id: str, controller: int) -> GameState:
+    """Call AFTER a Gear has actually left the board (killed OR bounced to
+    hand — both are "leaves the board"), same "react to the state its own
+    departure produced" convention as deaths.fire_death_triggers. Every
+    removal path must call this rather than silently dropping "when this
+    leaves the board" text on the floor — restrictive callers (excluding
+    a card_id from their own candidates) are for a reaction that ISN'T
+    registered here yet, not a substitute for calling this."""
+    effect = GEAR_LEAVES_BOARD_REACTIONS.get(card_id)
+    if effect is None:
+        return state
+    return effect(state, controller)
+
+
+# "[Chaos rune], Exhaust: Kill this." — an ordinary activated ability, on
+# top of the leaves-board reaction registered above. ABILITY_COSTS was
+# already declared before TREASURE_TROVE existed as a name; updated here
+# rather than reordering the whole file.
+ABILITY_COSTS[TREASURE_TROVE] = (0, 1, "Chaos")
+
+
+def _treasure_trove_kill_is_legal(state: GameState, action: ActivateAbility) -> bool:
+    return action.params == () and _source_is_usable(state, action)
+
+
+def _treasure_trove_kill_effect(state: GameState, action: ActivateAbility) -> GameState:
+    state = _exhaust_source(state, action)
+    located = find_gear(state, action.source_id)
+    assert located is not None
+    piece, controller = located
+    return kill_gear(state, controller, piece)
+
+
+def _treasure_trove_kill_candidates(state: GameState) -> list[tuple]:
+    return [()]
 
 
 def _exhaust_source(state: GameState, action: ActivateAbility) -> GameState:
@@ -277,8 +333,11 @@ def _pack_of_wonders_effect(state: GameState, action: ActivateAbility) -> GameSt
     if kind == "gear":
         target_gear, controller = find_gear(state, target_id)
         player = state.players[controller]
-        return replace_player(state, controller, dataclasses.replace(
+        state = replace_player(state, controller, dataclasses.replace(
             player, gear=player.gear - {target_gear}, hand=player.hand + (target_gear.card_id,)))
+        # A bounce leaves the board same as a kill does — Treasure Trove's
+        # "when this leaves the board" text doesn't care which.
+        return fire_gear_leaves_board_reactions(state, target_gear.card_id, controller)
     unit, zone = find_unit_anywhere(state, target_id)
     if zone == "base":
         player = state.players[unit.controller]
@@ -351,6 +410,69 @@ def _seal_candidates(state: GameState) -> list[tuple]:
     return [()]
 
 
+# --- Sun Disc: "[Legion] Exhaust: The next unit you play this turn enters
+# ready." ---
+#
+# [Legion]'s gate lives in the EFFECT, not is_legal — same convention as
+# Dangerous Duo/Trifarian Gloryseeker (abilities.py): activating a Gear
+# ability for no effect is a legal, merely bad, play, not an illegal one.
+
+SUN_DISC = "ogn-021-298"
+
+
+def _sun_disc_is_legal(state: GameState, action: ActivateAbility) -> bool:
+    return action.params == () and _source_is_usable(state, action)
+
+
+def _sun_disc_effect(state: GameState, action: ActivateAbility) -> GameState:
+    state = _exhaust_source(state, action)
+    # [Legion]: this ability is itself an ACTIVATION, not a play, so it
+    # never bumps cards_played_this_turn the way a played Legion card
+    # counts its own play as one of the two abilities.legion_condition_met
+    # checks for. The >0 threshold here is that helper's own documented
+    # "cost-time Legion" case — at least one OTHER card must already have
+    # been played this turn.
+    if state.cards_played_this_turn == 0:
+        return state  # Exhausted for nothing — [Legion] not met.
+    located = find_gear(state, action.source_id)
+    assert located is not None
+    _, controller = located
+    player = state.players[controller]
+    return replace_player(state, controller, dataclasses.replace(player, next_unit_enters_ready=True))
+
+
+def _sun_disc_candidates(state: GameState) -> list[tuple]:
+    return [()]
+
+
+# --- Ravenborn Tome: "Exhaust: The next spell you play this turn deals 1
+# Bonus Damage." ---
+#
+# See coverage.py's entry and abilities._bonus_damage for where the
+# resulting PlayerState.next_spell_bonus_damage flag is actually read and
+# consumed — this ability only sets it.
+
+RAVENBORN_TOME = "ogn-032-298"
+
+
+def _ravenborn_tome_is_legal(state: GameState, action: ActivateAbility) -> bool:
+    return action.params == () and _source_is_usable(state, action)
+
+
+def _ravenborn_tome_effect(state: GameState, action: ActivateAbility) -> GameState:
+    state = _exhaust_source(state, action)
+    located = find_gear(state, action.source_id)
+    assert located is not None
+    _, controller = located
+    player = state.players[controller]
+    return replace_player(state, controller, dataclasses.replace(
+        player, next_spell_bonus_damage=player.next_spell_bonus_damage + 1))
+
+
+def _ravenborn_tome_candidates(state: GameState) -> list[tuple]:
+    return [()]
+
+
 GEAR_ABILITIES: dict[str, tuple[
     Callable[[GameState, ActivateAbility], bool],
     Callable[[GameState, ActivateAbility], GameState],
@@ -367,6 +489,10 @@ GEAR_ABILITIES: dict[str, tuple[
     SEAL_OF_STRENGTH: (_seal_is_legal, _seal_effect, _seal_candidates),
     SEAL_OF_DISCORD: (_seal_is_legal, _seal_effect, _seal_candidates),
     SEAL_OF_UNITY: (_seal_is_legal, _seal_effect, _seal_candidates),
+    SUN_DISC: (_sun_disc_is_legal, _sun_disc_effect, _sun_disc_candidates),
+    RAVENBORN_TOME: (_ravenborn_tome_is_legal, _ravenborn_tome_effect, _ravenborn_tome_candidates),
+    TREASURE_TROVE: (_treasure_trove_kill_is_legal, _treasure_trove_kill_effect,
+                      _treasure_trove_kill_candidates),
 }
 
 

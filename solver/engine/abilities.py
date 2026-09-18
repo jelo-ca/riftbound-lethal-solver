@@ -222,10 +222,11 @@ def _get_excited_effect(state: GameState, action: PlaySpell) -> list[GameState]:
     discard_id, target_id = action.params
     amount = card_pool.card_def(discard_id).energy_cost
     controller = state.turn_player
+    bonus = _bonus_damage(state)
     state = discard_from_hand(state, controller, discard_id)
     state = observers.fire_observer_discard_triggers(state, controller)
     _, bf_id = find_unit_at_any_battlefield(state, target_id)
-    return [combat.deal_damage_to_unit(state, bf_id, target_id, amount)]
+    return [combat.deal_damage_to_unit(state, bf_id, target_id, amount + bonus)]
 
 
 def _get_excited_candidates(state: GameState) -> list[tuple]:
@@ -295,16 +296,29 @@ def grant_trait(state: GameState, instance_id: int, trait: str) -> GameState:
     return _replace_unit(state, unit, zone, updated)
 
 
+PIRATES_HAVEN = "ogn-143-298"  # Gear: "When you ready a friendly unit, give it +1 Might this turn."
+
+
 def ready_unit(state: GameState, instance_id: int) -> GameState:
     """Un-exhaust a unit, which is what lets it move or attack again this
     turn. A no-op on a unit that is already ready, so the search doesn't
-    treat it as progress."""
+    treat it as progress.
+
+    The single choke point every registered readying effect already routes
+    through (First Mate, Wildclaw Shaman, Overt Operation, Udyr's Ready
+    mode), so Pirate's Haven's "when you ready a friendly unit" reaction is
+    hooked in right here rather than at each of those call sites — it only
+    fires on a REAL exhausted-to-ready transition, matching "when you
+    ready" (readying an already-ready unit isn't a second readying)."""
     located = find_unit_anywhere(state, instance_id)
     assert located is not None
     unit, zone = located
     if not unit.exhausted:
         return state
-    return _replace_unit(state, unit, zone, dataclasses.replace(unit, exhausted=False))
+    state = _replace_unit(state, unit, zone, dataclasses.replace(unit, exhausted=False))
+    if any(g.card_id == PIRATES_HAVEN for g in state.players[unit.controller].gear):
+        state = _grant_might(state, instance_id, 1)
+    return state
 
 
 def stun_unit(state: GameState, instance_id: int) -> GameState:
@@ -338,6 +352,16 @@ def _grant_might(state: GameState, instance_id: int, amount: int) -> GameState:
         return replace_player(state, unit.controller, dataclasses.replace(player, base_units=new_units))
     bf = next(b for b in state.battlefields if b.battlefield_id == zone)
     return replace_battlefield(state, dataclasses.replace(bf, units=(bf.units - {unit}) | {buffed}))
+
+
+def _bonus_damage(state: GameState) -> int:
+    """Ravenborn Tome's pending "next spell deals 1 Bonus Damage"
+    (PlayerState.next_spell_bonus_damage) — read, never cleared, at each
+    SPELL_EFFECTS damage call site; resolve_spell_outcomes clears it once
+    per spell PLAY, after every instance below has already read it. Zero
+    (a no-op addend) when nothing is pending, so every call site reads the
+    same regardless of whether Ravenborn Tome is even in play."""
+    return state.players[state.turn_player].next_spell_bonus_damage
 
 
 def _primal_strength_is_legal(state: GameState, action: PlaySpell) -> bool:
@@ -385,8 +409,9 @@ def _flurry_effect(state: GameState, action: PlaySpell) -> list[GameState]:
     """"All units at battlefields" — both players', both battlefields, and
     Base is untouched. Routed through combat.deal_damage_to_all_at so the
     deaths it causes fire their own [Deathknell]s."""
+    bonus = _bonus_damage(state)
     for bf in state.battlefields:
-        state = combat.deal_damage_to_all_at(state, bf.battlefield_id, 1)
+        state = combat.deal_damage_to_all_at(state, bf.battlefield_id, 1 + bonus)
     return [state]
 
 
@@ -527,7 +552,7 @@ def _flat_damage_effect(state: GameState, action: PlaySpell) -> list[GameState]:
     """Effect damage, not combat damage — designation is None inside
     deal_damage_to_unit, so Shield and Assault don't soften it, and any
     death it causes fires that unit's [Deathknell]."""
-    amount = FLAT_DAMAGE_SPELLS[action.card_id]
+    amount = FLAT_DAMAGE_SPELLS[action.card_id] + _bonus_damage(state)
     _, bf_id = find_unit_at_any_battlefield(state, action.params[0])
     return [combat.deal_damage_to_unit(state, bf_id, action.params[0], amount)]
 
@@ -546,11 +571,12 @@ def _falling_star_effect(state: GameState, action: PlaySpell) -> list[GameState]
     in which case the second instance simply finds nothing there. Aiming
     both at one unit is a real choice, so it must not be collapsed into a
     single 6."""
+    bonus = _bonus_damage(state)
     for target in action.params:
         located = find_unit_at_any_battlefield(state, target)
         if located is None:
             continue  # already dead, or at Base where this can still be aimed
-        state = combat.deal_damage_to_unit(state, located[1], target, 3)
+        state = combat.deal_damage_to_unit(state, located[1], target, 3 + bonus)
     return [state]
 
 
@@ -650,10 +676,11 @@ def _singularity_is_legal(state: GameState, action: PlaySpell) -> bool:
 
 
 def _singularity_effect(state: GameState, action: PlaySpell) -> list[GameState]:
+    bonus = _bonus_damage(state)
     for target in action.params:
         located = find_unit_at_any_battlefield(state, target)
         if located is not None:
-            state = combat.deal_damage_to_unit(state, located[1], target, 6)
+            state = combat.deal_damage_to_unit(state, located[1], target, 6 + bonus)
     return [state]
 
 
@@ -746,16 +773,22 @@ def _unchecked_power_effect(state: GameState, action: PlaySpell) -> list[GameSta
                 current = find_unit_anywhere(state, unit.instance_id)
                 state = _replace_unit(state, current[0], current[1],
                                       dataclasses.replace(current[0], exhausted=True))
+    bonus = _bonus_damage(state)
     for bf in state.battlefields:
-        state = combat.deal_damage_to_all_at(state, bf.battlefield_id, 12)
+        state = combat.deal_damage_to_all_at(state, bf.battlefield_id, 12 + bonus)
     return [state]
 
 
-def _mutual_damage(state: GameState, first_id: int, second_id: int) -> GameState:
+def _mutual_damage(state: GameState, first_id: int, second_id: int, bonus: int = 0) -> GameState:
     """Two units deal damage equal to their Mights to each other,
     SIMULTANEOUSLY — both amounts are read before either is applied, so a
     unit that dies still deals its damage. Reading them one at a time
-    would let the first kill silence the second."""
+    would let the first kill silence the second.
+
+    `bonus` (Ravenborn Tome's Bonus Damage) defaults to 0 rather than
+    reading _bonus_damage internally: this is shared with Carnivorous
+    Snapvine's UNIT_PLAY_TRIGGERS effect, which is not a spell and must
+    never see it — only Challenge's SPELL_EFFECTS caller passes one."""
     first = find_unit_anywhere(state, first_id)
     second = find_unit_anywhere(state, second_id)
     if first is None or second is None:
@@ -765,7 +798,7 @@ def _mutual_damage(state: GameState, first_id: int, second_id: int) -> GameState
     for target_id, amount in ((first_id, second_might), (second_id, first_might)):
         located = find_unit_at_any_battlefield(state, target_id)
         if located is not None:
-            state = combat.deal_damage_to_unit(state, located[1], target_id, amount)
+            state = combat.deal_damage_to_unit(state, located[1], target_id, amount + bonus)
     return state
 
 
@@ -782,7 +815,7 @@ def _challenge_is_legal(state: GameState, action: PlaySpell) -> bool:
 
 
 def _challenge_effect(state: GameState, action: PlaySpell) -> list[GameState]:
-    return [_mutual_damage(state, action.params[0], action.params[1])]
+    return [_mutual_damage(state, action.params[0], action.params[1], bonus=_bonus_damage(state))]
 
 
 def _challenge_candidates(state: GameState) -> list[tuple]:
@@ -1180,14 +1213,14 @@ SALVAGE = "ogn-224-298"
 
 def _salvage_candidates(state: GameState) -> list[tuple]:
     """Declining (the empty tuple, leaving only the no-op draw) is always
-    legal. Gear with its own unbuilt on-death reaction is excluded from
-    the kill target list — see gear.GEAR_DEATH_REACTIONS — rather than
-    silently dropping that reaction on the floor."""
+    legal. Every Gear is a legal kill target now — actions.kill_gear fires
+    gear.fire_gear_leaves_board_reactions itself (Treasure Trove's own
+    "when this leaves the board" reaction is no longer dropped on the
+    floor, now that the hook and the rune-channel subsystem both exist)."""
     out: list[tuple] = [()]
     for player in state.players:
         for piece in sorted(player.gear, key=lambda g: g.instance_id):
-            if piece.card_id not in gear.GEAR_DEATH_REACTIONS:
-                out.append((piece.instance_id,))
+            out.append((piece.instance_id,))
     return out
 
 
@@ -1196,11 +1229,7 @@ def _salvage_is_legal(state: GameState, action: PlaySpell) -> bool:
         return True
     if len(action.params) != 1:
         return False
-    located = find_gear(state, action.params[0])
-    if located is None:
-        return False
-    piece, _ = located
-    return piece.card_id not in gear.GEAR_DEATH_REACTIONS
+    return find_gear(state, action.params[0]) is not None
 
 
 def _salvage_effect(state: GameState, action: PlaySpell) -> list[GameState]:
@@ -1404,7 +1433,7 @@ def _shakedown_is_legal(state: GameState, action: PlaySpell) -> bool:
 
 def _shakedown_effect(state: GameState, action: PlaySpell) -> list[GameState]:
     _, bf_id = find_unit_at_any_battlefield(state, action.params[0])
-    return [combat.deal_damage_to_unit(state, bf_id, action.params[0], 6)]
+    return [combat.deal_damage_to_unit(state, bf_id, action.params[0], 6 + _bonus_damage(state))]
 
 
 def _shakedown_candidates(state: GameState) -> list[tuple]:
@@ -1520,11 +1549,12 @@ def _cannon_barrage_effect(state: GameState, action: PlaySpell) -> list[GameStat
     bf = next(b for b in state.battlefields if b.battlefield_id == state.showdown.battlefield_id)
     targets = [u.instance_id for u in sorted(bf.units, key=lambda u: u.instance_id)
                if u.controller != state.turn_player]
+    bonus = _bonus_damage(state)
     for target_id in targets:
         located = find_unit_at_any_battlefield(state, target_id)
         if located is None:
             continue  # already dead — an earlier target's Deathknell got there first
-        state = combat.deal_damage_to_unit(state, located[1], target_id, 2)
+        state = combat.deal_damage_to_unit(state, located[1], target_id, 2 + bonus)
     return [state]
 
 
@@ -1923,6 +1953,19 @@ def is_legal_play_spell(state: GameState, action: PlaySpell, card: CardDef) -> b
     return is_legal_effect(state, action)
 
 
+def _consume_spell_bonus_damage(state: GameState) -> GameState:
+    """Ravenborn Tome's one-shot flag is used up by THIS spell play,
+    whether or not the spell actually dealt any damage (matching "the
+    next spell you play" rather than "the next damage spell") — cleared
+    here, once per PlaySpell resolution, after every SPELL_EFFECTS damage
+    call site above has already had the chance to read it."""
+    player = state.players[state.turn_player]
+    if not player.next_spell_bonus_damage:
+        return state
+    return replace_player(state, state.turn_player,
+                          dataclasses.replace(player, next_spell_bonus_damage=0))
+
+
 def resolve_spell_outcomes(state: GameState, action: PlaySpell, card: CardDef) -> list[GameState]:
     """All possible resulting states for `action` — a single-element list
     for a deterministic spell (Ride The Wind, Vengeance), multiple for one
@@ -1930,7 +1973,8 @@ def resolve_spell_outcomes(state: GameState, action: PlaySpell, card: CardDef) -
     resolve_unit_play_trigger_outcomes below, and for the same reason."""
     state_after_cost = apply_play_spell_cost(state, action)
     _, effect, _ = SPELL_EFFECTS[action.card_id]
-    return effect(state_after_cost, action)
+    outcomes = effect(state_after_cost, action)
+    return [_consume_spell_bonus_damage(outcome) for outcome in outcomes]
 
 
 # --- Unit "when you play me" triggers -----------------------------------
@@ -2722,10 +2766,44 @@ def _forge_of_the_future_candidates(state: GameState, base_action: PlayGear, car
     return [("mint",)]
 
 
+SPIRITS_REFUGE = "ogn-063-298"  # "When you play this, buff a friendly unit."
+# Its second clause ("Friendly buffed units have [Deflect] if they didn't
+# already") is a Gear-sourced conditional trait grant, not a trigger — see
+# traits.GEAR_CONDITIONAL_GRANTS, checked by traits.resolved_traits
+# whenever ANY friendly unit's traits are asked for, not just this one's
+# target. Both clauses have to be covered for coverage.py to clear the
+# card at all (a half-read card stays BLOCKING).
+
+
+def _spirits_refuge_is_legal(state: GameState, action: PlayGear, card: CardDef) -> bool:
+    """trigger_params = (target_instance_id,). "A friendly unit" — ours,
+    unrestricted otherwise; Spirit's Refuge itself is never a candidate
+    (it's Gear, not a UnitInstance, so it can't carry a buff at all)."""
+    if len(action.trigger_params) != 1:
+        return False
+    state_after_play = apply_play_gear(state, dataclasses.replace(action, trigger_params=()), card)
+    located = find_unit_anywhere(state_after_play, action.trigger_params[0])
+    return located is not None and located[0].controller == state.turn_player
+
+
+def _spirits_refuge_effect(state_after_play: GameState, action: PlayGear) -> list[GameState]:
+    return [apply_buff(state_after_play, action.trigger_params[0])]
+
+
+def _spirits_refuge_candidates(state: GameState, base_action: PlayGear, card: CardDef) -> list[tuple]:
+    state_after_play = apply_play_gear(state, base_action, card)
+    out = [(u.instance_id,) for u in sorted(state_after_play.players[state.turn_player].base_units,
+                                             key=lambda u: u.instance_id)]
+    out += [(u.instance_id,) for bf in state_after_play.battlefields
+            for u in sorted(bf.units, key=lambda u: u.instance_id)
+            if u.controller == state.turn_player]
+    return out
+
+
 # card_ids whose "when you play this" Gear trigger has no decision to
 # make — the PlayGear analogue of MANDATORY_PLAY_TRIGGERS. legal_actions()
 # withholds the bare trigger_params=() form for these.
-MANDATORY_GEAR_TRIGGERS = frozenset({FORGE_OF_THE_FUTURE})
+MANDATORY_GEAR_TRIGGERS = frozenset({FORGE_OF_THE_FUTURE, SPIRITS_REFUGE})
 
 # card_id -> (is_legal(state, action, card), effect(state_after_play, action) -> list[GameState],
 #             generate_candidate_params(state, base_action, card))
@@ -2736,6 +2814,7 @@ GEAR_PLAY_TRIGGERS: dict[str, tuple[
 ]] = {
     FORGE_OF_THE_FUTURE: (_forge_of_the_future_is_legal, _forge_of_the_future_effect,
                            _forge_of_the_future_candidates),
+    SPIRITS_REFUGE: (_spirits_refuge_is_legal, _spirits_refuge_effect, _spirits_refuge_candidates),
 }
 
 
