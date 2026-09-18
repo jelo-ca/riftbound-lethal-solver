@@ -468,12 +468,104 @@ INERT_FOR_LETHAL: dict[str, str] = {
     "ogn-291-298": "The Candlelit Sanctum — \"when you conquer here, look at the top "
                    "two cards of your Main Deck. You may recycle one or both.\" No "
                    "Main Deck, so there is nothing to look at and nothing to recycle.",
+    "ogn-071-298": "Party Favors — \"Each OTHER player chooses Cards or Runes. For each "
+                   "player that chooses Cards, you and that player each draw 1. For each "
+                   "player that chooses Runes, you and that player each channel 1 rune "
+                   "exhausted.\" Every branch is gated on the OPPONENT making a choice, and "
+                   "the opponent never acts in this model — there is no decision node for "
+                   "them at all, so neither branch is ever entered, for either player. "
+                   "Distinct from the play-restriction cluster above (a restriction on the "
+                   "opponent that holds vacuously): here the gate is on an opponent CHOICE "
+                   "that never happens, so the whole spell — including our own half of the "
+                   "payoff — simply never resolves.",
     "ogn-282-298": "Monastery of Hirana — \"when you conquer here, you may spend a "
                    "buff to draw 1.\" Spending a buff is a real cost (a genuine "
                    "-1 Might) for a draw that does nothing with no Main Deck, so a "
                    "solver would never take the option; it's optional (\"you may\"), "
                    "so declining it is always legal, and the option can never help "
                    "find a lethal that declining it wouldn't also find.",
+    # Deck/rune-deck cluster: every clause here reads a zone (the Main
+    # Deck, or — Twisted Fate's case — the Rune Deck) that this engine
+    # never models, so there is nothing for any of these effects to act
+    # on regardless of how elaborate the printed text looks.
+    "ogn-062-298": "Reinforce — \"Look at the top 5 cards of your Main Deck. You may banish "
+                   "a unit from among them, then play it... Recycle the remaining cards.\" No "
+                   "Main Deck, so there are no top 5 cards to look at, nothing to banish or "
+                   "play, and nothing to recycle.",
+    "ogn-115-298": "Promising Future — \"Each player looks at the top 5 cards of their Main "
+                   "Deck, chooses one, then recycles the rest. Starting with the next player, "
+                   "each player plays those cards...\" No Main Deck for either player, so "
+                   "there is nothing to look at, choose, recycle, or subsequently play.",
+    "ogn-183-298": "Stacked Deck — [Action] \"Look at the top 3 cards of your Main Deck. Put "
+                   "1 into your hand and recycle the rest.\" No Main Deck, so there is "
+                   "nothing to look at, put into hand, or recycle.",
+    "ogn-160-298": "Dazzling Aurora — Gear, \"At the end of your turn, reveal cards from the "
+                   "top of your Main Deck until you reveal a unit. Play it... and recycle the "
+                   "rest.\" Doubly dead: it fires AFTER the turn this engine searches ends "
+                   "(same argument as Sona/Targon's Peak), and there is no Main Deck to reveal "
+                   "from even if it fired mid-turn. Playing the Gear itself is fully generic "
+                   "(no \"when you play this\" text, no activated ability).",
+    "ogn-194-298": "Nocturne, Horrifying — [Ganking] (generic TRAIT_REGISTRY keyword) plus "
+                   "\"When you look at cards from the top of your deck (and don't draw them) "
+                   "and see me, you may play me for rainbow.\" No Main Deck, so a player never "
+                   "looks at cards from the top of it — this alternate-play trigger can never "
+                   "fire, regardless of whether any OTHER card's deck-look effect exists on "
+                   "the board (they're all no-ops for the identical reason).",
+    "ogn-200-298": "Twisted Fate, Gambler — mandatory \"when I attack, reveal the top rune of "
+                   "your rune deck, then recycle it. Do one of the following based on its "
+                   "domain...\" There is no Rune Deck in this model (state.RunePool holds the "
+                   "runes a player channelled during the already-resolved Beginning Phase, not "
+                   "a deck to reveal from — see state.ready_runes's docstring), so there is no "
+                   "top rune to reveal and none of the three domain branches (including a Stun "
+                   "branch — the parallel stun-mechanic work is not needed here) can ever "
+                   "execute. Not registered in abilities.ATTACK_TRIGGERS: since the trigger "
+                   "produces no observable effect under any domain, forcing the showdown "
+                   "through the trigger-resolution machinery would change nothing, so leaving "
+                   "her unregistered is exactly as correct as registering a no-op would be.",
+    "ogn-242-298": "Baited Hook — Gear, whose entire text is one activated ability: \"Kill a "
+                   "friendly unit. Look at the top 5 cards of your Main Deck. You may banish a "
+                   "unit from among them... and play it... Then recycle the rest.\" Killing your "
+                   "own unit is a real, strictly negative cost; the payoff is entirely a "
+                   "Main-Deck look with no deck to look into. A solver would never activate it, "
+                   "same reasoning as Garbage Grabber's activated Draw 1 — left unregistered "
+                   "in gear.GEAR_ABILITIES, which is never offered as a legal action.",
+    "ogn-101-298": "Mushroom Pouch — Gear, \"At the start of your Beginning Phase, if you "
+                   "control a facedown card at a battlefield, draw 1.\" The Beginning Phase is "
+                   "already resolved before the Action Phase this engine searches (same "
+                   "pre-turn non-event as Sona/Loose Cannon), and the draw is a no-op regardless. "
+                   "Playing the Gear itself is fully generic.",
+    "ogn-118-298": "Wraith of Echoes — \"The first time a friendly unit dies each turn, draw "
+                   "1.\" No-op regardless of the \"first time\" gating, since the draw itself "
+                   "does nothing.",
+    "ogn-182-298": "Scrapheap — Gear, \"When this is played, discarded, or killed, draw 1.\" "
+                   "No-op regardless of which of the three triggers it, since the draw itself "
+                   "does nothing.",
+    "ogn-292-298": "The Dreaming Tree — Battlefield, \"When a player chooses a friendly unit "
+                   "here with a spell for the first time each turn, they draw 1.\" No-op "
+                   "regardless of the triggering spell; battlefields.py has no entry for this "
+                   "effect_id, and an unregistered effect_id correctly grants nothing (see "
+                   "battlefields._effect's None-returning default), so leaving it unregistered "
+                   "is the right call, not a gap.",
+    "ogn-201-298": "Invert Timelines — \"Each player discards their hand, then draws 4.\" The "
+                   "draw is a no-op (no Main Deck), but discarding OUR OWN entire hand is a "
+                   "real, strictly negative cost with no offsetting benefit — no card in the "
+                   "pool reads hand size or rewards an empty hand. So this card is never a "
+                   "necessary part of a winning line: any strategy that plays it is dominated "
+                   "by the same strategy without it, same shape as Monastery of Hirana's "
+                   "buff-for-nothing. (The OPPONENT's hand also empties and refills with 4 "
+                   "no-op draws, which changes nothing either, per \"opponent never acts.\")",
+    "ogn-044-298": "Clockwork Keeper — \"As you play me, you may pay a Calm rune as an "
+                   "additional cost. If you do, draw 1.\" An optional extra rune payment for a "
+                   "no-op payoff (no Main Deck) — a solver would never pay it, and declining "
+                   "is always legal, same dominance shape as Monastery of Hirana.",
+    "ogn-156-298": "Sabotage — \"Choose an opponent. They reveal their hand. Choose a "
+                   "non-unit card from it, and recycle that card.\" \"Recycle\" means returning "
+                   "the card to the (nonexistent) Main Deck — the same no-op zone transition as "
+                   "every other \"recycle\" text in the pool — so the card leaves the opponent's "
+                   "hand into nowhere tracked, unlike a real discard (contrast Mindsplitter, "
+                   "which uses the word \"discard\" and IS modelled for real via "
+                   "actions.discard_from_hand, precisely because a real discard can trigger an "
+                   "enemy \"when you discard\" watcher and recycling cannot).",
 }
 
 
