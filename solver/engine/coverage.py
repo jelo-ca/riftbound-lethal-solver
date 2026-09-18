@@ -357,6 +357,33 @@ HANDLED: dict[str, str] = {
     "ogn-157-298": "Udyr, Wildman — abilities.ABILITY_EFFECTS[UDYR_WILDMAN]; \"spend my buff\" "
                    "cost via spend_buff, mode restriction via "
                    "UnitInstance.modes_chosen_this_turn",
+    # Reaction-speed sweep (this pass). See abilities.py's "More [Reaction]
+    # spells" section for the implementations.
+    "ogn-033-298": "Shakedown — [Reaction] \"Choose an enemy unit. Deal 6 to it unless "
+                   "its controller has you draw 2.\" The \"unless\" is the TARGET's "
+                   "controller's choice — the opponent, who never acts — so the option "
+                   "is never exercised and the primary effect (6 damage) is unconditional. "
+                   "Implemented via abilities.SPELL_EFFECTS as plain flat damage to an "
+                   "enemy unit at a battlefield.",
+    "ogn-048-298": "Meditation — [Reaction] \"As an additional cost to play this, you may "
+                   "exhaust a friendly unit. If you do, draw 2. Otherwise, draw 1.\" Both "
+                   "draw amounts are no-ops (no Main Deck), but the optional cost is a "
+                   "real, independent state change: gear.ARENA_BAR's ability requires an "
+                   "EXHAUSTED friendly unit to target, so paying this cost on a unit that "
+                   "doesn't need to act again this turn (a defender, say) can make it "
+                   "eligible for Arena Bar's buff. Implemented via abilities.SPELL_EFFECTS "
+                   "with the exhaust as an optional targeted param; declining it is always "
+                   "legal.",
+    "ogn-108-298": "Convergent Mutation — [Reaction] \"Choose a friendly unit. This turn, "
+                   "increase its Might to the Might of another friendly unit.\" via "
+                   "abilities.SPELL_EFFECTS, reading traits.effective_might for both units "
+                   "and applying the delta only when the reference is actually higher — "
+                   "\"increase\" has no effect when it isn't.",
+    "ogn-127-298": "Cannon Barrage — [Reaction] \"Deal 2 to all enemy units in combat.\" "
+                   "\"In combat\" is read as \"at the battlefield hosting the currently "
+                   "open showdown\" (state.showdown) — the only place this engine's model "
+                   "has two controllers' units present at once. Legal only while a "
+                   "showdown is open; implemented via abilities.SPELL_EFFECTS.",
 }
 
 
@@ -474,6 +501,70 @@ INERT_FOR_LETHAL: dict[str, str] = {
                    "acts, so the restriction holds vacuously whether or not this "
                    "card is played; the mandatory play trigger has no observable "
                    "effect on the search.",
+    # ogn-266-298 Siphon Power stays BLOCKING — not a rules question, a
+    # card-data one. "Choose a battlefield. Give friendly units there +1
+    # Might this turn and enemy units there -1 Might this turn, to a
+    # minimum of 1 Might" would be a straightforward SPELL_EFFECTS entry
+    # (Grand Strategem's target-free +Might plus Smoke Screen's floored
+    # debuff, applied per-unit at one battlefield) — but its printed cost
+    # carries a Power icon of 1 across TWO domains (Mind and Order), and
+    # card_data.build_card_def refuses that as ambiguous by design (its own
+    # module docstring: "two domains plus a Power cost, where which domain
+    # pays is genuinely ambiguous" — 10 printings share this, ogn-266-298
+    # among them). card_pool.card_def("ogn-266-298") is None. Non-negotiable
+    # #2 forbids hand-writing a CardDef to route around that refusal, so
+    # there is no CardDef to build a legal PlaySpell action against even if
+    # the effect were written. Left BLOCKING with no coverage entry.
+    #
+    # ogn-241-298 Shen, Kinkou stays BLOCKING too, for a different reason.
+    # Her printed text is [Shield 2] and [Tank] only — both already-generic
+    # keywords with other HANDLED cards exercising them — but she is a
+    # [Reaction]-speed UNIT, and her printed reminder text is the tell:
+    # "Play any time, even before spells and abilities resolve, INCLUDING TO
+    # A BATTLEFIELD YOU CONTROL" (every other [Reaction] card in the pool
+    # carries the plain reminder with no such clause). That's the game
+    # telling us a Reaction-speed Unit can reinforce an ONGOING fight, not
+    # just enter at the normal Action-Phase window a Slow unit is confined
+    # to. Investigated whether that's already reachable:
+    #   - At board level she's already fully playable via the ordinary
+    #     PlayUnit path (actions.is_legal_play_unit never checks
+    #     card.speed at all) — same as any Slow unit, to base or a
+    #     battlefield we control. That part needs no fix.
+    #   - DURING an open showdown, though, search._showdown_actions
+    #     generates ONLY PlaySpell candidates (via _playable_spells) plus
+    #     ResolveShowdown — there is no PlayUnit path in there for ANY
+    #     unit, [Reaction]-speed or not. Confirmed by reading, not
+    #     assumed: no isinstance(action, PlayUnit) branch is reachable
+    #     while state.showdown is not None.
+    #   - Scoped a minimal fix (generate legal PlayUnit for [Reaction]
+    #     units the same way _playable_spells does for spells) and found
+    #     it isn't actually minimal: actions.apply_play_unit's battlefield-
+    #     controller assignment (`new_controller = bf.controller if
+    #     bf.controller is not None else player_index`) can't tell "open
+    #     battlefield" (bf.controller is None, bf.units EMPTY — rule
+    #     466.7.b, establishing control is correct) apart from "Contested
+    #     mid-showdown battlefield" (bf.controller is None, bf.units
+    #     NON-empty and mixed-controller — must stay Contested). Playing a
+    #     reinforcement into the open showdown's own battlefield would hit
+    #     the second case and get the first case's behavior: it would
+    #     immediately assign the battlefield to state.turn_player, and
+    #     scoring.resolve_control_change would read that as a genuine
+    #     control change and fire resolve_conquer/conquer.
+    #     fire_conquer_triggers — a Conquer point granted mid-combat,
+    #     before the Combat Damage Step has even happened. That's scoring/
+    #     conquer surface, which this pass was told to leave to the
+    #     parallel conquer.py agent, and not a change to make under time
+    #     pressure regardless. (combat.deal_damage_to_unit's OWN
+    #     controller fallback doesn't have this bug — for a genuinely
+    #     mixed-controller `remaining`, `len(controllers) == 1` is False
+    #     and it already falls through to None correctly; this is
+    #     specific to apply_play_unit's open-vs-Contested conflation.)
+    # Per this ledger's own rule ("a half-covered card stays BLOCKING"),
+    # a card whose full printed capability isn't reachable stays blocking
+    # even though a large majority of her text has somewhere to go. Left
+    # undone rather than shipped partially or risked against code another
+    # agent owns in parallel.
+    #
     # ogn-070-298 Mageseeker Warden was cleared here once (2026-09-17) on the
     # argument that its "spells/abilities can't ready enemy units" clause
     # was vacuous because the only card reading an enemy unit's ready state,
@@ -497,6 +588,23 @@ INERT_FOR_LETHAL: dict[str, str] = {
                    "solver would never take the option; it's optional (\"you may\"), "
                    "so declining it is always legal, and the option can never help "
                    "find a lethal that declining it wouldn't also find.",
+    "ogn-144-298": "Spoils of War — [Reaction] \"If an enemy unit has died this turn, "
+                   "this costs 2 Energy less. Draw 2.\" The draw is a no-op with no Main "
+                   "Deck regardless of what it cost to get there — a cheaper price on "
+                   "nothing is still nothing, so the cost-reduction condition can never "
+                   "matter for lethal either.",
+    "ogn-145-298": "Unyielding Spirit — [Reaction] \"Prevent all spell and ability damage "
+                   "this turn.\" The opponent never acts, so every spell/ability damage "
+                   "source this prevention could ever apply to is OUR OWN — there is no "
+                   "opposing damage to defend against. Casting it can only suppress "
+                   "damage a solver chose to deal in the first place, which is strictly "
+                   "worse than simply not dealing that damage (same final board, minus "
+                   "the Energy/Body Power this costs) — including the one interaction "
+                   "worth naming: preventing a kill would also stop it from being a kill, "
+                   "which would deny Immortal Phoenix's spell-kill reaction (ogn-037-298) "
+                   "its trigger rather than help it. Any winning line that casts this can "
+                   "drop the cast (and whichever of its own spells it was shielding "
+                   "against) and still win, so it cannot change whether lethal exists.",
 }
 
 
