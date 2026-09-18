@@ -1,10 +1,14 @@
+import dataclasses
+
 from solver.engine.scoring import (
+    ASPIRANTS_CLIMB,
     VICTORY_SCORE,
     grant_card_effect_point,
     is_winning,
     resolve_conquer,
+    victory_score,
 )
-from solver.engine.state import BattlefieldState, GameState, PlayerState, RunePool
+from solver.engine.state import BattlefieldState, GameState, PlayerState, RunePool, UnitInstance
 
 
 def make_state(score=0, scored_this_turn=frozenset()):
@@ -83,3 +87,72 @@ def test_battlefield_already_scored_this_turn_cannot_score_again():
 
 def test_victory_score_constant_is_8():
     assert VICTORY_SCORE == 8
+
+
+# --- Aspirant's Climb: "Increase the points needed to win by 1" -----------
+
+
+def _with_climb(state):
+    return dataclasses.replace(state, battlefields=(
+        BattlefieldState("left", None, frozenset(), ASPIRANTS_CLIMB),
+        state.battlefields[1],
+    ))
+
+
+def test_aspirants_climb_raises_victory_score_by_one():
+    state = _with_climb(make_state(score=8))
+    assert victory_score(state) == 9
+    assert not is_winning(state)  # 8 points is no longer enough
+    nine = dataclasses.replace(state, players=(
+        dataclasses.replace(state.players[0], score=9), state.players[1]))
+    assert is_winning(nine)
+
+
+def test_without_the_climb_victory_score_is_unchanged():
+    assert victory_score(make_state(score=0)) == VICTORY_SCORE == 8
+
+
+def test_aspirants_climb_shifts_the_final_point_gate_too():
+    """Without the Climb, conquering "left" at 7 (with "right" already
+    Scored this turn) would BE the Final Point and win at 8 (rule 476).
+    With the Climb raising the threshold to 9, the same conquer is now an
+    ORDINARY point — 7 isn't within 1 of 9 — so it's unconditional and
+    doesn't need every battlefield Scored this turn at all."""
+    state = _with_climb(make_state(score=7, scored_this_turn=frozenset()))
+    new_state = resolve_conquer(state, "left")
+    assert new_state.players[0].score == 8
+    assert not is_winning(new_state)
+
+
+def test_aspirants_climb_is_reachable_through_a_full_solve():
+    """End to end via search.solve(), not scoring.py in isolation: a board
+    that's a winning Conquer-to-Final-Point at Victory Score 8 stops being
+    solvable at the depth that used to win it once Aspirant's Climb raises
+    the target to 9."""
+    from solver import search
+
+    def make_unit(instance_id, might=1):
+        return UnitInstance(card_id="chaff", instance_id=instance_id, controller=0, might=might,
+                             keywords=frozenset(), exhausted=False, damage=0, is_token=False)
+
+    def board(score, climb):
+        return GameState(
+            turn_player=0,
+            players=(
+                PlayerState(base_units=frozenset({make_unit(1)}), hand=(),
+                            runes=RunePool(available=()), score=score),
+                PlayerState(base_units=frozenset(), hand=(), runes=RunePool(available=()), score=0),
+            ),
+            battlefields=(
+                BattlefieldState("left", None, frozenset(), ASPIRANTS_CLIMB if climb else None),
+                BattlefieldState("right", 0, frozenset(), None),
+            ),
+            scored_this_turn=frozenset({"right"}),
+            cards_played_this_turn=0,
+        )
+
+    without_climb = board(score=7, climb=False)
+    assert search.solve(without_climb, {}, max_depth=2) is not None  # Conquer "left" -> 8, wins
+
+    with_climb = board(score=7, climb=True)
+    assert search.solve(with_climb, {}, max_depth=2) is None  # only reaches 8, needs 9

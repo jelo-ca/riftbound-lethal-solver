@@ -515,6 +515,16 @@ HANDLED: dict[str, str] = {
                    "every other draw effect above (e.g. Watchful Sentry). Mandatory, so "
                    "there is no decline candidate — an empty hand still resolves, as the "
                    "single no-op \"discard nothing\" candidate.",
+    "ogn-276-298": "Aspirant's Climb — Battlefield, \"Increase the points needed to win "
+                   "the game by 1.\" A genuine change to the win condition, not a "
+                   "Might-shaped static bonus — scoring.victory_score(state) reads "
+                   "board-conditionally off this effect_id and both scoring.is_winning "
+                   "and resolve_conquer's rule 474/475 Final Point gate consult it live "
+                   "instead of the bare VICTORY_SCORE constant, so a board carrying this "
+                   "battlefield needs 9 points (and 8 is no longer the Final Point) rather "
+                   "than 8. Verified end to end via search.solve() in test_scoring.py: a "
+                   "board that's a winning Conquer at Victory Score 8 stops being "
+                   "solvable at the same depth once this battlefield raises the target.",
     "ogn-287-298": "Sigil of the Storm — Battlefield, \"when you conquer here, recycle one "
                    "of your runes\" via conquer.BATTLEFIELD_CONQUER_TRIGGERS. Recycling pays "
                    "Power (rule 164.2.b) — there's no separate \"produce a floating Power\" "
