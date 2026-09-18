@@ -9,12 +9,13 @@ card_pool.card_def, never hand-written (non-negotiable #2).
 """
 
 from solver import search
-from solver.engine import abilities, combat, traits
+from solver.engine import abilities, combat, gear as gear_module, traits
 from solver.engine.actions import ActivateAbility, PlaySpell, PlayUnit, RunePayment
 from solver.engine.card_pool import card_def
 from solver.engine.state import (
     BattlefieldState,
     GameState,
+    GearInstance,
     PlayerState,
     RunePool,
     UnitInstance,
@@ -27,6 +28,7 @@ MORBID_RETURN = abilities.MORBID_RETURN
 SOULGORGER = abilities.SOULGORGER
 THE_HARROWING = abilities.THE_HARROWING
 SPECTRAL_MATRON = abilities.SPECTRAL_MATRON
+SALVAGE = abilities.SALVAGE
 TOO_EXPENSIVE_UNIT = "ogn-215-298"  # Petty Officer — 5 Energy, over Spectral Matron's 3-cap
 DEAD_UNIT = "ogn-052-298"  # Stalwart Poro — any real Unit printing works as trash filler
 DEAD_SPELL = "ogn-004-298"  # Cleave — a real Spell printing, to prove Units-only filtering
@@ -39,13 +41,15 @@ def make_unit(card_id, instance_id, controller=0, might=3, exhausted=False):
                          is_token=False)
 
 
-def make_state(base_units=frozenset(), hand=(), left_units=frozenset(), runes=(), trash=()):
+def make_state(base_units=frozenset(), hand=(), left_units=frozenset(), runes=(), trash=(),
+               gear=frozenset(), enemy_gear=frozenset()):
     return GameState(
         turn_player=0,
         players=(
             PlayerState(base_units=base_units, hand=hand, runes=RunePool(available=runes),
-                        score=0, trash=trash),
-            PlayerState(base_units=frozenset(), hand=(), runes=RunePool(available=()), score=0),
+                        score=0, trash=trash, gear=gear),
+            PlayerState(base_units=frozenset(), hand=(), runes=RunePool(available=()), score=0,
+                        gear=enemy_gear),
         ),
         battlefields=(
             BattlefieldState("left", 0 if left_units else None, left_units, None),
@@ -228,3 +232,73 @@ def test_spectral_matron_cannot_replay_a_unit_over_the_cost_cap():
     actions = [a for a in search.legal_actions(state, cards)
                if isinstance(a, PlayUnit) and a.card_id == SPECTRAL_MATRON and a.trigger_params]
     assert actions == []
+
+
+# --- Salvage: "[Action] You may kill a gear. Draw 1." ---
+
+
+def _ready_gear(card_id, instance_id):
+    return GearInstance(card_id=card_id, instance_id=instance_id, exhausted=False)
+
+
+def test_salvage_decline_is_still_legal():
+    """"Draw 1" alone (a no-op) is always a legal resolution."""
+    card = card_def(SALVAGE)
+    state = make_state(hand=(SALVAGE,), runes=("Fury", "Fury", "Order"),
+                        gear=frozenset({_ready_gear(gear_module.ORB_OF_REGRET, 50)}))
+    action = PlaySpell(card_id=SALVAGE, params=(),
+                        rune_payment=RunePayment(energy_runes=("Fury", "Fury"), power_runes=("Order",)))
+    assert abilities.is_legal_play_spell(state, action, card)
+    [result] = abilities.resolve_spell_outcomes(state, action, card)
+    assert len(result.players[0].gear) == 1  # untouched
+
+
+def test_salvage_kills_a_gear_and_lands_it_in_trash():
+    card = card_def(SALVAGE)
+    piece = _ready_gear(gear_module.ORB_OF_REGRET, 50)
+    state = make_state(hand=(SALVAGE,), runes=("Fury", "Fury", "Order"), gear=frozenset({piece}))
+    action = PlaySpell(card_id=SALVAGE, params=(50,),
+                        rune_payment=RunePayment(energy_runes=("Fury", "Fury"), power_runes=("Order",)))
+    assert abilities.is_legal_play_spell(state, action, card)
+    [result] = abilities.resolve_spell_outcomes(state, action, card)
+    assert result.players[0].gear == frozenset()
+    assert gear_module.ORB_OF_REGRET in result.players[0].trash
+    assert SALVAGE in result.players[0].trash  # the resolved spell itself
+
+
+def test_salvage_can_kill_the_opponents_gear():
+    """"A gear" is unqualified — either player's, same convention as Orb
+    of Regret's "a unit"."""
+    card = card_def(SALVAGE)
+    piece = _ready_gear(gear_module.THE_SYREN, 60)
+    state = make_state(hand=(SALVAGE,), runes=("Fury", "Fury", "Order"), enemy_gear=frozenset({piece}))
+    action = PlaySpell(card_id=SALVAGE, params=(60,),
+                        rune_payment=RunePayment(energy_runes=("Fury", "Fury"), power_runes=("Order",)))
+    assert abilities.is_legal_play_spell(state, action, card)
+    [result] = abilities.resolve_spell_outcomes(state, action, card)
+    assert result.players[1].gear == frozenset()
+    assert gear_module.THE_SYREN in result.players[1].trash
+
+
+def test_salvage_cannot_target_gear_with_an_unbuilt_death_reaction():
+    """Treasure Trove/Scrapheap react to their own death; kill_gear has no
+    hook to fire that yet, so they're excluded from candidates rather than
+    silently dropped — see gear.GEAR_DEATH_REACTIONS."""
+    card = card_def(SALVAGE)
+    piece = _ready_gear(gear_module.TREASURE_TROVE, 70)
+    state = make_state(hand=(SALVAGE,), runes=("Fury", "Fury", "Order"), gear=frozenset({piece}))
+    action = PlaySpell(card_id=SALVAGE, params=(70,),
+                        rune_payment=RunePayment(energy_runes=("Fury", "Fury"), power_runes=("Order",)))
+    assert not abilities.is_legal_play_spell(state, action, card)
+
+
+def test_salvage_reachable_through_legal_actions():
+    card = card_def(SALVAGE)
+    piece = _ready_gear(gear_module.ORB_OF_REGRET, 50)
+    state = make_state(hand=(SALVAGE,), runes=("Fury", "Fury", "Order"), gear=frozenset({piece}))
+    cards = {SALVAGE: card}
+    action = next(a for a in search.legal_actions(state, cards)
+                  if isinstance(a, PlaySpell) and a.card_id == SALVAGE and a.params == (50,))
+    [result] = abilities.resolve_spell_outcomes(state, action, card)
+    assert result.players[0].gear == frozenset()
+    assert gear_module.ORB_OF_REGRET in result.players[0].trash
