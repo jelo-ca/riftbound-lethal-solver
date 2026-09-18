@@ -379,6 +379,17 @@ INERT_FOR_LETHAL: dict[str, str] = {
                    "WIN CONDITION (\"if you have 7+ units here, you win the game\"); "
                    "it is inert only because the trigger cannot fire, so if Hold ever "
                    "becomes a live event this entry must be revisited first.",
+    "ogn-288-298": "Startipped Peak — \"When you hold here, you may channel 1 rune "
+                   "exhausted.\" Hold trigger only, same as the other battlefields "
+                   "above — no Hold occurs during the turn being searched. (Its "
+                   "\"channel 1 rune exhausted\" payload never matters here, since "
+                   "the trigger that would fire it can't fire at all.)",
+    # Beginning-Phase-only triggers, same non-event as Loose Cannon above.
+    "ogn-284-298": "Obelisk of Power — \"At the start of each player's first "
+                   "Beginning Phase, that player channels 1 rune.\" The Beginning "
+                   "Phase is already resolved before the Action Phase this engine "
+                   "searches, so this fires (if ever) before the position the "
+                   "engine is asked about even exists.",
     "ogn-045-298": "Defy — \"counter a spell\"; no opposing spell can ever exist",
     "ogn-064-298": "Wind Wall — \"counter a spell\"; as above",
     "ogn-080-298": "Mystic Reversal — \"gain control of a spell\"; as above",
