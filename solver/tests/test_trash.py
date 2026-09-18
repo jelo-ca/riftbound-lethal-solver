@@ -24,8 +24,11 @@ DR_MUNDO = traits.DR_MUNDO
 VI = abilities.VI_DESTRUCTIVE
 CEMETERY_ATTENDANT = abilities.CEMETERY_ATTENDANT
 MORBID_RETURN = abilities.MORBID_RETURN
+SOULGORGER = abilities.SOULGORGER
+THE_HARROWING = abilities.THE_HARROWING
 DEAD_UNIT = "ogn-052-298"  # Stalwart Poro — any real Unit printing works as trash filler
 DEAD_SPELL = "ogn-004-298"  # Cleave — a real Spell printing, to prove Units-only filtering
+TRIGGERED_UNIT = "ogn-136-298"  # Pit Rookie — a real Unit WITH its own UNIT_PLAY_TRIGGERS entry
 
 
 def make_unit(card_id, instance_id, controller=0, might=3, exhausted=False):
@@ -145,3 +148,52 @@ def test_morbid_return_reachable_through_legal_actions():
     # as a resolved spell (apply_play_spell_cost) — the two cross paths.
     assert result.players[0].trash == (MORBID_RETURN,)
     assert DEAD_UNIT in result.players[0].hand
+
+
+# --- Soulgorger / The Harrowing: play a unit from trash, ignoring Energy ---
+
+
+def test_soulgorger_decline_is_still_legal():
+    card = card_def(SOULGORGER)
+    state = make_state(hand=(SOULGORGER,), trash=(VI,), runes=("Fury",) * 8 + ("Chaos",) * 2)
+    action = PlayUnit(card_id=SOULGORGER, target_zone="base", trigger_params=(),
+                       rune_payment=RunePayment(energy_runes=("Fury",) * 8, power_runes=("Chaos", "Chaos")))
+    assert abilities.is_legal_unit_play_trigger(state, action, card)
+
+
+def test_soulgorger_replays_a_unit_ignoring_its_energy_cost():
+    card = card_def(SOULGORGER)
+    state = make_state(hand=(SOULGORGER,), trash=(VI,), runes=("Fury",) * 9 + ("Chaos",) * 2)
+    cards = {SOULGORGER: card}
+    action = next(a for a in search.legal_actions(state, cards)
+                  if isinstance(a, PlayUnit) and a.card_id == SOULGORGER
+                  and a.trigger_params and a.trigger_params[0] == VI)
+    [result] = abilities.resolve_unit_play_trigger_outcomes(state, action, card)
+    assert result.players[0].trash == ()
+    replayed = [u for u in result.players[0].base_units if u.card_id == VI]
+    assert len(replayed) == 1
+    assert replayed[0].exhausted is True  # no [Accelerate] variant offered on replay
+
+
+def test_soulgorger_cannot_replay_a_unit_with_its_own_play_trigger():
+    """Restrictive by design (see play_unit_from_trash's docstring): a
+    replayed unit's own "when you play me" text is never dispatched
+    through this path, so a card that has one is never offered."""
+    card = card_def(SOULGORGER)
+    state = make_state(hand=(SOULGORGER,), trash=(TRIGGERED_UNIT,), runes=("Fury",) * 9 + ("Chaos",) * 2)
+    cards = {SOULGORGER: card}
+    actions = [a for a in search.legal_actions(state, cards) if isinstance(a, PlayUnit)
+               and a.card_id == SOULGORGER and a.trigger_params]
+    assert actions == []
+
+
+def test_the_harrowing_replays_a_unit_paying_from_what_the_spell_leaves_behind():
+    card = card_def(THE_HARROWING)
+    state = make_state(hand=(THE_HARROWING,), trash=(VI,), runes=("Fury",) * 8 + ("Chaos",) * 2)
+    cards = {THE_HARROWING: card}
+    action = next(a for a in search.legal_actions(state, cards)
+                  if isinstance(a, PlaySpell) and a.card_id == THE_HARROWING)
+    [result] = abilities.resolve_spell_outcomes(state, action, card)
+    assert any(u.card_id == VI for u in result.players[0].base_units)
+    assert THE_HARROWING in result.players[0].trash
+    assert VI not in result.players[0].trash
