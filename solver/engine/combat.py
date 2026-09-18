@@ -250,7 +250,7 @@ def deal_damage_to_all_at(state: GameState, battlefield_id: str, amount: int) ->
 
 
 def open_showdown(state: GameState, mover: UnitInstance, from_zone: str, destination_id: str,
-                   exhausted_after: bool = True) -> GameState:
+                   exhausted_after: bool = True, has_pending_trigger: bool = False) -> GameState:
     """Moves `mover` into `destination_id`, applying Contested status and
     opening a showdown — WITHOUT resolving damage. The two halves are
     separate because card speeds make the gap between them observable:
@@ -261,6 +261,12 @@ def open_showdown(state: GameState, mover: UnitInstance, from_zone: str, destina
     Both sides stay on the battlefield with the mover among them and no
     controller, which is what Contested means (rule 190.6). Damage is
     resolve_showdown's job.
+
+    `has_pending_trigger` marks the new showdown as owing a mandatory
+    "when I attack" trigger before anything else can happen in it (see
+    ShowdownState.attack_trigger_resolved) — the caller decides this by
+    checking abilities.ATTACK_TRIGGERS, since this module can't import
+    abilities (abilities.py imports combat.py already).
     """
     destination = next(bf for bf in state.battlefields if bf.battlefield_id == destination_id)
     moved_mover = dataclasses.replace(mover, exhausted=exhausted_after,
@@ -272,7 +278,8 @@ def open_showdown(state: GameState, mover: UnitInstance, from_zone: str, destina
     state = _replace_battlefield(state, contested)
     return dataclasses.replace(
         state, showdown=ShowdownState(battlefield_id=destination_id,
-                                       attacker_controller=mover.controller))
+                                       attacker_controller=mover.controller,
+                                       attack_trigger_resolved=not has_pending_trigger))
 
 
 def resolve_showdown(state: GameState, attacker_assignment: Assignment,

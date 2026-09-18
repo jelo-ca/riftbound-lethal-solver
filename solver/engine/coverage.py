@@ -197,6 +197,34 @@ HANDLED: dict[str, str] = {
                    "legends.LEGEND_ABILITIES, same shape as Yasuo, Unforgiven",
     "ogn-304-298": "Blind Monk — same Legend, alternate printing",
     "ogn-304-star-298": "Blind Monk — same Legend, alternate printing",
+    # "When I attack" triggers (RULES ANSWER, project owner, 2026-09-17): a
+    # trigger that kills the defender before the Combat Damage Step removes
+    # it from combat entirely — it deals no combat damage. abilities.py's
+    # ATTACK_TRIGGERS registry forces the combat through the showdown
+    # mechanism with the trigger resolved BEFORE any damage-assignment
+    # option is computed, so a killed defender is simply gone from
+    # combat.showdown_assignment_options's live board by the time
+    # assignment happens. See search._board_actions_with_showdown_entries
+    # and abilities.ATTACK_TRIGGERS's own module comment.
+    "ogn-148-298": "Anivia, Primal — mandatory \"when I attack, deal 3 to all enemy units "
+                   "here\" via abilities.ATTACK_TRIGGERS, resolved before damage assignment",
+    "ogn-076-298": "Yasuo, Remorseful — mandatory \"when I attack, deal damage equal to my "
+                   "Might to an enemy unit here\" via abilities.ATTACK_TRIGGERS; the amount "
+                   "is read at trigger time via traits.effective_might",
+    "ogn-076a-298": "Yasuo, Remorseful (alt art) — same card as ogn-076-298",
+    "ogn-130-298": "Crackshot Corsair — mandatory \"when I attack, deal 1 to an enemy unit "
+                   "here\" via abilities.ATTACK_TRIGGERS",
+    "ogn-131-298": "Dune Drake — mandatory \"when I attack, give me +2 Might this turn if "
+                   "there is a ready enemy unit here\" via abilities.ATTACK_TRIGGERS; the "
+                   "trigger always fires, its effect is merely conditional",
+    # "While I'm attacking or defending alone" (RULES ANSWER, project
+    # owner, 2026-09-17): SelfConditional.condition now takes the unit's
+    # combat role (designation) as a fourth argument. "Attacking alone" is
+    # unconditionally true in this engine (combat.py: the attacking side
+    # is always exactly one unit); "defending alone" is checked for real,
+    # against co-located controllers, the same shape as En Garde.
+    "ogn-055-298": "Wielder of Water — \"while I'm attacking or defending alone, +2 Might\" "
+                   "via traits.SELF_CONDITIONALS with the new designation parameter",
 }
 
 
@@ -290,24 +318,15 @@ INERT_FOR_LETHAL: dict[str, str] = {
                    "acts, so the restriction holds vacuously whether or not this "
                    "card is played; the mandatory play trigger has no observable "
                    "effect on the search.",
-    "ogn-070-298": "Mageseeker Warden — \"While I'm at a battlefield, opponents can "
-                   "only play units to their base\" is inert for the usual reason: "
-                   "opponents never play anything. Its second clause, \"spells and "
-                   "abilities can't ready enemy units and gear,\" is a real "
-                   "restriction on OUR actions, not the opponent's, and is checked "
-                   "on its own merits: no ability in this engine readies enemy "
-                   "gear (gear.py has no such effect, so that half is vacuous "
-                   "regardless), and the only ability that readies an enemy UNIT "
-                   "is First Mate's \"ready another unit\" "
-                   "(abilities._first_mate_effect / _first_mate_is_legal, which is "
-                   "explicitly unrestricted — \"Readying an ENEMY unit is legal and "
-                   "merely unwise\"). The only card that reads an enemy unit's "
-                   "ready state, Dune Drake (\"...+2 Might this turn if there is a "
-                   "ready enemy unit here\"), is itself BLOCKING (not in this "
-                   "ledger), so any board where First Mate readying an enemy unit "
-                   "could matter is already refused on Dune Drake independently of "
-                   "Mageseeker Warden. Revisit this entry if Dune Drake, or any "
-                   "future enemy-gear-readying effect, is ever implemented.",
+    # ogn-070-298 Mageseeker Warden was cleared here once (2026-09-17) on the
+    # argument that its "spells/abilities can't ready enemy units" clause
+    # was vacuous because the only card reading an enemy unit's ready state,
+    # Dune Drake, was itself BLOCKING. That argument's own note said to
+    # revisit if Dune Drake was ever implemented — it now is (see the
+    # attack-trigger entries below), so a board with Warden + First Mate +
+    # Dune Drake is a real case the restriction could change, and Warden's
+    # ready-restriction itself still isn't modelled. Back to BLOCKING until
+    # that restriction is actually built.
     # [Conquer] triggers whose text needs no new subsystem — see
     # engine/conquer.py for the ones that do.
     "ogn-039-298": "Kai'Sa, Survivor — [Accelerate], and \"when I conquer, draw 1\". "

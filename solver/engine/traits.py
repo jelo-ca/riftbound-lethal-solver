@@ -90,23 +90,61 @@ class SelfConditional:
     Victorious's "while I'm [Mighty]" (5+ Might) is exactly the case that
     isn't, since Shield could push her over her own threshold, and she
     stays unmodelled for that reason rather than by oversight.
+
+    `designation` is the unit's current combat role ("attacker" /
+    "defender" / None) — threaded through from wherever effective_might
+    already carries it (RULES ANSWER, project owner, 2026-09-17: needed
+    to express "while I'm attacking or defending alone"). A condition
+    that doesn't care about role simply ignores the parameter, so every
+    pre-existing entry stays correct unchanged.
     """
-    condition: "object"  # (state, unit, zone) -> bool
+    condition: "object"  # (state, unit, zone, designation) -> bool
     grants: frozenset[str] = frozenset()
     might_delta: int = 0
 
 
 WIZENED_ELDER = "ogn-065-298"  # "While I'm buffed, I have an additional +1 Might."
 BILGEWATER_BULLY = "ogn-125-298"  # "While I'm buffed, I have [Ganking]."
+WIELDER_OF_WATER = "ogn-055-298"  # "While I'm attacking or defending alone, I have +2 Might."
 
 
-def _is_buffed(state: GameState, unit: UnitInstance, zone: Zone) -> bool:
+def _is_buffed(state: GameState, unit: UnitInstance, zone: Zone, designation: Optional[str] = None) -> bool:
     return unit.buffed
+
+
+def _attacking_or_defending_alone(state: GameState, unit: UnitInstance, zone: Zone,
+                                   designation: Optional[str] = None) -> bool:
+    """"While I'm attacking or defending alone." "Alone" means the unit is
+    the only one of its side (attacker or defender) in this combat.
+
+    The ATTACKING side in this engine's action space is always exactly
+    one unit — combat.py's module docstring: "our action space only ever
+    moves a single unit per action," and a destination can't already hold
+    any of the mover's own units when a Standard Move triggers combat
+    (determine_sides requires the defender's units to belong to a single
+    OTHER controller). So an attacking Wielder of Water is unconditionally
+    alone whenever this engine can put her in combat at all — not an
+    assumption, a consequence of a scope note already on record.
+
+    Defending is different: reachable only via an enemy unit redirected
+    onto ground we hold (Charm, Blitzcrank), where more than one of our
+    units could already be standing there — so it's checked for real,
+    same shape as En Garde's "only unit you control there."
+    """
+    if designation == "attacker":
+        return True
+    if designation != "defender":
+        return False
+    bf = _battlefield(state, zone)
+    if bf is None:
+        return False
+    return sum(1 for u in bf.units if u.controller == unit.controller) == 1
 
 
 SELF_CONDITIONALS: dict[str, SelfConditional] = {
     WIZENED_ELDER: SelfConditional(condition=_is_buffed, might_delta=1),
     BILGEWATER_BULLY: SelfConditional(condition=_is_buffed, grants=frozenset({"Ganking"})),
+    WIELDER_OF_WATER: SelfConditional(condition=_attacking_or_defending_alone, might_delta=2),
 }
 
 
@@ -162,7 +200,8 @@ def _battlefield(state: GameState, zone: Zone):
     return next((bf for bf in state.battlefields if bf.battlefield_id == zone), None)
 
 
-def resolved_traits(state: GameState, unit: UnitInstance, zone: Zone) -> frozenset[str]:
+def resolved_traits(state: GameState, unit: UnitInstance, zone: Zone,
+                     designation: Optional[str] = None) -> frozenset[str]:
     """The full trait set for `unit` standing at `zone` right now: printed
     (plus anything a spell/ability has already unioned into
     `unit.keywords` — same mutate-in-place pattern as Might, no separate
@@ -170,11 +209,17 @@ def resolved_traits(state: GameState, unit: UnitInstance, zone: Zone) -> frozens
     rather than reading `unit.keywords` directly wherever the unit's
     location could matter — reading `unit.keywords` alone is how a
     battlefield granting [Shield] went invisible to damage math before
-    this module existed."""
+    this module existed.
+
+    `designation` ("attacker"/"defender"/None) is passed straight through
+    to any SelfConditional whose GRANT depends on combat role (e.g. "while
+    I'm attacking or defending alone, I have <trait>") — most callers pass
+    nothing, which is correct outside combat or where role doesn't apply.
+    """
     traits = set(unit.keywords)
 
     own = SELF_CONDITIONALS.get(unit.card_id)
-    if own is not None and own.condition(state, unit, zone):
+    if own is not None and own.condition(state, unit, zone, designation):
         traits |= own.grants
 
     if zone == "base":
@@ -234,14 +279,14 @@ def effective_might(state: GameState, unit: UnitInstance, zone: Zone,
     sums Might off the resolved set — never the reverse (see module
     docstring) — which is what lets a battlefield that both grants
     [Shield] and pays [Shield] units +2 stack correctly."""
-    traits = resolved_traits(state, unit, zone)
+    traits = resolved_traits(state, unit, zone, designation)
     # A buff is a flat, unconditional +1 — it doesn't care about attacking
     # or defending, so it lands here rather than in TRAIT_REGISTRY, whose
     # entries are all designation-gated or zero.
     bonus = 1 if unit.buffed else 0
 
     own = SELF_CONDITIONALS.get(unit.card_id)
-    if own is not None and own.condition(state, unit, zone):
+    if own is not None and own.condition(state, unit, zone, designation):
         bonus += own.might_delta
 
     effect_id = None if zone == "base" else (

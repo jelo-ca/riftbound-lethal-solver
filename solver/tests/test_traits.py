@@ -9,6 +9,7 @@ non-circularity invariant this relies on.
 
 from solver.engine import combat, traits
 from solver.engine.card_pool import TARIC_PROTECTOR
+from solver.engine.traits import WIELDER_OF_WATER
 from solver.engine.state import BattlefieldState, GameState, PlayerState, RunePool, UnitInstance
 
 
@@ -82,3 +83,56 @@ def test_taric_does_not_grant_shield_to_himself_via_a_second_copy():
     # each is treated as the other's "other friendly unit", not excluded.
     assert "Shield" in traits.resolved_traits(state, taric_a, "left")
     assert "Shield" in traits.resolved_traits(state, taric_b, "left")
+
+
+# --- Wielder of Water: "while I'm attacking or defending alone, +2 Might" ---
+#
+# RULES ANSWER (project owner, 2026-09-17): SelfConditional.condition now
+# takes the unit's combat role (designation) as a fourth argument, so a
+# card can read "while I'm attacking/defending alone" without touching
+# Might inside the condition (the module's non-circularity invariant).
+
+
+def test_wielder_of_water_is_unconditionally_alone_while_attacking():
+    """This engine's action space never produces a multi-unit attack (see
+    combat.py's module docstring), so the attacking side is always exactly
+    one unit — "attacking alone" is unconditionally true whenever this
+    engine can put her in combat as the attacker at all, company or not."""
+    wielder = make_unit(1, card_id=WIELDER_OF_WATER, might=2)
+    companion = make_unit(3, might=5)  # irrelevant to the ATTACKING side
+    state = make_state(left_units=frozenset({wielder, companion}))
+    assert combat.effective_might(state, wielder, "left", "attacker") == 4  # 2 + 2
+
+
+def test_wielder_of_water_defending_alone_gets_the_bonus():
+    wielder = make_unit(1, card_id=WIELDER_OF_WATER, might=2, controller=0)
+    state = make_state(left_units=frozenset({wielder}), left_ctrl=0)
+    assert combat.effective_might(state, wielder, "left", "defender") == 4  # 2 + 2
+
+
+def test_wielder_of_water_defending_with_company_gets_no_bonus():
+    wielder = make_unit(1, card_id=WIELDER_OF_WATER, might=2, controller=0)
+    companion = make_unit(2, might=5, controller=0)
+    state = make_state(left_units=frozenset({wielder, companion}), left_ctrl=0)
+    assert combat.effective_might(state, wielder, "left", "defender") == 2  # not alone -- no bonus
+
+
+def test_wielder_of_water_outside_combat_gets_no_bonus():
+    """designation=None (any non-combat context, e.g. direct effect
+    damage) — the card's text is explicitly about attacking/defending."""
+    wielder = make_unit(1, card_id=WIELDER_OF_WATER, might=2)
+    state = make_state(left_units=frozenset({wielder}))
+    assert combat.effective_might(state, wielder, "left", None) == 2
+
+
+def test_wielder_of_water_grant_check_does_not_read_might():
+    """Non-circularity smoke test: the condition function takes `unit`
+    (whose .might it must NOT read) and answers purely from designation
+    and co-located controllers — confirmed here by calling it directly
+    with a unit whose Might is deliberately absurd, and getting the same
+    answer as a normal one would."""
+    absurd = make_unit(1, card_id=WIELDER_OF_WATER, might=999)
+    state = make_state(left_units=frozenset({absurd}), left_ctrl=0)
+    assert traits._attacking_or_defending_alone(state, absurd, "left", "defender") is True
+    assert traits._attacking_or_defending_alone(state, absurd, "left", "attacker") is True
+    assert traits._attacking_or_defending_alone(state, absurd, "left", None) is False

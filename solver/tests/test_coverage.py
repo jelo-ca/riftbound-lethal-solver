@@ -215,39 +215,34 @@ def test_a_generated_card_def_does_not_clear_the_card():
 
 
 def test_opponent_play_restrictions_are_inert():
-    """Noxus Saboteur, Brynhir Thundersong and Mageseeker Warden each
-    restrict something the OPPONENT does — reveal a Hidden card, play a
-    card, play a unit anywhere but base. The opponent never acts during
-    the turn being searched, so none of these restrictions can ever bind,
-    and a board containing any of them should be answerable rather than
+    """Noxus Saboteur and Brynhir Thundersong each restrict something the
+    OPPONENT does — reveal a Hidden card, play a card. The opponent never
+    acts during the turn being searched, so neither restriction can ever
+    bind, and a board containing either should be answerable rather than
     refused."""
-    for card_id in ("ogn-018-298", "ogn-026-298", "ogn-070-298"):
+    for card_id in ("ogn-018-298", "ogn-026-298"):
         assert coverage.classify(card_id) == "inert"
     state = make_state(base_units=frozenset({
         make_unit("ogn-018-298", 1),
         make_unit("ogn-026-298", 2),
-        make_unit("ogn-070-298", 3),
     }))
     assert coverage.blocking_cards(state) == []
 
 
-def test_mageseeker_wardens_ready_restriction_is_checked_on_its_own_merits():
+def test_mageseeker_warden_stays_blocking_now_dune_drake_is_handled():
     """Warden's second clause ("spells and abilities can't ready enemy
     units and gear") restricts an action WE can take (First Mate can
-    ready an enemy unit), not the opponent, so it isn't cleared for free
-    by "the opponent never acts." It is inert only because nothing reads
-    an enemy unit's ready state without itself being blocking (Dune
-    Drake) and nothing readies enemy gear at all. Both halves of that
-    argument are pinned here so a future change to either notices this
-    entry needs revisiting."""
-    from solver.engine import gear
-
-    assert not hasattr(gear, "ready_gear"), \
-        "a gear-readying effect now exists — revisit Mageseeker Warden's ledger entry"
-    assert "ogn-131-298" not in coverage.HANDLED, \
-        "Dune Drake (reads enemy ready state) is now handled — revisit Mageseeker Warden"
-    state = make_state(base_units=frozenset({make_unit("ogn-070-298", 1)}))
-    assert coverage.blocking_cards(state) == []
+    ready an enemy unit), not the opponent, so it was never free under
+    "the opponent never acts." It was cleared for a while on the argument
+    that nothing reads an enemy unit's ready state without itself being
+    blocking (Dune Drake) — Dune Drake is now HANDLED (attack-trigger
+    cluster), so a board with Warden + First Mate + Dune Drake is a real
+    case the restriction could change, and the restriction itself still
+    isn't modelled. Pinned blocking until it is."""
+    assert "ogn-131-298" in coverage.HANDLED, \
+        "Dune Drake is expected to be handled now — if this ever reverts, " \
+        "Mageseeker Warden's old inert argument becomes valid again"
+    assert coverage.classify("ogn-070-298") == "blocking"
 
 
 # --- what the board scan sees ---
