@@ -313,6 +313,50 @@ HANDLED: dict[str, str] = {
     # against co-located controllers, the same shape as En Garde.
     "ogn-055-298": "Wielder of Water — \"while I'm attacking or defending alone, +2 Might\" "
                    "via traits.SELF_CONDITIONALS with the new designation parameter",
+    # Stun (RULES ANSWER, project owner, 2026-09-18): a stunned unit's
+    # Might is ignored when summing its SIDE's damage-dealing pool for the
+    # Combat Damage Step (combat.side_damage_pool) — it stays in combat,
+    # stays targetable, and its own death threshold (traits.effective_might)
+    # is untouched. UnitInstance.stunned, same non-stacking "rest of this
+    # single-turn puzzle" shape as buffed.
+    "ogn-238-298": "Leona, Determined — [Shield] via traits.TRAIT_REGISTRY; mandatory "
+                   "\"when I attack, stun an enemy unit here\" via abilities.ATTACK_TRIGGERS "
+                   "and abilities.stun_unit, same targeted-trigger shape as Yasuo Remorseful/"
+                   "Crackshot Corsair, extended (abilities._leona_is_legal/_candidates) to "
+                   "fold in Radiant Dawn's mandatory buff choice when that Legend is present "
+                   "(no resolution stack, so the compound trigger's whole choice lives in one "
+                   "trigger_params tuple — same shape as Kinkou Monk's two-target buff)",
+    "ogn-238a-298": "Leona, Determined — same card as ogn-238-298, alternate art",
+    # Radiant Dawn: a passive "when you stun" observer, wired via the
+    # shared abilities._stun_buff_choice_active gate (checked by Legend
+    # identity in abilities.STUN_OBSERVER_LEGENDS, not by which card did
+    # the stunning) into EVERY registered stunner — both Leona (whose own
+    # target is always an enemy by her own text) and Udyr, Wildman (whose
+    # "stun A UNIT" is unrestricted-controller, so the gate additionally
+    # checks the chosen target is actually an enemy before the buff choice
+    # applies). The buff target is a real choice (unlike observers.py's
+    # deterministic play-trigger watchers), so it can't use that module's
+    # shape; it's folded into the stunning trigger/ability's own params
+    # instead, verified reachable through search.legal_actions offering
+    # the extended-params form for both stunners.
+    "ogn-261-298": "Radiant Dawn — Legend, \"when you stun one or more enemy units, buff a "
+                   "friendly unit\" via abilities._stun_buff_choice_active, wired into every "
+                   "registered stunner (Leona, Udyr)",
+    "ogn-306-298": "Radiant Dawn — same Legend, alternate printing",
+    "ogn-306-star-298": "Radiant Dawn — same Legend, alternate printing",
+    # Udyr, Wildman: "Spend my buff: Choose one you've not chosen this
+    # turn — Deal 2 to a unit at a battlefield / Stun a unit at a
+    # battlefield / Ready me / Give me [Ganking] this turn." All four
+    # modes reuse existing primitives (combat.deal_damage_to_unit,
+    # abilities.stun_unit, ready_unit, grant_trait); the one new piece is
+    # UnitInstance.modes_chosen_this_turn, recording which of his own
+    # modes have already been picked this turn so a re-buffed Udyr can't
+    # repeat one. The Stun mode routes through the same
+    # abilities._stun_buff_choice_active gate as Leona, so Radiant Dawn
+    # observes a stun he causes too when the target is actually an enemy.
+    "ogn-157-298": "Udyr, Wildman — abilities.ABILITY_EFFECTS[UDYR_WILDMAN]; \"spend my buff\" "
+                   "cost via spend_buff, mode restriction via "
+                   "UnitInstance.modes_chosen_this_turn",
 }
 
 

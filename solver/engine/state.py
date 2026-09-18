@@ -42,6 +42,24 @@ class UnitInstance:
     # +1 Might", "spend any number of buffs". A buff that had been added
     # straight to Might would be invisible to both.
     buffed: bool = False
+    # RULES ANSWER (project owner, 2026-09-18): a stunned unit stays on the
+    # board, alive and targetable, and its OWN death threshold is entirely
+    # unaffected — only its SIDE's damage-dealing pool for the Combat
+    # Damage Step ignores it (combat.side_damage_pool is the one place
+    # that reads this; traits.effective_might, which still governs this
+    # unit's own death threshold, never does). Binary and non-stacking,
+    # same "rest of this single-turn puzzle, no expiry bookkeeping" shape
+    # as `buffed` above — a puzzle never reaches a second turn.
+    stunned: bool = False
+    # Udyr, Wildman: "Spend my buff: Choose one you've not chosen this
+    # turn — [4 modes]." Which of his own modes have already been picked
+    # THIS TURN, keyed by a short mode name (see abilities.py's Udyr
+    # section) — his ability can fire more than once if something re-buffs
+    # him mid-turn, and each firing must pick a mode not already used.
+    # Same per-instance, single-turn-puzzle, no-expiry-bookkeeping shape as
+    # `moved_this_turn`/`buffed` above; empty for every unit that isn't
+    # Udyr, since nothing else reads it.
+    modes_chosen_this_turn: frozenset[str] = frozenset()
 
 
 @dataclass(frozen=True)
@@ -227,6 +245,8 @@ def _canonical_unit(unit: UnitInstance) -> tuple:
         unit.is_token,
         unit.moved_this_turn,
         unit.buffed,
+        unit.stunned,
+        tuple(sorted(unit.modes_chosen_this_turn)),
     )
 
 

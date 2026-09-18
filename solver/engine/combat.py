@@ -24,13 +24,31 @@ the action space produces it.
 from __future__ import annotations
 
 import dataclasses
-from typing import Optional
+from typing import Iterable, Optional
 
 from . import deaths
 from .state import BattlefieldState, GameState, ShowdownState, UnitInstance, replace_player
 from .traits import effective_might, resolved_traits
 
 Assignment = tuple[tuple[int, int], ...]  # (instance_id, damage_amount) pairs
+
+
+def side_damage_pool(state: GameState, zone: str, units: Iterable[UnitInstance],
+                      designation: Optional[str]) -> int:
+    """Sum of a SIDE's effective Might, feeding the assignable pool for the
+    Combat Damage Step — the one place "how much damage does my side deal
+    out" gets computed. This is the ONLY thing Stun touches (RULES ANSWER,
+    project owner, 2026-09-18): a stunned unit contributes 0 here, because
+    its side simply ignores its Might when totaling what it deals out. It
+    is NOT removed from combat, stays alive/targetable, and its own death
+    threshold is untouched — that still runs through effective_might
+    per-unit in _apply_damage/enumerate_assignments, which never checks
+    `stunned` and must not start to. Every call site that used to write
+    `sum(effective_might(...) for u in units)` to build a side's pool goes
+    through here instead, so this is the one place "stunned means 0" is
+    encoded, matching traits.effective_might's own role as the one place
+    per-unit Might is computed."""
+    return sum(0 if u.stunned else effective_might(state, u, zone, designation) for u in units)
 
 
 def _dead_among(before: frozenset[UnitInstance], after: frozenset[UnitInstance]) -> list[UnitInstance]:
@@ -80,7 +98,7 @@ def our_assignment_options(state: GameState, mover: UnitInstance, destination_id
     our_designation = "attacker" if we_are_attacker else "defender"
     target_units = defender_units if we_are_attacker else attacker_units
     target_designation = "defender" if we_are_attacker else "attacker"
-    our_pool = sum(effective_might(state, u, destination_id, our_designation) for u in our_units)
+    our_pool = side_damage_pool(state, destination_id, our_units, our_designation)
     return enumerate_assignments(state, destination_id, target_units, our_pool, target_designation)
 
 
@@ -328,7 +346,7 @@ def showdown_assignment_options(state: GameState, for_controller: int) -> list[A
         return [()]
     our_designation = "attacker" if for_controller == state.showdown.attacker_controller else "defender"
     their_designation = "defender" if our_designation == "attacker" else "attacker"
-    pool = sum(effective_might(state, u, bf.battlefield_id, our_designation) for u in ours)
+    pool = side_damage_pool(state, bf.battlefield_id, ours, our_designation)
     return enumerate_assignments(state, bf.battlefield_id, theirs, pool, their_designation)
 
 
@@ -436,7 +454,7 @@ def enumerate_combat_outcomes(state: GameState, mover: UnitInstance, from_zone: 
         opponent_units, opponent_designation, opponent_targets = attacker_units, "attacker", defender_units
         target_designation = "defender"
 
-    opponent_pool = sum(effective_might(state, u, destination_id, opponent_designation) for u in opponent_units)
+    opponent_pool = side_damage_pool(state, destination_id, opponent_units, opponent_designation)
 
     outcomes = []
     for opponent_assignment in enumerate_assignments(state, destination_id, opponent_targets, opponent_pool,

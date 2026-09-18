@@ -71,6 +71,8 @@ def render_unit(unit: UnitInstance) -> dict:
         "is_token": unit.is_token,
         "moved_this_turn": unit.moved_this_turn,
         "buffed": unit.buffed,
+        "stunned": unit.stunned,
+        "modes_chosen_this_turn": sorted(unit.modes_chosen_this_turn),
     }
 
 
