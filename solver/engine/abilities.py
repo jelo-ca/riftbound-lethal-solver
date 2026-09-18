@@ -12,7 +12,7 @@ import dataclasses
 import itertools
 from typing import Callable, Optional
 
-from . import combat, scoring, traits
+from . import combat, deaths, scoring, traits
 from .actions import (
     ActivateAbility,
     PlayGear,
@@ -1052,6 +1052,119 @@ def _spectral_matron_effect(state_after_play: GameState, action: PlayUnit) -> li
     card_id, zone = action.trigger_params
     return [play_unit_from_trash(state_after_play, card_def(card_id), state_after_play.turn_player,
                                   zone, RunePayment(energy_runes=(), power_runes=()))]
+
+
+# --- Spell-kill reactions: "when you kill a unit with a spell" -----------
+#
+# A watcher's optional reaction to a kill that a SPELL just caused —
+# generic across every spell, since damage from many different spells
+# (Hextech Ray, Falling Comet, Vengeance's outright kill, ...) can be the
+# lethal blow. Detected as a diff (deaths.units_killed_between) rather
+# than per-spell bookkeeping, the same shape as conquer.py's "who
+# conquered." Restricted to spells whose OWN resolve_spell_outcomes
+# returns exactly one state — restrictive, not permissive, same direction
+# as everywhere else this session: a spell that could ALSO cause
+# adversarial combat (none currently registered do) would need its own
+# extension to this, not a silent overclaim.
+IMMORTAL_PHOENIX = "ogn-037-298"  # "[Assault 2] When you kill a unit with a spell, you
+# may pay 1 Energy, 1 Fury to play me from your trash." A fixed alternate
+# cost, NOT her printed 3E/1Fury — text-specific, like [Accelerate]'s.
+
+# watcher_card_id -> (energy_cost, power_cost, power_domain) for the
+# reaction's OWN fixed cost (distinct from the watcher's printed cost).
+SPELL_KILL_REACTION_COST: dict[str, tuple[int, int, Optional[str]]] = {
+    IMMORTAL_PHOENIX: (1, 1, "Fury"),
+}
+
+def _immortal_phoenix_reaction_effect(state: GameState, zone: str, payment: RunePayment) -> GameState:
+    from .card_pool import card_def
+    return play_unit_from_trash(state, card_def(IMMORTAL_PHOENIX), state.turn_player, zone, payment)
+
+
+# watcher_card_id -> effect(state, zone, payment) -> GameState. Kept
+# separate from PlayUnit/PlaySpell effect signatures since a reaction's
+# payment is always its own fixed cost, never the watched spell's.
+SPELL_KILL_REACTIONS: dict[str, Callable[[GameState, str, RunePayment], GameState]] = {
+    IMMORTAL_PHOENIX: _immortal_phoenix_reaction_effect,
+}
+
+
+def _spell_single_outcome(state: GameState, action: PlaySpell, card: CardDef) -> Optional[GameState]:
+    """The base spell's own resolution, iff it's deterministic (exactly
+    one outcome) — see module comment above for why this stays narrow."""
+    try:
+        outcomes = resolve_spell_outcomes(state, action, card)
+    except NotImplementedError:
+        return None
+    if len(outcomes) != 1:
+        return None
+    return outcomes[0]
+
+
+def spell_kill_reaction_candidates(state: GameState, action: PlaySpell, card: CardDef) -> list[tuple]:
+    """(watcher_card_id, zone, reaction_payment) tuples for every
+    registered watcher in `state.turn_player`'s trash, IF resolving
+    `action` (with its OWN rune_payment already fixed) would kill at
+    least one unit. Payment is drawn from what `action.rune_payment`
+    leaves behind, same "pay from what's left" shape as [Deflect]'s
+    trigger tax. Zone options are read off the board AFTER the spell
+    resolves (base, or a battlefield the reaction wouldn't need to
+    conquer — no watcher here can play to an open one). Bails before the
+    (re-simulate the spell) cost check if trash has no registered watcher
+    at all — the common case, and otherwise this would re-run every
+    spell's effect speculatively on every node just to find out."""
+    player = state.players[state.turn_player]
+    if not any(c in SPELL_KILL_REACTION_COST for c in player.trash):
+        return []
+    base_outcome = _spell_single_outcome(state, action, card)
+    if base_outcome is None or not deaths.units_killed_between(state, base_outcome):
+        return []
+    remaining = consume_runes(player.runes, action.rune_payment)
+    zones = _trash_replay_candidate_zones(base_outcome, state.turn_player)
+    out = []
+    for watcher in sorted(set(player.trash)):
+        cost = SPELL_KILL_REACTION_COST.get(watcher)
+        if cost is None:
+            continue
+        energy_cost, power_cost, power_domain = cost
+        for zone in zones:
+            for payment in generate_rune_payments(remaining, energy_cost, power_cost, power_domain):
+                out.append((watcher, zone, payment))
+    return out
+
+
+def is_legal_spell_kill_reaction(state: GameState, action: PlaySpell, card: CardDef) -> bool:
+    if len(action.reaction_params) != 3:
+        return False
+    watcher, zone, payment = action.reaction_params
+    if watcher not in state.players[state.turn_player].trash:
+        return False
+    cost = SPELL_KILL_REACTION_COST.get(watcher)
+    if cost is None:
+        return False
+    base_outcome = _spell_single_outcome(state, action, card)
+    if base_outcome is None or not deaths.units_killed_between(state, base_outcome):
+        return False
+    if zone not in _trash_replay_candidate_zones(base_outcome, state.turn_player):
+        return False
+    energy_cost, power_cost, power_domain = cost
+    if len(payment.energy_runes) != energy_cost or len(payment.power_runes) != power_cost:
+        return False
+    if power_cost and any(d != power_domain for d in payment.power_runes):
+        return False
+    remaining = consume_runes(state.players[state.turn_player].runes, action.rune_payment)
+    return payment_is_affordable(remaining, payment)
+
+
+def resolve_spell_outcomes_with_reaction(state: GameState, action: PlaySpell, card: CardDef) -> list[GameState]:
+    """Resolves the base spell (exactly one outcome — reaction_params is
+    only ever offered when that held true at candidate-generation time),
+    then applies the reaction on top if one was chosen."""
+    [base_outcome] = resolve_spell_outcomes(state, action, card)
+    if not action.reaction_params:
+        return [base_outcome]
+    watcher, zone, payment = action.reaction_params
+    return [SPELL_KILL_REACTIONS[watcher](base_outcome, zone, payment)]
 
 
 # card_id -> (is_legal(state, action), effect(state, action) -> list[GameState],

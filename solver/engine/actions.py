@@ -161,6 +161,13 @@ class PlaySpell:
     # different spells need different parameters.
     params: tuple
     rune_payment: RunePayment
+    # A "when you kill a unit with a spell" watcher's optional reaction,
+    # bolted onto the SAME action rather than a separate one, since the
+    # kill only exists as a diff produced by resolving THIS spell (see
+    # deaths.units_killed_between and abilities.SPELL_KILL_REACTIONS).
+    # () = no watcher present, or the player declined; else
+    # (watcher_card_id, reaction_payment).
+    reaction_params: tuple = ()
 
 
 @dataclass(frozen=True)

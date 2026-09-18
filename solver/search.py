@@ -187,6 +187,21 @@ def legal_actions(state: GameState, cards: dict[str, CardDef]) -> list[Action]:
                 if abilities.is_legal_play_spell(state, action, card):
                     result.append(action)
 
+    # Spell-kill reactions ("when you kill a unit with a spell") — offered
+    # on top of whichever base PlaySpell actions were just generated, for
+    # any of them that would actually kill a unit (abilities.
+    # spell_kill_reaction_candidates does the diff-based check). Guarded
+    # here, before touching `result` at all: this loop runs on every node
+    # of every search, so it must cost nothing when no registered watcher
+    # is even in trash (the overwhelmingly common case).
+    if any(c in abilities.SPELL_KILL_REACTION_COST for c in player.trash):
+        for base_action in [a for a in result if isinstance(a, PlaySpell)]:
+            base_card = cards[base_action.card_id]
+            for reaction_params in abilities.spell_kill_reaction_candidates(state, base_action, base_card):
+                reacted = dataclasses.replace(base_action, reaction_params=reaction_params)
+                if abilities.is_legal_spell_kill_reaction(state, reacted, base_card):
+                    result.append(reacted)
+
     # PlayGear: Gear has no target and no placement choice, so the only
     # variable is how its cost is paid (engine/gear.py).
     for card_id in sorted(set(player.hand)):
@@ -437,7 +452,9 @@ def _dfs(state: GameState, remaining: int, cards: dict[str, CardDef],
             result = _and_or_search(state, action, outcomes, remaining, cards, ttable)
         elif isinstance(action, PlaySpell):
             try:
-                outcomes = abilities.resolve_spell_outcomes(state, action, cards[action.card_id])
+                resolver = (abilities.resolve_spell_outcomes_with_reaction if action.reaction_params
+                           else abilities.resolve_spell_outcomes)
+                outcomes = resolver(state, action, cards[action.card_id])
             except NotImplementedError:
                 # e.g. Ride The Wind moving a friendly unit onto an enemy-
                 # occupied battlefield - that spell's effect doesn't handle
@@ -557,7 +574,9 @@ def _count_solutions(state: GameState, remaining: int, cards: dict[str, CardDef]
             outcomes = abilities.resolve_gear_play_trigger_outcomes(state, action, cards[action.card_id])
         elif isinstance(action, PlaySpell):
             try:
-                outcomes = abilities.resolve_spell_outcomes(state, action, cards[action.card_id])
+                resolver = (abilities.resolve_spell_outcomes_with_reaction if action.reaction_params
+                           else abilities.resolve_spell_outcomes)
+                outcomes = resolver(state, action, cards[action.card_id])
             except NotImplementedError:
                 continue
         else:

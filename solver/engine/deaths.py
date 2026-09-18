@@ -137,3 +137,36 @@ def fire_death_triggers(state: GameState, dead: list[tuple[UnitInstance, Zone]])
         if effect is not None:
             state = effect(state, unit, zone)
     return state
+
+
+def _all_units(state: GameState) -> dict[int, UnitInstance]:
+    found = {}
+    for player in state.players:
+        for u in player.base_units:
+            found[u.instance_id] = u
+    for bf in state.battlefields:
+        for u in bf.units:
+            found[u.instance_id] = u
+    return found
+
+
+def units_killed_between(old_state: GameState, new_state: GameState) -> list[UnitInstance]:
+    """Units present on `old_state`'s board that are gone from
+    `new_state`'s AND landed in trash for it — a diff, same style as
+    conquer.py's "who conquered." Distinguishes an actual kill from a
+    bounce (leaves the board, but to hand — trash count unchanged) or a
+    relocation (still present, just elsewhere). Used by
+    abilities.SPELL_KILL_REACTIONS (Immortal Phoenix's "when you kill a
+    unit with a spell") — deliberately generic rather than per-spell,
+    since damage from many different spells can be the lethal blow."""
+    old_units = _all_units(old_state)
+    new_units = _all_units(new_state)
+    killed = []
+    for instance_id, unit in old_units.items():
+        if instance_id in new_units:
+            continue
+        old_count = old_state.players[unit.controller].trash.count(unit.card_id)
+        new_count = new_state.players[unit.controller].trash.count(unit.card_id)
+        if new_count > old_count:
+            killed.append(unit)
+    return killed

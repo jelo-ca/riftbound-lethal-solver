@@ -209,6 +209,14 @@ HANDLED: dict[str, str] = {
                    "meaning). Waives the WHOLE cost, unlike Soulgorger/The Harrowing — "
                    "reuses play_unit_from_trash with an empty RunePayment. Same "
                    "no-own-play-trigger restriction on the replayed candidate.",
+    "ogn-037-298": "Immortal Phoenix — [Assault 2] (TRAIT_REGISTRY's generic numeric "
+                   "form), optional reaction \"when you kill a unit with a spell, pay "
+                   "1 Energy, 1 Fury to play me from your trash\" via "
+                   "abilities.SPELL_KILL_REACTIONS. The kill is detected as a diff "
+                   "(deaths.units_killed_between) rather than per-spell bookkeeping, so "
+                   "it's real for damage spells too, not just outright-kill ones — "
+                   "restricted to spells whose own resolution is a single outcome "
+                   "(true of every registered spell today).",
     # [Conquer] triggers — engine/conquer.py, hooked into
     # scoring.resolve_control_change.
     "ogn-164-298": "Sett, Brawler — \"when I'm played and when I conquer, buff me\" "
