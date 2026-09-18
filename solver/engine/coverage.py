@@ -320,6 +320,17 @@ HANDLED: dict[str, str] = {
                    "abilities.UNIT_PLAY_TRIGGERS, the same 2**N-subset candidate shape "
                    "as Overt Operation's spend-and-ready choice; \"any number\" includes "
                    "zero, so this is optional rather than mandatory",
+    "ogn-249-298": "Relentless Storm — Legend, \"When you play a [Mighty] unit, you may "
+                   "exhaust me to channel 1 rune exhausted\" via "
+                   "legends.LEGEND_OBSERVER_PLAY_TRIGGERS (a new registry, keyed by the "
+                   "WATCHING Legend rather than the played card — observers.py's "
+                   "deterministic-only shape can't carry this card's \"you may\" choice). "
+                   "\"Mighty\" is 5+ EFFECTIVE Might, read at the moment the unit lands. "
+                   "The channelled rune is real but narrow (RULING 1: Energy-only, "
+                   "arriving already-exhausted) — see test_channel_runes.py's Ekko "
+                   "interaction test for the case where it actually matters.",
+    "ogn-300-298": "Relentless Storm — same Legend as ogn-249-298, alternate printing",
+    "ogn-300-star-298": "Relentless Storm — same Legend as ogn-249-298, alternate printing",
 }
 
 

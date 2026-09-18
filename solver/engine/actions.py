@@ -88,6 +88,15 @@ class PlayUnit:
     # targeting, not the card's own cost, and is spent from what's left
     # after the card itself is paid for. None when no tax is owed.
     trigger_payment: Optional[RunePayment] = None
+    # A LEGEND watching the play from its own zone, reacting to whichever
+    # unit is being played rather than to its own text — as opposed to
+    # `trigger_params` above, which belongs to the PLAYED card. Opaque,
+    # same () = declined/not-applicable convention (see
+    # legends.LEGEND_OBSERVER_PLAY_TRIGGERS — today only Relentless
+    # Storm's "when you play a Mighty unit, you may exhaust me to channel
+    # 1 rune exhausted"). Independent of trigger_params: a Mighty unit
+    # with its own registered trigger can carry both on the same action.
+    legend_reaction_params: tuple = ()
 
 
 @dataclass(frozen=True)
@@ -437,7 +446,8 @@ def apply_play_unit(state: GameState, action: PlayUnit, card: CardDef) -> GameSt
             runes=new_runes,
         )
         state = replace_player(state, player_index, new_player)
-        return observers.fire_observer_play_triggers(state, new_unit)
+        state = observers.fire_observer_play_triggers(state, new_unit)
+        return _apply_legend_observer_reaction(state, action, player_index)
 
     new_player = dataclasses.replace(player, hand=tuple(new_hand), runes=new_runes)
     state = replace_player(state, player_index, new_player)
@@ -449,7 +459,26 @@ def apply_play_unit(state: GameState, action: PlayUnit, card: CardDef) -> GameSt
     new_controller = bf.controller if bf.controller is not None else player_index
     new_bf = dataclasses.replace(bf, units=bf.units | {new_unit}, controller=new_controller)
     state = replace_battlefield(state, new_bf)
-    return observers.fire_observer_play_triggers(state, new_unit)
+    state = observers.fire_observer_play_triggers(state, new_unit)
+    return _apply_legend_observer_reaction(state, action, player_index)
+
+
+def _apply_legend_observer_reaction(state: GameState, action: PlayUnit, player_index: int) -> GameState:
+    """The other half of `apply_play_unit`'s tail, alongside observers.py's
+    unit watchers — a LEGEND watching the play instead (PlayUnit.
+    legend_reaction_params's field comment). Deferred import: legends.py
+    imports this module (ActivateAbility, RunePayment, ...), so importing
+    it back at this module's top level would cycle.
+
+    Deterministic — no combat, no branching — so this can live directly in
+    apply_play_unit's single-state path and still be reached correctly
+    from abilities.resolve_unit_play_trigger_outcomes, which calls
+    apply_play_unit with the full action (legend_reaction_params included)
+    before branching on the PLAYED card's own trigger."""
+    if not action.legend_reaction_params:
+        return state
+    from . import legends  # deferred — see above
+    return legends.apply_legend_observer_reaction(state, player_index)
 
 
 def mint_token_unit(state: GameState, card: CardDef, controller: int, zone: Zone) -> GameState:

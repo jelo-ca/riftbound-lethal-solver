@@ -7,8 +7,9 @@ unless something readies runes later the SAME turn (see
 test_deathknell.py's Soaring Scout + Ekko interaction test for that case
 worked all the way through).
 
-This file covers the mandatory play-trigger shape (Stormclaw Ursine) and
-the per-buff-spent shape (Albus Ferros).
+This file covers the mandatory play-trigger shape (Stormclaw Ursine), the
+per-buff-spent shape (Albus Ferros), and the Legend "observer" shape
+(Relentless Storm).
 """
 
 import dataclasses
@@ -19,20 +20,33 @@ from solver.engine.abilities import (
     is_legal_unit_play_trigger,
     resolve_unit_play_trigger_outcomes,
 )
-from solver.engine.actions import PlayUnit, generate_rune_payments
+from solver.engine.actions import PlayUnit, apply_play_unit, generate_rune_payments
 from solver.engine.card_pool import card_def
-from solver.engine.state import BattlefieldState, GameState, PlayerState, RunePool, UnitInstance
-from solver.search import legal_actions
+from solver.engine import legends
+from solver.engine.state import (
+    BattlefieldState,
+    GameState,
+    LegendState,
+    PlayerState,
+    RunePool,
+    UnitInstance,
+)
+from solver.search import apply, legal_actions
 
 STORMCLAW_URSINE_CARD = card_def(STORMCLAW_URSINE)
 ALBUS_FERROS_CARD = card_def(ALBUS_FERROS)
+PLAYFUL_PHANTOM = "ogn-049-298"  # vanilla, 5 Might — HANDLED (no printed text)
+PLAYFUL_PHANTOM_CARD = card_def(PLAYFUL_PHANTOM)
+STALWART_PORO = "ogn-052-298"  # [Shield], 2 Might — HANDLED, not Mighty
+STALWART_PORO_CARD = card_def(STALWART_PORO)
 
 
-def make_root(hand, runes=(), cards_played_this_turn=0, base_units=frozenset()):
+def make_root(hand, runes=(), cards_played_this_turn=0, base_units=frozenset(), legend=None):
     return GameState(
         turn_player=0,
         players=(
-            PlayerState(base_units=base_units, hand=hand, runes=RunePool(available=runes), score=0),
+            PlayerState(base_units=base_units, hand=hand, runes=RunePool(available=runes), score=0,
+                        legend=legend),
             PlayerState(base_units=frozenset(), hand=(), runes=RunePool(available=()), score=0),
         ),
         battlefields=(
@@ -138,3 +152,117 @@ def test_albus_ferros_appears_in_legal_actions_with_every_buff_subset():
     play_unit_actions = [a for a in legal_actions(root, cards) if isinstance(a, PlayUnit)]
     subsets = {a.trigger_params for a in play_unit_actions}
     assert subsets == {(), (5,), (6,), (5, 6)}
+
+
+# --- Relentless Storm: Legend "observer" reaction to a Mighty unit's play ---
+
+
+def test_relentless_storm_reaction_offered_and_declined_are_both_legal():
+    legend = LegendState(card_id=legends.RELENTLESS_STORM, exhausted=False)
+    runes = ("Fury",) * PLAYFUL_PHANTOM_CARD.energy_cost
+    root = make_root(hand=(PLAYFUL_PHANTOM,), runes=runes, legend=legend)
+    cards = {PLAYFUL_PHANTOM: PLAYFUL_PHANTOM_CARD}
+    play_unit_actions = [a for a in legal_actions(root, cards) if isinstance(a, PlayUnit)]
+    reaction_choices = {a.legend_reaction_params for a in play_unit_actions}
+    assert reaction_choices == {(), ("channel",)}
+
+
+def test_relentless_storm_reaction_exhausts_the_legend_and_channels_a_domain_less_rune():
+    legend = LegendState(card_id=legends.RELENTLESS_STORM, exhausted=False)
+    runes = ("Fury",) * PLAYFUL_PHANTOM_CARD.energy_cost
+    root = make_root(hand=(PLAYFUL_PHANTOM,), runes=runes, legend=legend)
+    payment = generate_rune_payments(root.players[0].runes, PLAYFUL_PHANTOM_CARD.energy_cost,
+                                      PLAYFUL_PHANTOM_CARD.power_cost,
+                                      PLAYFUL_PHANTOM_CARD.power_domain)[0]
+    action = PlayUnit(card_id=PLAYFUL_PHANTOM, target_zone="base", rune_payment=payment,
+                       legend_reaction_params=("channel",))
+    is_legal, _ = legends.LEGEND_OBSERVER_PLAY_TRIGGERS[legends.RELENTLESS_STORM]
+    assert is_legal(root, action, PLAYFUL_PHANTOM_CARD)
+
+    cards = {PLAYFUL_PHANTOM: PLAYFUL_PHANTOM_CARD}
+    result = apply(root, action, cards)
+    assert result.players[0].legend.exhausted is True
+    assert result.players[0].runes.available.count(None) == 1
+    from solver.engine.state import energy_capacity
+    assert energy_capacity(result.players[0].runes) == 0  # arrives already-exhausted
+
+
+def test_relentless_storm_declining_leaves_legend_unexhausted():
+    legend = LegendState(card_id=legends.RELENTLESS_STORM, exhausted=False)
+    runes = ("Fury",) * PLAYFUL_PHANTOM_CARD.energy_cost
+    root = make_root(hand=(PLAYFUL_PHANTOM,), runes=runes, legend=legend)
+    payment = generate_rune_payments(root.players[0].runes, PLAYFUL_PHANTOM_CARD.energy_cost,
+                                      PLAYFUL_PHANTOM_CARD.power_cost,
+                                      PLAYFUL_PHANTOM_CARD.power_domain)[0]
+    action = PlayUnit(card_id=PLAYFUL_PHANTOM, target_zone="base", rune_payment=payment)
+    cards = {PLAYFUL_PHANTOM: PLAYFUL_PHANTOM_CARD}
+    result = apply(root, action, cards)
+    assert result.players[0].legend.exhausted is False
+    assert result.players[0].runes.available.count(None) == 0
+
+
+def test_relentless_storm_not_offered_for_a_non_mighty_unit():
+    """Stalwart Poro is 2 Might — below the 5+ Mighty threshold — so the
+    reaction must never appear as a legal choice for it."""
+    legend = LegendState(card_id=legends.RELENTLESS_STORM, exhausted=False)
+    runes = ("Fury",) * STALWART_PORO_CARD.energy_cost
+    root = make_root(hand=(STALWART_PORO,), runes=runes, legend=legend)
+    cards = {STALWART_PORO: STALWART_PORO_CARD}
+    play_unit_actions = [a for a in legal_actions(root, cards) if isinstance(a, PlayUnit)]
+    assert all(a.legend_reaction_params == () for a in play_unit_actions)
+
+
+def test_relentless_storm_not_offered_when_already_exhausted():
+    legend = LegendState(card_id=legends.RELENTLESS_STORM, exhausted=True)
+    runes = ("Fury",) * PLAYFUL_PHANTOM_CARD.energy_cost
+    root = make_root(hand=(PLAYFUL_PHANTOM,), runes=runes, legend=legend)
+    cards = {PLAYFUL_PHANTOM: PLAYFUL_PHANTOM_CARD}
+    play_unit_actions = [a for a in legal_actions(root, cards) if isinstance(a, PlayUnit)]
+    assert all(a.legend_reaction_params == () for a in play_unit_actions)
+
+
+def test_relentless_storm_not_offered_for_a_different_legend():
+    legend = LegendState(card_id=legends.BOUNTY_HUNTER, exhausted=False)
+    runes = ("Fury",) * PLAYFUL_PHANTOM_CARD.energy_cost
+    root = make_root(hand=(PLAYFUL_PHANTOM,), runes=runes, legend=legend)
+    cards = {PLAYFUL_PHANTOM: PLAYFUL_PHANTOM_CARD}
+    play_unit_actions = [a for a in legal_actions(root, cards) if isinstance(a, PlayUnit)]
+    assert all(a.legend_reaction_params == () for a in play_unit_actions)
+
+
+def test_relentless_storm_then_ekko_makes_the_channeled_rune_real():
+    """The mechanism this ruling exists for, worked all the way through
+    search.legal_actions/apply — mirroring test_deathknell.py's Soaring
+    Scout + Ekko test. The channelled rune is inert on its own (arrives
+    already-exhausted, Energy-only) until Ekko's Deathknell readies it the
+    same turn — isolated here by comparing the channelled line against the
+    declined one, both followed by the same Ekko death: readying gives
+    back everything either way (the 5 Fury runes spent on the card's own
+    cost included), so the CHANNELLED line must end up exactly 1 Energy
+    ahead of the declined one, not merely "some capacity"."""
+    from solver.engine.deaths import EKKO_RECURRENT
+    from solver.engine.actions import kill_unit
+    from solver.engine.state import energy_capacity
+
+    legend = LegendState(card_id=legends.RELENTLESS_STORM, exhausted=False)
+    runes = ("Fury",) * PLAYFUL_PHANTOM_CARD.energy_cost
+    ekko = UnitInstance(card_id=EKKO_RECURRENT, instance_id=1, controller=0, might=5,
+                        keywords=frozenset({"Deathknell"}), exhausted=False, damage=0, is_token=False)
+    root = make_root(hand=(PLAYFUL_PHANTOM,), runes=runes, legend=legend,
+                     base_units=frozenset({ekko}))
+    payment = generate_rune_payments(root.players[0].runes, PLAYFUL_PHANTOM_CARD.energy_cost,
+                                      PLAYFUL_PHANTOM_CARD.power_cost,
+                                      PLAYFUL_PHANTOM_CARD.power_domain)[0]
+    cards = {PLAYFUL_PHANTOM: PLAYFUL_PHANTOM_CARD}
+
+    channeled_action = PlayUnit(card_id=PLAYFUL_PHANTOM, target_zone="base", rune_payment=payment,
+                                 legend_reaction_params=("channel",))
+    declined_action = PlayUnit(card_id=PLAYFUL_PHANTOM, target_zone="base", rune_payment=payment)
+
+    channeled_after_ekko = kill_unit(apply(root, channeled_action, cards), 1)
+    declined_after_ekko = kill_unit(apply(root, declined_action, cards), 1)
+
+    assert (energy_capacity(channeled_after_ekko.players[0].runes)
+            == energy_capacity(declined_after_ekko.players[0].runes) + 1)
+    assert channeled_after_ekko.players[0].runes.available.count(None) == 1
+    assert declined_after_ekko.players[0].runes.available.count(None) == 0
