@@ -1,12 +1,12 @@
 {
   "schema_version": 2,
   "puzzle_id": "puzzle-004-extra-innings",
-  "root": "9e235d34d74098d3",
+  "root": "c51a6a164e4ed9c3",
   "solution": {
-    "9e235d34d74098d3": "a2"
+    "c51a6a164e4ed9c3": "a2"
   },
   "nodes": {
-    "9e235d34d74098d3": {
+    "c51a6a164e4ed9c3": {
       "turn_player": 0,
       "players": [
         {
@@ -69,9 +69,10 @@
         "left"
       ],
       "cards_played_this_turn": 0,
+      "cards_discarded_this_turn": 0,
       "showdown": null
     },
-    "da8b5857b74c24f3": {
+    "4b444090e8a7e9eb": {
       "turn_player": 0,
       "players": [
         {
@@ -136,9 +137,10 @@
         "left"
       ],
       "cards_played_this_turn": 1,
+      "cards_discarded_this_turn": 0,
       "showdown": null
     },
-    "284e2e50298f993e": {
+    "3f8eab2fa77028aa": {
       "turn_player": 0,
       "players": [
         {
@@ -204,9 +206,10 @@
         "right"
       ],
       "cards_played_this_turn": 1,
+      "cards_discarded_this_turn": 0,
       "showdown": null
     },
-    "b60f2867d7f573b8": {
+    "a0832d30d7f30ad1": {
       "turn_player": 0,
       "players": [
         {
@@ -271,9 +274,10 @@
         "left"
       ],
       "cards_played_this_turn": 1,
+      "cards_discarded_this_turn": 0,
       "showdown": null
     },
-    "e3eccc928f30f363": {
+    "99d1efc6293fd5eb": {
       "turn_player": 0,
       "players": [
         {
@@ -339,11 +343,12 @@
         "right"
       ],
       "cards_played_this_turn": 1,
+      "cards_discarded_this_turn": 0,
       "showdown": null
     }
   },
   "edges": {
-    "9e235d34d74098d3": [
+    "c51a6a164e4ed9c3": [
       {
         "action": {
           "id": "a1",
@@ -356,7 +361,7 @@
           "instance_id": null
         },
         "to": [
-          "da8b5857b74c24f3"
+          "4b444090e8a7e9eb"
         ],
         "adversarial": false
       },
@@ -372,12 +377,12 @@
           "instance_id": null
         },
         "to": [
-          "284e2e50298f993e"
+          "3f8eab2fa77028aa"
         ],
         "adversarial": false
       }
     ],
-    "da8b5857b74c24f3": [
+    "4b444090e8a7e9eb": [
       {
         "action": {
           "id": "a3",
@@ -390,7 +395,7 @@
           "instance_id": 1
         },
         "to": [
-          "b60f2867d7f573b8"
+          "a0832d30d7f30ad1"
         ],
         "adversarial": false
       },
@@ -406,15 +411,15 @@
           "instance_id": 1
         },
         "to": [
-          "e3eccc928f30f363"
+          "99d1efc6293fd5eb"
         ],
         "adversarial": false
       }
     ]
   },
   "terminal": {
-    "284e2e50298f993e": "win",
-    "b60f2867d7f573b8": "dead_end",
-    "e3eccc928f30f363": "win"
+    "3f8eab2fa77028aa": "win",
+    "a0832d30d7f30ad1": "dead_end",
+    "99d1efc6293fd5eb": "win"
   }
 }

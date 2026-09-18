@@ -301,6 +301,40 @@ HANDLED: dict[str, str] = {
     # against co-located controllers, the same shape as En Garde.
     "ogn-055-298": "Wielder of Water — \"while I'm attacking or defending alone, +2 Might\" "
                    "via traits.SELF_CONDITIONALS with the new designation parameter",
+    # Generic discard mechanism (actions.discard_from_hand) — a card
+    # leaving hand for trash by discard, real (never a no-op: it shrinks a
+    # resource-limited hand) unlike "draw," which has no Main Deck to draw
+    # from. observers.fire_observer_discard_triggers fires "when you
+    # discard" watchers off the same choke point apply_play_unit's
+    # observer call already uses for "when you play."
+    "ogn-003-298": "Chemtech Enforcer — [Assault 2] (numeric TRAIT_REGISTRY form), mandatory "
+                   "\"when you play me, discard 1\" via abilities.UNIT_PLAY_TRIGGERS and "
+                   "actions.discard_from_hand",
+    "ogn-020-298": "Scrapyard Champion — [Legion]-gated mandatory \"discard 2, then draw 2\"; "
+                   "Legion suppresses the WHOLE effect when unmet (no discard at all), same "
+                   "reading as Vanguard Captain's token count going to zero rather than one; "
+                   "the draw is a no-op (no Main Deck), the discard is real via "
+                   "actions.discard_from_hand",
+    "ogn-202-298": "Jinx, Rebel — \"when you discard one or more cards, ready me and give me "
+                   "+1 Might this turn\" via observers.OBSERVER_DISCARD_TRIGGERS, fired once per "
+                   "discard EVENT (not once per card) from actions.discard_from_hand's callers",
+    "ogn-202a-298": "Jinx, Rebel — same card as ogn-202-298, alternate art",
+    "ogn-019-298": "Raging Soul — \"if you've discarded a card this turn, I have [Assault] and "
+                   "[Ganking]\" via traits.SELF_CONDITIONALS reading state.cards_discarded_this_turn "
+                   "(new GameState field, bumped by actions.discard_from_hand, same shape as "
+                   "cards_played_this_turn feeding legion_condition_met)",
+    "ogn-008-298": "Get Excited! — [Action] \"Discard 1. Deal its Energy cost as damage to a unit "
+                   "at a battlefield.\" via abilities.SPELL_EFFECTS and actions.discard_from_hand; "
+                   "the damage amount is read off the DISCARDED card's own printed Energy cost "
+                   "(card_pool.card_def), so which card is discarded is a real, scored choice, "
+                   "not free to ignore the way a no-op draw is",
+    "ogn-192-298": "Mindsplitter — mandatory \"when you play me, choose an opponent, they reveal "
+                   "their hand, choose a card from it, they discard it\" via UNIT_PLAY_TRIGGERS and "
+                   "actions.discard_from_hand applied to the OPPONENT's hand/controller — reusing "
+                   "the real mechanism rather than arguing it inert matters here specifically "
+                   "because it correctly fires an enemy-controlled \"when you discard\" watcher "
+                   "(a hypothetical enemy Jinx, Rebel) exactly as the real rules would, instead of "
+                   "silently under-crediting the opponent's board",
 }
 
 

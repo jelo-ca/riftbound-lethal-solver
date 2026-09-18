@@ -115,6 +115,7 @@ def render_state(state: GameState) -> dict:
         "battlefields": [render_battlefield(b) for b in state.battlefields],
         "scored_this_turn": sorted(state.scored_this_turn),
         "cards_played_this_turn": state.cards_played_this_turn,
+        "cards_discarded_this_turn": state.cards_discarded_this_turn,
         "showdown": ({"battlefield_id": state.showdown.battlefield_id,
                       "attacker_controller": state.showdown.attacker_controller,
                       "attack_trigger_resolved": state.showdown.attack_trigger_resolved}

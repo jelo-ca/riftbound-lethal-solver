@@ -23,6 +23,7 @@ from .actions import (
     apply_play_gear,
     apply_play_spell_cost,
     apply_play_unit,
+    discard_from_hand,
     find_unit,
     find_unit_anywhere,
     find_unit_at_any_battlefield,
@@ -163,6 +164,54 @@ def _vengeance_candidates(state: GameState) -> list[tuple[int]]:
     for bf in state.battlefields:
         candidates += [(u.instance_id,) for u in sorted(bf.units, key=lambda u: u.instance_id)]
     return candidates
+
+
+GET_EXCITED = "ogn-008-298"  # [Action] "Discard 1. Deal its Energy cost as damage to a unit at a battlefield."
+
+
+def _get_excited_is_legal(state: GameState, action: PlaySpell) -> bool:
+    """params = (discard_card_id, target_instance_id). is_legal_play_spell
+    checks this against the PRE-cost state, where Get Excited! himself is
+    still physically in hand (apply_play_spell_cost hasn't run yet) — so
+    the discard candidate must exclude THIS copy explicitly, not just any
+    card matching GET_EXCITED's id, in case a second copy is also in
+    hand."""
+    if len(action.params) != 2:
+        return False
+    discard_id, target_id = action.params
+    hand = list(state.players[state.turn_player].hand)
+    if GET_EXCITED not in hand:
+        return False
+    hand.remove(GET_EXCITED)  # this copy is the one being cast, not discarded
+    if discard_id not in hand:
+        return False
+    if find_unit_at_any_battlefield(state, target_id) is None:
+        return False
+    from . import card_pool  # deferred: card_pool imports this module
+    # The damage amount is read off the discarded card's own Energy cost,
+    # so a card the engine can't describe can't be validly chosen.
+    return card_pool.card_def(discard_id) is not None
+
+
+def _get_excited_effect(state: GameState, action: PlaySpell) -> list[GameState]:
+    from . import card_pool, observers  # deferred
+    discard_id, target_id = action.params
+    amount = card_pool.card_def(discard_id).energy_cost
+    controller = state.turn_player
+    state = discard_from_hand(state, controller, discard_id)
+    state = observers.fire_observer_discard_triggers(state, controller)
+    _, bf_id = find_unit_at_any_battlefield(state, target_id)
+    return [combat.deal_damage_to_unit(state, bf_id, target_id, amount)]
+
+
+def _get_excited_candidates(state: GameState) -> list[tuple]:
+    from . import card_pool  # deferred
+    hand = list(state.players[state.turn_player].hand)
+    hand.remove(GET_EXCITED)
+    discardable = sorted({c for c in set(hand) if card_pool.card_def(c) is not None})
+    targets = [u.instance_id for bf in state.battlefields
+               for u in sorted(bf.units, key=lambda u: u.instance_id)]
+    return [(c, t) for c in discardable for t in targets]
 
 
 PRIMAL_STRENGTH = "ogn-154-298"  # 4 Energy, 1 Body Power, [Action]: "Give a unit +7 Might this turn."
@@ -1196,6 +1245,7 @@ SPELL_EFFECTS: dict[str, tuple[
     OVERT_OPERATION: (_overt_operation_is_legal, _overt_operation_effect, _overt_operation_candidates),
     MORBID_RETURN: (_morbid_return_is_legal, _morbid_return_effect, _morbid_return_candidates),
     THE_HARROWING: (_the_harrowing_is_legal, _the_harrowing_effect, _the_harrowing_candidates),
+    GET_EXCITED: (_get_excited_is_legal, _get_excited_effect, _get_excited_candidates),
 }
 
 
@@ -1426,6 +1476,9 @@ MADDENED_MARAUDER = "ogn-191-298"  # [Tank] "When you play me, move a unit from 
 RIPTIDE_REX = "ogn-092-298"  # "When you play me, deal 6 to an enemy unit at a battlefield."
 HARNESSED_DRAGON = "ogn-234-298"  # "When you play me, kill an enemy unit."
 PIT_ROOKIE = "ogn-136-298"  # "When you play me, buff another friendly unit."
+CHEMTECH_ENFORCER = "ogn-003-298"  # [Assault 2] "When you play me, discard 1."
+SCRAPYARD_CHAMPION = "ogn-020-298"  # [Legion] "When you play me, discard 2, then draw 2."
+MINDSPLITTER = "ogn-192-298"  # "When you play me, choose an opponent... they discard that card."
 TRIFARIAN_GLORYSEEKER = "ogn-217-298"  # [Legion] "When you play me, buff me."
 PEAK_GUARDIAN = "ogn-223-298"  # "When you play me, buff me. Then, if I am at a battlefield, buff all other friendly units there."
 RECRUIT_TOKEN = "ogn-271-298"  # one of three same-stat printings (see card_pool.py); this one
@@ -1443,7 +1496,8 @@ MANDATORY_PLAY_TRIGGERS = frozenset({FAITHFUL_MANUFACTOR, VANGUARD_CAPTAIN, WHIT
                                      PIT_ROOKIE, TRIFARIAN_GLORYSEEKER, PEAK_GUARDIAN,
                                      RIPTIDE_REX, HARNESSED_DRAGON, DANGEROUS_DUO,
                                      FIRST_MATE, KINKOU_MONK, CARNIVOROUS_SNAPVINE,
-                                     SETT_BRAWLER, SETT_BRAWLER_ALT, CEMETERY_ATTENDANT})
+                                     SETT_BRAWLER, SETT_BRAWLER_ALT, CEMETERY_ATTENDANT,
+                                     CHEMTECH_ENFORCER, SCRAPYARD_CHAMPION, MINDSPLITTER})
 
 
 def _charm_deflect_targets(state: GameState, params: tuple) -> list[tuple]:
@@ -1855,6 +1909,114 @@ def _zaunite_bouncer_candidates(state: GameState, base_action: PlayUnit, card: C
     return candidates
 
 
+def _chemtech_enforcer_is_legal(state: GameState, action: PlayUnit, card: CardDef) -> bool:
+    """trigger_params = (card_id_to_discard,). Mandatory ("discard 1" is
+    not "you may") — see MANDATORY_PLAY_TRIGGERS, which withholds the
+    empty-tuple decline form Blitzcrank/Zaunite Bouncer offer. The
+    candidate is checked against the hand AFTER Chemtech Enforcer himself
+    has already left it via the normal PlayUnit mechanism, same timing as
+    Whiteflame/Pit Rookie's target checks."""
+    if len(action.trigger_params) != 1:
+        return False
+    state_after_play = apply_play_unit(state, dataclasses.replace(
+        action, trigger_params=(), trigger_payment=None), card)
+    return action.trigger_params[0] in state_after_play.players[state.turn_player].hand
+
+
+def _chemtech_enforcer_effect(state_after_play: GameState, action: PlayUnit) -> list[GameState]:
+    from . import observers  # deferred — see observers.py's module docstring
+    controller = state_after_play.turn_player
+    state = discard_from_hand(state_after_play, controller, action.trigger_params[0])
+    return [observers.fire_observer_discard_triggers(state, controller)]
+
+
+def _chemtech_enforcer_candidates(state: GameState, base_action: PlayUnit, card: CardDef) -> list[tuple]:
+    """One candidate per DISTINCT card_id left in hand once Chemtech
+    Enforcer's own play has removed him from it — two copies of the same
+    card_id are interchangeable, same dedup reasoning generate_rune_
+    payments applies to identical rune domains."""
+    state_after_play = apply_play_unit(state, base_action, card)
+    hand = state_after_play.players[state.turn_player].hand
+    return [(card_id,) for card_id in sorted(set(hand))]
+
+
+def _scrapyard_champion_is_legal(state: GameState, action: PlayUnit, card: CardDef) -> bool:
+    """trigger_params = ("discard", card_id_a, card_id_b) when [Legion]'s
+    condition is met (two DISTINCT cards — "discard 2" needs two to
+    discard, not one card counted twice), or ("skip",) when it isn't:
+    Legion suppresses the WHOLE effect rather than shrinking it to "discard
+    1" (same reading as Vanguard Captain's token count going to zero, not
+    one) — so no discard, and the no-op draw doesn't matter either way."""
+    state_after_play = apply_play_unit(state, dataclasses.replace(
+        action, trigger_params=(), trigger_payment=None), card)
+    met = legion_condition_met(state_after_play)
+    if not met:
+        return action.trigger_params == ("skip",)
+    if len(action.trigger_params) != 3 or action.trigger_params[0] != "discard":
+        return False
+    a, b = action.trigger_params[1], action.trigger_params[2]
+    if a == b:
+        return False
+    hand = list(state_after_play.players[state.turn_player].hand)
+    if a not in hand:
+        return False
+    hand.remove(a)
+    return b in hand
+
+
+def _scrapyard_champion_effect(state_after_play: GameState, action: PlayUnit) -> list[GameState]:
+    if action.trigger_params == ("skip",):
+        return [state_after_play]
+    from . import observers  # deferred — see observers.py's module docstring
+    controller = state_after_play.turn_player
+    state = state_after_play
+    for card_id in action.trigger_params[1:]:
+        state = discard_from_hand(state, controller, card_id)
+    return [observers.fire_observer_discard_triggers(state, controller)]
+
+
+def _scrapyard_champion_candidates(state: GameState, base_action: PlayUnit, card: CardDef) -> list[tuple]:
+    state_after_play = apply_play_unit(state, base_action, card)
+    if not legion_condition_met(state_after_play):
+        return [("skip",)]
+    hand = sorted(set(state_after_play.players[state.turn_player].hand))
+    return [("discard", a, b) for i, a in enumerate(hand) for b in hand[i + 1:]]
+
+
+def _mindsplitter_is_legal(state: GameState, action: PlayUnit, card: CardDef) -> bool:
+    """trigger_params = (opponent_card_id,). Only one opponent exists in
+    this model, so "choose an opponent" has no real branch; "choose a card
+    from it" prints no "opponent chooses" wording, so — same default
+    reading as every other card in the pool that picks a target from a
+    revealed set (Sabotage, The Harrowing's trash pick) — it's OUR choice,
+    checked against the opponent's hand once Mindsplitter's own play has
+    resolved."""
+    if len(action.trigger_params) != 1:
+        return False
+    opponent = 1 - state.turn_player
+    state_after_play = apply_play_unit(state, dataclasses.replace(
+        action, trigger_params=(), trigger_payment=None), card)
+    return action.trigger_params[0] in state_after_play.players[opponent].hand
+
+
+def _mindsplitter_effect(state_after_play: GameState, action: PlayUnit) -> list[GameState]:
+    """Forces the OPPONENT's own discard, via the same real mechanism as
+    our own — not argued inert, because "they discard" fires THEIR "when
+    you discard" watchers (an enemy Jinx, Rebel would ready and buff
+    herself off this), and treating it as a no-op would silently
+    under-credit the opponent's board on exactly that case."""
+    from . import observers  # deferred — see observers.py's module docstring
+    opponent = 1 - state_after_play.turn_player
+    state = discard_from_hand(state_after_play, opponent, action.trigger_params[0])
+    return [observers.fire_observer_discard_triggers(state, opponent)]
+
+
+def _mindsplitter_candidates(state: GameState, base_action: PlayUnit, card: CardDef) -> list[tuple]:
+    state_after_play = apply_play_unit(state, base_action, card)
+    opponent = 1 - state.turn_player
+    return [(c,) for c in sorted(set(state_after_play.players[opponent].hand))]
+
+
 # card_id -> (is_legal(state, action, card), effect(state_after_play, action) -> list[GameState],
 #             generate_candidate_params(state, base_action, card))
 UNIT_PLAY_TRIGGERS: dict[str, tuple[
@@ -1886,6 +2048,11 @@ UNIT_PLAY_TRIGGERS: dict[str, tuple[
                           _cemetery_attendant_candidates),
     SOULGORGER: (_soulgorger_is_legal, _soulgorger_effect, _soulgorger_candidates),
     SPECTRAL_MATRON: (_spectral_matron_is_legal, _spectral_matron_effect, _spectral_matron_candidates),
+    CHEMTECH_ENFORCER: (_chemtech_enforcer_is_legal, _chemtech_enforcer_effect,
+                         _chemtech_enforcer_candidates),
+    SCRAPYARD_CHAMPION: (_scrapyard_champion_is_legal, _scrapyard_champion_effect,
+                          _scrapyard_champion_candidates),
+    MINDSPLITTER: (_mindsplitter_is_legal, _mindsplitter_effect, _mindsplitter_candidates),
 }
 
 

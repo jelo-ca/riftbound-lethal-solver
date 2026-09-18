@@ -210,6 +210,16 @@ class GameState:
     # None outside combat. While set, the action space narrows sharply —
     # see ShowdownState.
     showdown: Optional[ShowdownState] = None
+    # How many cards have left a hand via discard this turn — Raging Soul's
+    # "if you've discarded a card this turn, I have [Assault] and
+    # [Ganking]" reads this directly (traits.SELF_CONDITIONALS), the same
+    # shape as cards_played_this_turn feeding legion_condition_met.
+    # Defaulted so every pre-existing GameState construction still works;
+    # a multi-card discard (Scrapyard Champion's "discard 2") bumps this
+    # once per card, same as cards_played_this_turn counts one play at a
+    # time — Raging Soul's condition is a plain ">0" threshold, so the
+    # exact count past 1 is never actually read.
+    cards_discarded_this_turn: int = 0
 
 
 def _canonical_unit(unit: UnitInstance) -> tuple:
@@ -288,6 +298,7 @@ def canonical_key(state: GameState) -> tuple:
         tuple(_canonical_battlefield(b) for b in state.battlefields),
         tuple(sorted(state.scored_this_turn)),
         state.cards_played_this_turn,
+        state.cards_discarded_this_turn,
         # Mid-showdown is a genuinely different position from the same
         # board after damage resolved — conflating them would let the
         # transposition table prune real lines. attack_trigger_resolved is
