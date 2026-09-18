@@ -301,6 +301,20 @@ HANDLED: dict[str, str] = {
     # against co-located controllers, the same shape as En Garde.
     "ogn-055-298": "Wielder of Water — \"while I'm attacking or defending alone, +2 Might\" "
                    "via traits.SELF_CONDITIONALS with the new designation parameter",
+    # "Channel N runes exhausted" (RULING 1, project owner, 2026-09-18): no
+    # Rune Deck exists in this engine, so a channelled rune's domain is
+    # unknowable — it contributes Energy capacity only, never Power, via
+    # state.add_runes. "...exhausted" means it arrives with that Energy
+    # already spent, so each of these is a real but narrow effect: nothing
+    # observable happens unless something readies runes later the SAME
+    # turn (Ekko, Recurrent's Deathknell is the only such effect that fires
+    # mid-turn — Sona and Targon's Peak both ready at END of turn and stay
+    # INERT_FOR_LETHAL below).
+    "ogn-216-298": "Soaring Scout — [Deathknell] \"Channel 1 rune exhausted\" via "
+                   "deaths.DEATH_TRIGGERS and state.add_runes",
+    "ogn-137-298": "Stormclaw Ursine — [Tank] via traits.TRAIT_REGISTRY, mandatory "
+                   "\"when you play me, channel 1 rune exhausted\" via "
+                   "abilities.UNIT_PLAY_TRIGGERS and state.add_runes",
 }
 
 

@@ -194,6 +194,49 @@ def test_readying_does_not_give_back_recycled_power():
     assert power_capacity(result.players[0].runes, "Mind") == 0  # still spent
 
 
+# --- Soaring Scout: "Channel 1 rune exhausted" ---
+
+
+def test_soaring_scout_channels_a_domain_less_rune_exhausted():
+    """RULING 1 (project owner, 2026-09-18): no Rune Deck exists, so the
+    channelled rune's domain is unknowable — Energy capacity only, arriving
+    with that Energy already spent. On its own this is unobservable (zero
+    net capacity), which is the point of the next test."""
+    from solver.engine.deaths import SOARING_SCOUT
+    from solver.engine.state import energy_capacity
+
+    scout = make_unit(1, card_id=SOARING_SCOUT, might=1, keywords=frozenset({"Deathknell"}))
+    state = make_state(frozenset({scout}), left_ctrl=0)
+    result = kill_unit(state, 1)
+    assert len(result.players[0].runes.available) == 1
+    assert result.players[0].runes.available == (None,)
+    assert energy_capacity(result.players[0].runes) == 0  # arrived, but already spent
+
+
+def test_soaring_scout_then_ekko_makes_the_channeled_rune_real():
+    """The mechanism this ruling is actually FOR: a domain-less rune sits
+    inert until something readies runes the same turn. Ekko, Recurrent's
+    Deathknell is the only such effect that fires mid-turn (Sona/Targon's
+    Peak both ready at end of turn, after the question is settled) — kill
+    both in the same turn and the channelled rune becomes 1 real, spendable
+    Energy that wasn't there before either died."""
+    from solver.engine.deaths import EKKO_RECURRENT, SOARING_SCOUT
+    from solver.engine.state import energy_capacity
+
+    scout = make_unit(1, card_id=SOARING_SCOUT, might=1, keywords=frozenset({"Deathknell"}))
+    ekko = make_unit(2, card_id=EKKO_RECURRENT, might=5, keywords=frozenset({"Deathknell"}))
+    state = make_state(frozenset({scout, ekko}), left_ctrl=0)
+
+    after_scout = kill_unit(state, 1)
+    assert energy_capacity(after_scout.players[0].runes) == 0
+
+    after_both = kill_unit(after_scout, 2)
+    # Ekko's readying un-Exhausts EVERY rune, the channelled one included —
+    # it doesn't distinguish "which domain" (state.ready_runes's docstring).
+    assert energy_capacity(after_both.players[0].runes) == 1
+    assert after_both.players[0].runes.available.count(None) == 1
+
+
 # --- cascades ---
 
 

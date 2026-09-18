@@ -52,6 +52,7 @@ Zone = str  # "base" or a battlefield_id
 KOGMAW_CAUSTIC = "ogn-190-298"  # "Deal 4 to all units at my battlefield."
 MACHINE_EVANGEL = "ogn-239-298"  # "Play three 1 Might Recruit unit tokens into your base."
 EKKO_RECURRENT = "ogn-110-298"  # "Recycle me to ready your runes."
+SOARING_SCOUT = "ogn-216-298"  # "Channel 1 rune exhausted."
 
 
 def _kogmaw_effect(state: GameState, unit: UnitInstance, zone: Zone) -> GameState:
@@ -96,6 +97,21 @@ def _ekko_effect(state: GameState, unit: UnitInstance, zone: Zone) -> GameState:
                           dataclasses.replace(player, runes=ready_runes(player.runes)))
 
 
+def _soaring_scout_effect(state: GameState, unit: UnitInstance, zone: Zone) -> GameState:
+    """"Channel 1 rune exhausted" (RULING 1, project owner, 2026-09-18: no
+    Rune Deck exists, so the arriving rune's domain is unknowable and it
+    can add Energy capacity only, never Power). Arriving EXHAUSTED means
+    its own Energy is already spent the instant it lands, so this is a
+    real but narrow effect: it does nothing observable UNLESS something
+    readies runes later the same turn (e.g. Ekko, Recurrent's own
+    Deathknell, above) — see state.add_runes's docstring."""
+    from .state import add_runes  # deferred for symmetry with the others
+    player = state.players[unit.controller]
+    return replace_player(state, unit.controller,
+                          dataclasses.replace(player, runes=add_runes(
+                              player.runes, (None,), exhausted=True)))
+
+
 # card_id -> effect(state, dead_unit, zone_it_died_in) -> GameState
 #
 # Effects are deterministic (single state, no player choice), which is
@@ -106,6 +122,7 @@ DEATH_TRIGGERS: dict[str, Callable[[GameState, UnitInstance, Zone], GameState]] 
     KOGMAW_CAUSTIC: _kogmaw_effect,
     MACHINE_EVANGEL: _machine_evangel_effect,
     EKKO_RECURRENT: _ekko_effect,
+    SOARING_SCOUT: _soaring_scout_effect,
 }
 
 # Cards whose own death text redirects the dying card somewhere OTHER

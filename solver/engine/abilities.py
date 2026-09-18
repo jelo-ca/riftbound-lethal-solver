@@ -1428,6 +1428,7 @@ HARNESSED_DRAGON = "ogn-234-298"  # "When you play me, kill an enemy unit."
 PIT_ROOKIE = "ogn-136-298"  # "When you play me, buff another friendly unit."
 TRIFARIAN_GLORYSEEKER = "ogn-217-298"  # [Legion] "When you play me, buff me."
 PEAK_GUARDIAN = "ogn-223-298"  # "When you play me, buff me. Then, if I am at a battlefield, buff all other friendly units there."
+STORMCLAW_URSINE = "ogn-137-298"  # [Tank] "When you play me, channel 1 rune exhausted."
 RECRUIT_TOKEN = "ogn-271-298"  # one of three same-stat printings (see card_pool.py); this one
 # picked as the canonical id for tokens minted by card effects.
 RECRUIT_TOKEN_CARD = CardDef(card_id=RECRUIT_TOKEN, card_type="Unit", energy_cost=0,
@@ -1443,7 +1444,8 @@ MANDATORY_PLAY_TRIGGERS = frozenset({FAITHFUL_MANUFACTOR, VANGUARD_CAPTAIN, WHIT
                                      PIT_ROOKIE, TRIFARIAN_GLORYSEEKER, PEAK_GUARDIAN,
                                      RIPTIDE_REX, HARNESSED_DRAGON, DANGEROUS_DUO,
                                      FIRST_MATE, KINKOU_MONK, CARNIVOROUS_SNAPVINE,
-                                     SETT_BRAWLER, SETT_BRAWLER_ALT, CEMETERY_ATTENDANT})
+                                     SETT_BRAWLER, SETT_BRAWLER_ALT, CEMETERY_ATTENDANT,
+                                     STORMCLAW_URSINE})
 
 
 def _charm_deflect_targets(state: GameState, params: tuple) -> list[tuple]:
@@ -1509,6 +1511,27 @@ def _faithful_manufactor_effect(state_after_play: GameState, action: PlayUnit) -
 
 def _faithful_manufactor_candidates(state: GameState, base_action: PlayUnit, card: CardDef) -> list[tuple]:
     return [("mint",)]
+
+
+def _stormclaw_ursine_is_legal(state: GameState, action: PlayUnit, card: CardDef) -> bool:
+    """No target/choice — trigger_params is a fixed sentinel, same
+    convention as Faithful Manufactor (mandatory, see MANDATORY_PLAY_TRIGGERS)."""
+    return action.trigger_params == ("channel",)
+
+
+def _stormclaw_ursine_effect(state_after_play: GameState, action: PlayUnit) -> list[GameState]:
+    """"Channel 1 rune exhausted" (RULING 1, project owner, 2026-09-18):
+    a domain-less rune, arriving with its own Energy already spent, so
+    this is real but narrow — nothing observable unless something
+    readies runes later the same turn. See state.add_runes's docstring."""
+    from .state import add_runes  # deferred, same reasoning as other cross-module imports here
+    player = state_after_play.players[state_after_play.turn_player]
+    new_player = dataclasses.replace(player, runes=add_runes(player.runes, (None,), exhausted=True))
+    return [replace_player(state_after_play, state_after_play.turn_player, new_player)]
+
+
+def _stormclaw_ursine_candidates(state: GameState, base_action: PlayUnit, card: CardDef) -> list[tuple]:
+    return [("channel",)]
 
 
 def _vanguard_captain_is_legal(state: GameState, action: PlayUnit, card: CardDef) -> bool:
@@ -1886,6 +1909,8 @@ UNIT_PLAY_TRIGGERS: dict[str, tuple[
                           _cemetery_attendant_candidates),
     SOULGORGER: (_soulgorger_is_legal, _soulgorger_effect, _soulgorger_candidates),
     SPECTRAL_MATRON: (_spectral_matron_is_legal, _spectral_matron_effect, _spectral_matron_candidates),
+    STORMCLAW_URSINE: (_stormclaw_ursine_is_legal, _stormclaw_ursine_effect,
+                        _stormclaw_ursine_candidates),
 }
 
 
