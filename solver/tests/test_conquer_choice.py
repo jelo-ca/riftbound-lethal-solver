@@ -15,7 +15,7 @@ test_conquer.py's own module docstring).
 from solver import search
 from solver.engine import scoring
 from solver.engine.actions import MoveUnit, ResolveConquerTrigger
-from solver.engine.conquer import ZAUN_WARRENS
+from solver.engine.conquer import SIGIL_OF_THE_STORM, ZAUN_WARRENS
 from solver.engine.state import (
     BattlefieldState,
     GameState,
@@ -137,3 +137,87 @@ def test_zaun_warrens_is_reachable_through_a_full_solve():
         action = strategy[key]
         current = search.apply(current, action, cards)
     assert current.players[0].score >= 8
+
+
+# --- Sigil of the Storm: BATTLEFIELD-keyed, mandatory, rune-recycle choice --
+
+
+def test_conquering_sigil_of_the_storm_opens_a_pending_choice_through_legal_actions():
+    """Two domains available means a real choice — this must open a
+    pending window the same shape as Zaun Warrens', not resolve on its
+    own."""
+    mover = make_unit(CHAFF, 1, exhausted=False)
+    state = make_state(base_units=frozenset({mover}), runes=("Fury", "Calm"),
+                        left_effect=SIGIL_OF_THE_STORM)
+    cards = {}
+    move = next(a for a in search.legal_actions(state, cards)
+                if isinstance(a, MoveUnit) and a.instance_id == 1 and a.to_zone == "left")
+    result = search.apply(state, move, cards)
+
+    assert result.battlefields[0].controller == 0
+    assert result.pending_conquer_choice is not None
+    assert result.pending_conquer_choice.kind == "battlefield"
+    assert result.pending_conquer_choice.key == SIGIL_OF_THE_STORM
+
+    pending_actions = search.legal_actions(result, cards)
+    assert all(isinstance(a, ResolveConquerTrigger) for a in pending_actions)
+    assert {a.params for a in pending_actions} == {("Fury",), ("Calm",)}
+
+
+def test_resolving_the_recycle_choice_spends_that_domains_power_capacity():
+    mover = make_unit(CHAFF, 1, exhausted=False)
+    state = make_state(base_units=frozenset({mover}), runes=("Fury", "Calm"),
+                        left_effect=SIGIL_OF_THE_STORM)
+    cards = {}
+    move = next(a for a in search.legal_actions(state, cards)
+                if isinstance(a, MoveUnit) and a.to_zone == "left")
+    pending_state = search.apply(state, move, cards)
+
+    choice = next(a for a in search.legal_actions(pending_state, cards) if a.params == ("Fury",))
+    result = search.apply(pending_state, choice, cards)
+
+    assert result.pending_conquer_choice is None
+    assert result.players[0].runes.power_spent == ("Fury",)
+    # The rune isn't gone — RunePool.docstring: Recycling leaves a
+    # "floating rune" still able to be Exhausted for Energy afterwards.
+    assert result.players[0].runes.available == ("Fury", "Calm")
+
+
+def test_sigil_with_no_recyclable_rune_resolves_immediately_no_dead_end():
+    """Every rune already Recycled (or none at all) must fizzle rather
+    than strand the line with no legal continuation — same "as many as
+    possible, zero is well-defined" shape as Zaun Warrens against an
+    empty hand."""
+    mover = make_unit(CHAFF, 1, exhausted=False)
+    state = make_state(base_units=frozenset({mover}), left_effect=SIGIL_OF_THE_STORM)
+    cards = {}
+    move = next(a for a in search.legal_actions(state, cards)
+                if isinstance(a, MoveUnit) and a.to_zone == "left")
+    result = search.apply(state, move, cards)
+
+    assert result.pending_conquer_choice is None
+    assert result.players[0].runes.power_spent == ()
+
+
+def test_sigil_recycle_is_a_real_cost_a_solve_can_be_forced_through():
+    """End to end via search.solve(): conquering Sigil of the Storm is
+    mandatory on the winning line (it's the only open battlefield), and
+    the trigger must resolve (spending the domain) rather than block the
+    solve — the mandatory cost is real but never prevents the Conquer
+    itself from completing."""
+    mover = make_unit(CHAFF, 1, exhausted=False, might=1)
+    state = make_state(base_units=frozenset({mover}), runes=("Fury",),
+                        left_effect=SIGIL_OF_THE_STORM, score=7,
+                        right_ctrl=0, scored_this_turn=frozenset({"right"}))
+    cards = {}
+    strategy = search.solve(state, cards, max_depth=4)
+    assert strategy is not None
+    current = state
+    for _ in range(len(strategy) + 1):
+        if scoring.is_winning(current):
+            break
+        key = canonical_key(current)
+        action = strategy[key]
+        current = search.apply(current, action, cards)
+    assert current.players[0].score >= 8
+    assert current.players[0].runes.power_spent == ("Fury",)

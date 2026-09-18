@@ -515,6 +515,18 @@ HANDLED: dict[str, str] = {
                    "every other draw effect above (e.g. Watchful Sentry). Mandatory, so "
                    "there is no decline candidate — an empty hand still resolves, as the "
                    "single no-op \"discard nothing\" candidate.",
+    "ogn-287-298": "Sigil of the Storm — Battlefield, \"when you conquer here, recycle one "
+                   "of your runes\" via conquer.BATTLEFIELD_CONQUER_TRIGGERS. Recycling pays "
+                   "Power (rule 164.2.b) — there's no separate \"produce a floating Power\" "
+                   "effect independent of paying for something (state.py's RunePool docstring) "
+                   "— so this is a real, mandatory, strictly negative cost: it spends one "
+                   "domain's Power capacity (chosen among domains still able to be Recycled; "
+                   "the specific physical rune doesn't matter, since RunePool.power_spent only "
+                   "ever records domains) for the rest of the turn, for no offsetting benefit. "
+                   "Not a no-op like Zaun Warrens' \"then draw 1\" — the choice of WHICH domain "
+                   "to spend is real and can matter to what's affordable afterwards. Fizzles "
+                   "(no candidate but the empty one) once every real-domain rune is already "
+                   "spent, same convention as Zaun Warrens against an empty hand.",
     "ogn-112-298": "Kai'Sa, Evolutionary — [Ganking] (plain trait, already handled) "
                    "\"when I conquer, you may play a spell from your trash with Energy "
                    "cost less than your points, without paying its Energy cost. Then "

@@ -92,6 +92,14 @@ def test_the_arenas_greatest_is_inert():
     assert coverage.blocking_cards(state) == []
 
 
+def test_sigil_of_the_storm_is_handled():
+    """"Recycle one of your runes" is a real mandatory cost (spends a
+    domain's Power capacity), not a no-op — see test_conquer_choice.py for
+    the search.legal_actions-reachable proof of the choice itself."""
+    state = make_state(left_effect="ogn-287-298")
+    assert coverage.blocking_cards(state) == []
+
+
 def test_monastery_of_hirana_conquer_trigger_is_inert():
     """"You may spend a buff to draw 1" — a real cost for an empty draw,
     so a solver would never take the option; declining is always legal."""

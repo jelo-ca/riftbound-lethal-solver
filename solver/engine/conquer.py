@@ -74,11 +74,14 @@ of two choice-bearing triggers firing off the very same conquer event.
 Restrictive, not permissive: no card in the pool needs the missing case
 today.
 
-Sigil of the Storm (rune economy), Qiyana (rune channelling), and Super
-Mega Death Rocket! (a *third* event grammar — see coverage.py: it watches
-"you conquered ANY battlefield" from trash, not a specific unit or
-battlefield conquering, closer to observers.py's shape than either
-grammar here) remain blocking on their own unbuilt subsystems.
+Sigil of the Storm needed no new subsystem after all — "recycle one of
+your runes" reads as a real (if purely negative) cost against RunePool's
+existing power_spent bookkeeping, not a rune-economy mechanism of its
+own — see BATTLEFIELD_CONQUER_TRIGGERS below. Qiyana (rune channelling)
+and Super Mega Death Rocket! (a *third* event grammar — see coverage.py:
+it watches "you conquered ANY battlefield" from trash, not a specific
+unit or battlefield conquering, closer to observers.py's shape than
+either grammar here) remain blocking on their own unbuilt subsystems.
 
 Imports of abilities.py are deliberately deferred into the effect bodies:
 abilities.py imports scoring.py (for scoring.resolve_control_change) and
@@ -92,7 +95,7 @@ from __future__ import annotations
 import dataclasses
 from typing import Callable
 
-from .state import GameState, PendingConquerChoice, replace_player
+from .state import GameState, PendingConquerChoice, power_capacity, replace_player
 
 SETT_BRAWLER = "ogn-164-298"  # "When I'm played and when I conquer, buff me."
 SETT_BRAWLER_ALT = "ogn-164a-298"  # same card, alternate art — identical text
@@ -183,18 +186,58 @@ def _zaun_warrens_effect(state: GameState, battlefield_id: str, params: tuple) -
     return replace_player(state, controller, new_player)
 
 
+SIGIL_OF_THE_STORM = "ogn-287-298"  # Battlefield: "When you conquer here, recycle one of your runes."
+
+
+def _sigil_of_the_storm_candidates(state: GameState, battlefield_id: str) -> list[tuple]:
+    """One candidate per DOMAIN still able to be Recycled — not per
+    physical rune, since two runes of the same domain are indistinguishable
+    once Recycled (RunePool.power_spent only ever records which domains
+    went, never which specific rune — see state.py). Domain-less
+    (channelled/added) runes can never be Recycled at all (RunePool's
+    docstring: their domain is unknowable, so they occupy no Power slot,
+    including this one), so they're excluded the same way power_capacity
+    already excludes them from a rainbow cost. Empty when every real-domain
+    rune is already spent — a mandatory trigger that can't fire fizzles,
+    same convention as Zaun Warrens discarding from an empty hand."""
+    pool = state.players[state.turn_player].runes
+    domains = sorted({d for d in pool.available if d is not None and power_capacity(pool, d) > 0})
+    return [(domain,) for domain in domains] or [()]
+
+
+def _sigil_of_the_storm_effect(state: GameState, battlefield_id: str, params: tuple) -> GameState:
+    """Recycling pays Power (rule 164.2.b) — there is no "produce a
+    floating Power" side effect independent of paying for something, so
+    this trigger's entire observable consequence is spending one rune's
+    Power capacity in the chosen domain for the rest of the turn. That's a
+    real, strictly negative cost to the conquering player (never a
+    benefit), same shape as Monastery of Hirana's buff-for-a-no-op-draw —
+    except here declining isn't an option, so a solver forced through this
+    battlefield's Conquer genuinely loses a domain's worth of future Power
+    capacity. `params == ()` is the fizzle case: nothing left to Recycle."""
+    if not params:
+        return state
+    (domain,) = params
+    controller = state.turn_player
+    player = state.players[controller]
+    new_pool = dataclasses.replace(player.runes, power_spent=player.runes.power_spent + (domain,))
+    return replace_player(state, controller, dataclasses.replace(player, runes=new_pool))
+
+
 # battlefield_effect_id -> (generate_candidates(state, battlefield_id) -> list[tuple],
 #                           effect(state, battlefield_id, params) -> GameState)
 #
-# Zaun Warrens is MANDATORY (no "you may" in the text), so its candidate
-# list never includes a bare decline the way CONQUER_TRIGGERS_WITH_CHOICE's
-# entries do — only real choices, one of which may itself do nothing
-# (discarding from an empty hand).
+# Zaun Warrens and Sigil of the Storm are both MANDATORY (no "you may" in
+# either text), so their candidate lists never include a bare decline the
+# way CONQUER_TRIGGERS_WITH_CHOICE's entries do — only real choices, one of
+# which may itself do nothing (discarding from an empty hand; Recycling
+# with no capacity left).
 BATTLEFIELD_CONQUER_TRIGGERS: dict[str, tuple[
     Callable[[GameState, str], list[tuple]],
     Callable[[GameState, str, tuple], GameState],
 ]] = {
     ZAUN_WARRENS: (_zaun_warrens_candidates, _zaun_warrens_effect),
+    SIGIL_OF_THE_STORM: (_sigil_of_the_storm_candidates, _sigil_of_the_storm_effect),
 }
 
 
