@@ -39,7 +39,7 @@ from __future__ import annotations
 import dataclasses
 from typing import Optional
 
-from .engine import abilities, combat, gear, legends, scoring
+from .engine import abilities, combat, conquer, gear, legends, scoring
 from .engine.actions import (
     Action,
     ActivateAbility,
@@ -50,6 +50,7 @@ from .engine.actions import (
     PlayUnit,
     ResolveAttackTrigger,
     ResolveCombat,
+    ResolveConquerTrigger,
     ResolveShowdown,
     apply_move_unit,
     apply_play_unit,
@@ -165,6 +166,15 @@ def _showdown_actions(state: GameState, cards: dict[str, CardDef]) -> list[Actio
 
 
 def legal_actions(state: GameState, cards: dict[str, CardDef]) -> list[Action]:
+    # A pending choice-bearing conquer trigger (engine/conquer.py) gates
+    # everything else, same shape as an open showdown's pending attack
+    # trigger — checked first since it can coexist with neither (a
+    # showdown's own control change, if any, resolves after
+    # combat.resolve_showdown has already cleared state.showdown).
+    if state.pending_conquer_choice is not None:
+        return [ResolveConquerTrigger(params=params)
+                for params in conquer.pending_choice_candidates(state)]
+
     if state.showdown is not None:
         return _showdown_actions(state, cards)
 
@@ -364,6 +374,15 @@ def apply(state: GameState, action: Action, cards: dict[str, CardDef]) -> GameSt
 
     if isinstance(action, ResolveAttackTrigger):
         return abilities.apply_attack_trigger(state, action)
+
+    if isinstance(action, ResolveConquerTrigger):
+        # Deterministic given the chosen params (a single candidate from
+        # conquer.pending_choice_candidates), so this is a plain
+        # single-state apply — the OR over which candidate to choose is
+        # handled by _dfs's outer loop over legal_actions(), the same way
+        # every other choice in this codebase is (see conquer.py's module
+        # docstring for why this shape was chosen).
+        return conquer.apply_pending_choice(state, action.params)
 
     if isinstance(action, ResolveShowdown):
         raise NotImplementedError(

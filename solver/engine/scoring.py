@@ -119,7 +119,12 @@ def resolve_control_change(state: GameState, new_state: GameState, battlefield_i
     conquered_state = resolve_conquer(new_state, battlefield_id)
     # "When I conquer" — engine/conquer.py. Fired after the point (if any)
     # is granted, so a trigger reading score sees it already there.
-    return conquer.fire_conquer_triggers(state, conquered_state, battlefield_id, turn_player)
+    triggered_state = conquer.fire_conquer_triggers(state, conquered_state, battlefield_id, turn_player)
+    # "When you conquer here" — a different, battlefield-keyed event
+    # grammar (see conquer.py's module docstring). Either hook may leave
+    # triggered_state.pending_conquer_choice set instead of fully
+    # resolved, if the trigger offers a genuine choice.
+    return conquer.fire_battlefield_conquer_triggers(triggered_state, battlefield_id)
 
 
 def grant_card_effect_point(state: GameState) -> GameState:

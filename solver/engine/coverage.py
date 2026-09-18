@@ -301,6 +301,19 @@ HANDLED: dict[str, str] = {
     # against co-located controllers, the same shape as En Garde.
     "ogn-055-298": "Wielder of Water — \"while I'm attacking or defending alone, +2 Might\" "
                    "via traits.SELF_CONDITIONALS with the new designation parameter",
+    # Choice-bearing [Conquer] triggers — engine/conquer.py's
+    # GameState.pending_conquer_choice fan-out (2026-09-18), generalizing
+    # past the deterministic-only CONQUER_TRIGGERS/BATTLEFIELD_EFFECTS
+    # shape. See conquer.py's module docstring for why the choice is
+    # modelled as a pending marker + ResolveConquerTrigger action rather
+    # than a list-returning resolve_control_change.
+    "ogn-298-298": "Zaun Warrens — Battlefield, \"when you conquer here, discard 1, then "
+                   "draw 1\" via conquer.BATTLEFIELD_CONQUER_TRIGGERS (the battlefield-keyed "
+                   "grammar this cluster adds). The discard is a real choice/cost (which "
+                   "hand card); \"then draw 1\" is a no-op, same no-Main-Deck reasoning as "
+                   "every other draw effect above (e.g. Watchful Sentry). Mandatory, so "
+                   "there is no decline candidate — an empty hand still resolves, as the "
+                   "single no-op \"discard nothing\" candidate.",
 }
 
 
