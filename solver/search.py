@@ -382,7 +382,7 @@ def apply(state: GameState, action: Action, cards: dict[str, CardDef]) -> GameSt
         new_state = apply_move_unit(state, action)
         if action.to_zone != "base":
             new_state = scoring.resolve_control_change(state, new_state, action.to_zone)
-        return abilities.apply_move_triggers(new_state, action.instance_id)
+        return abilities.apply_move_triggers(new_state, action.instance_id, action.from_zone)
 
     if isinstance(action, EnterShowdown):
         # No damage yet, so no deaths and no control change - nothing for
@@ -391,7 +391,7 @@ def apply(state: GameState, action: Action, cards: dict[str, CardDef]) -> GameSt
         has_trigger = mover.card_id in abilities.ATTACK_TRIGGERS
         new_state = combat.open_showdown(state, mover, action.from_zone, action.to_zone,
                                           has_pending_trigger=has_trigger)
-        return abilities.apply_move_triggers(new_state, action.instance_id)
+        return abilities.apply_move_triggers(new_state, action.instance_id, action.from_zone)
 
     if isinstance(action, ResolveAttackTrigger):
         return abilities.apply_attack_trigger(state, action)
@@ -531,7 +531,7 @@ def resolve_combat_outcomes(state: GameState, action: ResolveCombat) -> list[Gam
     outcomes = combat.enumerate_combat_outcomes(state, mover, action.from_zone, action.to_zone,
                                                  action.our_assignment)
     outcomes = [scoring.resolve_control_change(state, o, action.to_zone) for o in outcomes]
-    return [abilities.apply_move_triggers(o, action.instance_id) for o in outcomes]
+    return [abilities.apply_move_triggers(o, action.instance_id, action.from_zone) for o in outcomes]
 
 
 def resolve_showdown_outcomes(state: GameState, action: ResolveShowdown) -> list[GameState]:

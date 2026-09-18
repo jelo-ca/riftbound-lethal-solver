@@ -49,22 +49,44 @@ from .state import GameState, replace_player
 
 RIDE_THE_WIND = "ogn-173-298"  # 2 Energy, 1 Chaos Power: "Move a friendly unit and ready it."
 YASUO_WINDRIDER = "ogn-205-298"  # [Ganking] "The third time I move in a turn, you score 1 point."
+BACK_ALLEY_BAR = "ogn-277-298"  # Battlefield: "When a unit moves from here, give it +1 Might this turn."
 
 # card_id -> move count that grants the point (checked for an exact match,
 # not "every Nth move" - Yasuo's text fires once, at exactly the third).
 MOVE_COUNT_TRIGGERS: dict[str, int] = {YASUO_WINDRIDER: 3}
 
 
-def apply_move_triggers(state: GameState, moved_instance_id: int) -> GameState:
+def apply_move_triggers(state: GameState, moved_instance_id: int, from_zone: str) -> GameState:
     """Call after ANY move completes (Standard Move, a spell-granted move,
-    or moving into/as part of combat) on `moved_instance_id`. A no-op
-    unless that unit's card has a registered move-count trigger and its
-    new count exactly matches — e.g. Yasuo - Windrider's card-effect point
-    (rule 473: unrestricted by the Final Point rule, unlike Conquer),
-    needed for design/08-puzzle-concepts.md's puzzle 3 "The Long Way
-    Around". Only the mover's own controller benefits (rule text is
-    "you score," referring to the card's controller).
+    or moving into/as part of combat) on `moved_instance_id`, naming the
+    zone it moved OUT of. A no-op unless that unit's card has a registered
+    move-count trigger and its new count exactly matches — e.g. Yasuo -
+    Windrider's card-effect point (rule 473: unrestricted by the Final
+    Point rule, unlike Conquer), needed for design/08-puzzle-concepts.md's
+    puzzle 3 "The Long Way Around". Only the mover's own controller
+    benefits (rule text is "you score," referring to the card's
+    controller) — OR unless `from_zone` is Back-Alley Bar, whose "when a
+    unit moves from here" names no controller at all, so it fires for
+    either player's mover (checked first and independently of the
+    controller-gated move-count branch below, since the two conditions
+    don't share a "whose card" restriction).
+
+    `from_zone` is looked up in THIS (post-move) state rather than
+    threaded through as a snapshot of the pre-move board: a battlefield's
+    `effect_id` is fixed at position setup and never changes as units
+    enter or leave it, so reading it after the move is exactly as correct
+    and saves every caller from having to remember the origin's effect
+    separately from its zone id.
     """
+    if next((bf.effect_id for bf in state.battlefields if bf.battlefield_id == from_zone), None) == BACK_ALLEY_BAR:
+        # The mover can be dead by now (a Standard Move that walked
+        # straight into a losing combat resolves before this runs) — a
+        # dead unit has nowhere to receive the buff, so skip rather than
+        # crash the way `_grant_might`'s `assert located is not None`
+        # would.
+        if find_unit_anywhere(state, moved_instance_id) is not None:
+            state = _grant_might(state, moved_instance_id, 1)
+
     located = find_unit_at_any_battlefield(state, moved_instance_id)
     if located is None:
         located = (find_unit(state, moved_instance_id, "base"), "base")
@@ -117,7 +139,7 @@ def _ride_the_wind_effect(state: GameState, action: PlaySpell) -> list[GameState
     new_state = relocate_unit(state, instance_id, from_zone, destination, exhausted_after=False)
     if destination != "base":
         new_state = scoring.resolve_control_change(state, new_state, destination)
-    return [apply_move_triggers(new_state, instance_id)]
+    return [apply_move_triggers(new_state, instance_id, from_zone)]
 
 
 def _ride_the_wind_candidates(state: GameState) -> list[tuple[int, str]]:
@@ -866,11 +888,11 @@ def _charm_effect(state: GameState, action: PlaySpell) -> list[GameState]:
         outcomes = combat.enumerate_combat_outcomes(state, unit, from_zone, destination,
                                                      our_assignment, exhausted_after=unit.exhausted)
         outcomes = [scoring.resolve_control_change(state, o, destination) for o in outcomes]
-        return [apply_move_triggers(o, enemy_id) for o in outcomes]
+        return [apply_move_triggers(o, enemy_id, from_zone) for o in outcomes]
 
     moved_state = _move_enemy_unit_no_combat(state, unit, from_zone, destination)
     moved_state = scoring.resolve_control_change(state, moved_state, destination)
-    return [apply_move_triggers(moved_state, enemy_id)]
+    return [apply_move_triggers(moved_state, enemy_id, from_zone)]
 
 
 def _charm_candidates(state: GameState) -> list[tuple]:
@@ -1968,11 +1990,11 @@ def _blitzcrank_effect(state_after_play: GameState, action: PlayUnit) -> list[Ga
         outcomes = combat.enumerate_combat_outcomes(state_after_play, unit, from_zone, to_zone,
                                                      our_assignment, exhausted_after=unit.exhausted)
         outcomes = [scoring.resolve_control_change(state_after_play, o, to_zone) for o in outcomes]
-        return [apply_move_triggers(o, enemy_id) for o in outcomes]
+        return [apply_move_triggers(o, enemy_id, from_zone) for o in outcomes]
 
     moved = relocate_unit(state_after_play, enemy_id, from_zone, to_zone, exhausted_after=unit.exhausted)
     moved = scoring.resolve_control_change(state_after_play, moved, to_zone)
-    return [apply_move_triggers(moved, enemy_id)]
+    return [apply_move_triggers(moved, enemy_id, from_zone)]
 
 
 def _blitzcrank_candidates(state: GameState, base_action: PlayUnit, card: CardDef) -> list[tuple]:
@@ -2457,7 +2479,7 @@ def _marauder_effect(state_after_play: GameState, action: PlayUnit) -> list[Game
     moved = _move_enemy_unit_no_combat(state_after_play, unit, from_zone, "base")         if unit.controller != state_after_play.turn_player         else relocate_unit(state_after_play, target, from_zone, "base",
                             exhausted_after=unit.exhausted)
     moved = scoring.resolve_control_change(state_after_play, moved, from_zone)
-    return [apply_move_triggers(moved, target)]
+    return [apply_move_triggers(moved, target, from_zone)]
 
 
 def _marauder_candidates(state: GameState, base_action: PlayUnit, card: CardDef) -> list[tuple]:

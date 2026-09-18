@@ -283,6 +283,36 @@ HANDLED: dict[str, str] = {
     "ogn-295-298": "Vilemaw's Lair — \"Units can't move from here to base\" via "
                    "battlefields.BattlefieldEffect(blocks_move_to_base=True), exercised "
                    "in puzzle 7 and covered directly by test_battlefields.py",
+    # Same ledger-hygiene shape as Vilemaw's Lair above: both were already
+    # implemented in battlefields.py and covered by test_battlefields.py
+    # before this pass, just never entered here — so they read as BLOCKING
+    # despite being correctly modelled.
+    "ogn-297-298": "Windswept Hillock — \"Units here have [Ganking]\" via "
+                   "battlefields.BattlefieldEffect(grants=frozenset({'Ganking'})), read "
+                   "through traits.resolved_traits and reachable in move legality via "
+                   "actions.effective_keywords — covered by test_battlefields.py",
+    "ogn-294-298": "Trifarian War Camp — \"Units here have +1 Might. (This includes "
+                   "attackers.)\" via battlefields.BattlefieldEffect(flat_might_bonus=1), "
+                   "read through traits.effective_might for both combat roles AND plain "
+                   "(non-combat) damage, unlike Assault/Shield's role-gated bonus — "
+                   "covered by test_battlefields.py",
+    # Back-Alley Bar — a genuine MOVE-COMPLETION trigger, not a static
+    # positional bonus, so it doesn't fit battlefields.py's BattlefieldEffect
+    # shape at all (that module's own docstring: TRIGGERS stay out of it).
+    # Hooked into abilities.apply_move_triggers instead — the same choke
+    # point every completed move (Standard Move, EnterShowdown, ResolveCombat,
+    # and every ability/spell that relocates a unit: Ride The Wind, Charm,
+    # Blitzcrank, Maddened Marauder) already routes through for Yasuo
+    # Windrider's move-count trigger, so no new hook was needed, just a
+    # second condition alongside the existing one.
+    "ogn-277-298": "Back-Alley Bar — \"When a unit moves from here, give it +1 Might "
+                   "this turn.\" via abilities.apply_move_triggers/_grant_might, keyed off "
+                   "the battlefield's own effect_id read from the post-move state (effect_id "
+                   "is fixed at position setup and never changes as units enter or leave, so "
+                   "reading it after the move is exactly as correct as before). Printed text "
+                   "names no controller (\"a unit,\" not \"a friendly unit\" — contrast Reaver's "
+                   "Row/Fortified Position below), so it fires for either player's mover; "
+                   "verified reachable through search.legal_actions via a plain Standard Move.",
     # Observer triggers — "when you play ANOTHER unit," fired at whoever is
     # already on the board watching, from actions.apply_play_unit (the one
     # choke point every genuine unit-from-hand play routes through). See
@@ -485,6 +515,28 @@ HANDLED: dict[str, str] = {
                    "every other draw effect above (e.g. Watchful Sentry). Mandatory, so "
                    "there is no decline candidate — an empty hand still resolves, as the "
                    "single no-op \"discard nothing\" candidate.",
+    "ogn-276-298": "Aspirant's Climb — Battlefield, \"Increase the points needed to win "
+                   "the game by 1.\" A genuine change to the win condition, not a "
+                   "Might-shaped static bonus — scoring.victory_score(state) reads "
+                   "board-conditionally off this effect_id and both scoring.is_winning "
+                   "and resolve_conquer's rule 474/475 Final Point gate consult it live "
+                   "instead of the bare VICTORY_SCORE constant, so a board carrying this "
+                   "battlefield needs 9 points (and 8 is no longer the Final Point) rather "
+                   "than 8. Verified end to end via search.solve() in test_scoring.py: a "
+                   "board that's a winning Conquer at Victory Score 8 stops being "
+                   "solvable at the same depth once this battlefield raises the target.",
+    "ogn-287-298": "Sigil of the Storm — Battlefield, \"when you conquer here, recycle one "
+                   "of your runes\" via conquer.BATTLEFIELD_CONQUER_TRIGGERS. Recycling pays "
+                   "Power (rule 164.2.b) — there's no separate \"produce a floating Power\" "
+                   "effect independent of paying for something (state.py's RunePool docstring) "
+                   "— so this is a real, mandatory, strictly negative cost: it spends one "
+                   "domain's Power capacity (chosen among domains still able to be Recycled; "
+                   "the specific physical rune doesn't matter, since RunePool.power_spent only "
+                   "ever records domains) for the rest of the turn, for no offsetting benefit. "
+                   "Not a no-op like Zaun Warrens' \"then draw 1\" — the choice of WHICH domain "
+                   "to spend is real and can matter to what's affordable afterwards. Fizzles "
+                   "(no candidate but the empty one) once every real-domain rune is already "
+                   "spent, same convention as Zaun Warrens against an empty hand.",
     "ogn-112-298": "Kai'Sa, Evolutionary — [Ganking] (plain trait, already handled) "
                    "\"when I conquer, you may play a spell from your trash with Energy "
                    "cost less than your points, without paying its Energy cost. Then "
@@ -586,6 +638,79 @@ HANDLED: dict[str, str] = {
 # of scope for this pass. Per coverage.py's own rule, a half-covered card
 # stays BLOCKING; clearing just the conquer clause here would be exactly
 # the kind of partial-credit claim this ledger exists to prevent.
+#
+# DEFEND-TRIGGER CLUSTER (2026-09-18) — Fortified Position (ogn-279-298)
+# and Reaver's Row (ogn-285-298) investigated together, left BLOCKING:
+#
+# ogn-279-298 Fortified Position — "When you defend here, choose a unit.
+# It gains [Shield 2] this combat." ogn-285-298 Reaver's Row — "When you
+# defend here, you may move a friendly unit here to base." Both need a
+# "when you defend here" hook that doesn't exist: abilities.ATTACK_TRIGGERS
+# is the only combat-timing trigger machinery built so far, and it only
+# ever handles OUR OWN mandatory choice, because in every attack this
+# engine can generate, the mover (and so the attacker) is always
+# state.turn_player — the opponent never acts, so it never initiates a
+# Standard Move. A DEFEND trigger inverts that: combat.determine_sides
+# assigns the DEFENDER role to whoever DIDN'T move, which in the
+# overwhelmingly common case (we attack into an enemy-held battlefield) is
+# the OPPONENT, not us. So "choose a unit" / "you may move a friendly unit
+# to base" would be the OPPONENT's choice in the case that actually comes
+# up whenever we attack a Fortified Position/Reaver's Row the enemy holds
+# — and an opponent choice has to be searched ADVERSARIALLY (an AND-branch
+# over every candidate, the solver must still win regardless of which one
+# they'd pick), the opposite of every choice-bearing mechanism built so
+# far (ATTACK_TRIGGERS, CONQUER_TRIGGERS_WITH_CHOICE,
+# BATTLEFIELD_CONQUER_TRIGGERS all resolve OUR OWN choice via an OR-branch,
+# reusing search._dfs's ordinary loop). Reaver's Row is worse still: "you
+# may move a friendly unit here to base" lets the DEFENDING player pull
+# their own unit out of the fight entirely — a real, adversarial
+# retreat/rescue option the solver would need to prove a lethal survives
+# either way.
+#
+# A second, narrower path exists where WE'D be the defender instead:
+# Blitzcrank's "move an enemy unit to here" (and Charm's redirect) can
+# make an ENEMY unit the mover, flipping combat.determine_sides so OUR
+# units become the defenders — reachable, and there the choice genuinely
+# would be ours (OR-branch, same shape as every other trigger here). But
+# Blitzcrank/Charm bypass ShowdownState entirely
+# (combat.enumerate_combat_outcomes resolves atomically, with no "open
+# showdown, then trigger" window the way open_showdown/ResolveShowdown
+# gives ATTACK_TRIGGERS) — so even the reachable half would need its own
+# hook, separate from whatever handles the common enemy-defends case.
+# Building only the Blitzcrank-reachable half while leaving the far more
+# frequent "we attack an enemy holding this battlefield" case unhandled
+# would silently under-count the enemy's toughness in the common case —
+# exactly the half-covered-card risk this ledger exists to catch. A full,
+# correct defend-trigger subsystem needs BOTH an adversarial-choice
+# AND-branch (new — nothing in search.py does this today, closer in shape
+# to combat.enumerate_assignments' opponent-response enumeration than to
+# any existing trigger registry) and a second hook for the atomic
+# Blitzcrank/Charm path. That is a larger, differently-shaped subsystem
+# than ATTACK_TRIGGERS, not a comparable extension of it, so both cards
+# stay BLOCKING rather than risk an incorrect or one-sided partial model.
+#
+# ogn-296-298 Void Gate — "Spells and abilities affecting units here each
+# deal 1 Bonus Damage. (Each instance of damage the spell deals is
+# increased by 1.)" A genuinely new damage-modifier concept: "Bonus
+# Damage" appears on exactly one OTHER card in the whole pool
+# (ogn-032-298 Ravenborn Tome, a Gear: "Exhaust: The next spell you play
+# this turn deals 1 Bonus Damage," same reminder text) and nowhere else —
+# so this isn't Void Gate's own one-off text, it's a shared mechanic
+# neither card currently has anywhere to plug into. Doing it correctly
+# means adding +1 to EVERY damage INSTANCE a spell/ability deals to a unit
+# standing at the affected battlefield — not a flat total, per the
+# reminder text ("each instance"), so a card like Falling Star (two
+# separate 3-damage instances) or Singularity (up to two units) would need
+# the bonus applied per-instance, per-target, which means threading a
+# "how much Bonus Damage applies here" parameter through every
+# damage-dealing call site combat.py and abilities.py have (flat-damage
+# spells, ATTACK_TRIGGERS' damage effects, deal_damage_to_all_at, on top
+# of Void Gate's own positional gate) rather than adding one line to a
+# single function. Scoped as a real, moderate-sized cross-cutting change,
+# not a small hack — left BLOCKING with this writeup rather than force a
+# partial version that only covers some damage sources. Worth revisiting
+# together with Ravenborn Tome in a future pass, since building the
+# concept once would clear both.
 
 
 # card_id -> why its text cannot change whether lethal exists this turn.
@@ -634,6 +759,13 @@ INERT_FOR_LETHAL: dict[str, str] = {
                    "strictly worse than playing the card, and no Origins card "
                    "rewards holding fewer runes (verified across the set), so "
                    "hiding is never correct.",
+    "ogn-278-298": "Bandle Tree — Battlefield, \"You may hide an additional card here.\" "
+                   "Raises how many cards you're ALLOWED to pay Hidden's cost for at this "
+                   "battlefield — it doesn't change what hiding buys (Pakaa Cub's argument "
+                   "above: strictly worse than playing the card this turn, and nothing in "
+                   "the pool rewards holding fewer runes), so permitting a SECOND "
+                   "never-correct action is still never correct. Optional (\"you may\"), so "
+                   "declining is always legal regardless.",
     "ogn-274-298": "Sprite — [Temporary] and nothing else. It dies at the start "
                    "of your next Beginning Phase, which a single turn never "
                    "reaches.",
@@ -649,6 +781,21 @@ INERT_FOR_LETHAL: dict[str, str] = {
                    "already resolved before the Action Phase this engine searches — "
                    "same pre-turn non-event as Sona/Targon's Peak, and the draw would "
                    "be a no-op anyway (no Main Deck).",
+    "ogn-290-298": "The Arena's Greatest — Battlefield, \"At the start of each player's "
+                   "first Beginning Phase, that player gains 1 point.\" Unlike Loose "
+                   "Cannon's no-op draw, this genuinely grants something — but \"each "
+                   "player's FIRST Beginning Phase\" happens at most once per player in "
+                   "the whole game, and the position model's Beginning Phase is already "
+                   "resolved before the Action Phase this engine searches (HANDOFF.md). "
+                   "So either this is that player's first turn and the point was already "
+                   "granted during the already-resolved Beginning Phase — meaning it's "
+                   "already reflected in the starting PlayerState.score the puzzle hands "
+                   "this engine, same as any other pre-turn effect — or it isn't their "
+                   "first turn, in which case the trigger fired (or didn't) on an earlier "
+                   "turn entirely outside this single-turn search and cannot fire again. "
+                   "Either way, nothing observable can happen to score DURING the turn "
+                   "being searched — this is a fact about it having already happened (or "
+                   "already being permanently spent), not a no-op payload.",
     # The six Rune cards. Runes are modelled as domains in RunePool, not as
     # cards in a zone, and the Beginning Phase that channels them is
     # already resolved before the question is asked — so a Rune card can

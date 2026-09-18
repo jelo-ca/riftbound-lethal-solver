@@ -19,8 +19,20 @@ import dataclasses
 from . import conquer
 from .state import GameState, replace_player
 
-VICTORY_SCORE = 8  # rule 198.1. v0 puzzles don't use battlefield effects
-                     # that alter this (design/07-scope-and-cut-list.md).
+VICTORY_SCORE = 8  # rule 198.1.
+
+ASPIRANTS_CLIMB = "ogn-276-298"  # Battlefield: "Increase the points needed to win the game by 1."
+
+
+def victory_score(state: GameState) -> int:
+    """rule 198.1's Victory Score, raised by 1 for every Aspirant's Climb
+    present on the board. This is a genuine change to the win condition
+    itself (contrast a Might-shaped static bonus, which never touches
+    scoring), so both `is_winning` and `resolve_conquer`'s Final Point
+    gate below read this live rather than the bare `VICTORY_SCORE`
+    constant — a board including this battlefield needs 9 (or more, one
+    per copy) points to win, not 8."""
+    return VICTORY_SCORE + sum(1 for bf in state.battlefields if bf.effect_id == ASPIRANTS_CLIMB)
 
 
 def held_battlefields(state: GameState) -> frozenset[str]:
@@ -76,8 +88,10 @@ def resolve_conquer(state: GameState, battlefield_id: str) -> GameState:
     new_scored_this_turn = state.scored_this_turn | {battlefield_id}
 
     # rule 474/475: "current Point Total is 1 point from Victory Score or
-    # higher" gates the Final Point restriction.
-    is_final_point_attempt = player.score >= VICTORY_SCORE - 1
+    # higher" gates the Final Point restriction. Reads victory_score(state)
+    # rather than the bare constant so Aspirant's Climb's raised threshold
+    # shifts this gate too — the Final Point IS the Victory-Score-th point.
+    is_final_point_attempt = player.score >= victory_score(state) - 1
 
     if not is_final_point_attempt:
         new_player = dataclasses.replace(player, score=player.score + 1)
@@ -146,4 +160,4 @@ def is_winning(state: GameState) -> bool:
     threshold is sufficient as long as the opponent's starting score is
     below it — a puzzle-authoring invariant, not enforced here.
     """
-    return state.players[state.turn_player].score >= VICTORY_SCORE
+    return state.players[state.turn_player].score >= victory_score(state)

@@ -75,6 +75,38 @@ def test_candlelit_sanctum_conquer_trigger_is_inert():
     assert coverage.blocking_cards(state) == []
 
 
+def test_bandle_tree_is_inert():
+    """"You may hide an additional card here" only raises the cap on a
+    never-correct action (Pakaa Cub) — permitting a second one changes
+    nothing."""
+    state = make_state(left_effect="ogn-278-298")
+    assert coverage.blocking_cards(state) == []
+
+
+def test_the_arenas_greatest_is_inert():
+    """"Each player's first Beginning Phase" grants a point that either
+    already happened (pre-turn, already resolved) or happened on an
+    earlier turn outside this single-turn search — never observably
+    during the Action Phase being searched."""
+    state = make_state(left_effect="ogn-290-298")
+    assert coverage.blocking_cards(state) == []
+
+
+def test_aspirants_climb_is_handled():
+    """Raises the win-condition threshold itself — see test_scoring.py for
+    the search.solve()-reachable proof it actually changes solvability."""
+    state = make_state(left_effect="ogn-276-298")
+    assert coverage.blocking_cards(state) == []
+
+
+def test_sigil_of_the_storm_is_handled():
+    """"Recycle one of your runes" is a real mandatory cost (spends a
+    domain's Power capacity), not a no-op — see test_conquer_choice.py for
+    the search.legal_actions-reachable proof of the choice itself."""
+    state = make_state(left_effect="ogn-287-298")
+    assert coverage.blocking_cards(state) == []
+
+
 def test_monastery_of_hirana_conquer_trigger_is_inert():
     """"You may spend a buff to draw 1" — a real cost for an empty draw,
     so a solver would never take the option; declining is always legal."""
@@ -298,6 +330,23 @@ def test_vilemaws_lair_is_handled():
     test_battlefields.py — it just never got a ledger entry, so it read as
     BLOCKING despite being correctly modelled."""
     state = make_state(left_effect="ogn-295-298")
+    assert coverage.blocking_cards(state) == []
+
+
+def test_windswept_hillock_and_trifarian_war_camp_are_handled():
+    """Same ledger-hygiene gap as Vilemaw's Lair — both battlefield
+    effects were already implemented and covered by test_battlefields.py
+    before this pass, just missing their HANDLED entries."""
+    state = make_state(left_effect="ogn-297-298")
+    assert coverage.blocking_cards(state) == []
+    state = make_state(left_effect="ogn-294-298")
+    assert coverage.blocking_cards(state) == []
+
+
+def test_back_alley_bar_is_handled():
+    """New move-completion hook, not a ledger-hygiene gap — see
+    test_battlefields.py for the search.legal_actions-reachable proof."""
+    state = make_state(left_effect="ogn-277-298")
     assert coverage.blocking_cards(state) == []
 
 
