@@ -221,11 +221,14 @@ HANDLED: dict[str, str] = {
                    "abilities.SALVAGE/actions.kill_gear. \"A gear\" is unqualified — "
                    "either player's, same convention as Orb of Regret's unqualified "
                    "\"a unit\" (engine/gear.py's module docstring). Draw is a no-op, no "
-                   "Main Deck. Optional, so declining is always legal. Cannot target a "
-                   "Gear with its own unbuilt on-death reaction (Treasure Trove, "
-                   "Scrapheap — see gear.GEAR_DEATH_REACTIONS): restrictive, not "
-                   "permissive, same convention as play_unit_from_trash excluding "
-                   "trash units with their own UNIT_PLAY_TRIGGERS.",
+                   "Main Deck. Optional, so declining is always legal. Cannot target "
+                   "Treasure Trove specifically (gear.GEAR_DEATH_REACTIONS): its own "
+                   "\"when this leaves the board\" reaction needs a RunePool change out "
+                   "of scope here — restrictive, not permissive, same convention as "
+                   "play_unit_from_trash excluding trash units with their own "
+                   "UNIT_PLAY_TRIGGERS. Scrapheap has no such restriction — its own "
+                   "on-death reaction is separately proven inert (see below), so "
+                   "killing it through Salvage is unrestricted.",
     # [Conquer] triggers — engine/conquer.py, hooked into
     # scoring.resolve_control_change.
     "ogn-164-298": "Sett, Brawler — \"when I'm played and when I conquer, buff me\" "
@@ -332,6 +335,25 @@ INERT_FOR_LETHAL: dict[str, str] = {
     "ogn-099-298": "Garbage Grabber — an activated ability whose whole effect is "
                    "Draw 1. With no deck it does nothing, so it is never worth "
                    "activating regardless of its trash cost.",
+    "ogn-182-298": "Scrapheap — Gear, \"when this is played, discarded, or killed, "
+                   "draw 1.\" All three triggers are the same no-op draw; found while "
+                   "wiring kill-gear (checking what Gear reacts to its own death) but "
+                   "inert regardless of whether anything can ever kill it.",
+    "ogn-072-298": "Solari Shrine — Gear, \"when you kill a stunned enemy unit, you "
+                   "may exhaust this to draw 1.\" Optional, and the payoff is the "
+                   "same no-op draw whether or not [Stun] (unmodelled) ever fires — "
+                   "inert regardless of the Stun subsystem's status.",
+    "ogn-101-298": "Mushroom Pouch — Gear, \"AT THE START OF YOUR BEGINNING PHASE, "
+                   "if you control a facedown card at a battlefield, draw 1.\" Same "
+                   "pre-turn non-event as Dr. Mundo/Loose Cannon's Beginning Phase "
+                   "triggers (already resolved before the Action Phase this engine "
+                   "searches), and the draw would be a no-op regardless.",
+    "ogn-180-298": "Fading Memories — Spell, \"Give a unit at a battlefield or a gear "
+                   "[Temporary].\" [Temporary] kills its target at the start of the "
+                   "controller's NEXT Beginning Phase, which a single-turn puzzle "
+                   "never reaches (Sprite's precedent above) — true regardless of "
+                   "which legal target is chosen, including a gear, so the whole "
+                   "card is inert without needing the kill-gear mechanism at all.",
     "ogn-135-298": "Pakaa Cub — [Hidden] and nothing else. Hiding spends a rune "
                    "now to play for 0 Energy later; inside one turn that is "
                    "strictly worse than playing the card, and no Origins card "

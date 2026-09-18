@@ -281,15 +281,30 @@ def test_salvage_can_kill_the_opponents_gear():
 
 
 def test_salvage_cannot_target_gear_with_an_unbuilt_death_reaction():
-    """Treasure Trove/Scrapheap react to their own death; kill_gear has no
-    hook to fire that yet, so they're excluded from candidates rather than
-    silently dropped — see gear.GEAR_DEATH_REACTIONS."""
+    """Treasure Trove reacts to its own death with an effect this engine
+    can't fire yet (a RunePool change), so it's excluded from candidates
+    rather than silently dropped — see gear.GEAR_DEATH_REACTIONS."""
     card = card_def(SALVAGE)
     piece = _ready_gear(gear_module.TREASURE_TROVE, 70)
     state = make_state(hand=(SALVAGE,), runes=("Fury", "Fury", "Order"), gear=frozenset({piece}))
     action = PlaySpell(card_id=SALVAGE, params=(70,),
                         rune_payment=RunePayment(energy_runes=("Fury", "Fury"), power_runes=("Order",)))
     assert not abilities.is_legal_play_spell(state, action, card)
+
+
+def test_salvage_can_target_scrapheap_since_its_own_reaction_is_proven_inert():
+    """Scrapheap ALSO reacts to its own death ("...or killed, draw 1"),
+    but coverage.py clears its whole card as inert (every trigger is the
+    same no-op draw) — so unlike Treasure Trove it needs no exclusion."""
+    card = card_def(SALVAGE)
+    piece = _ready_gear("ogn-182-298", 71)  # Scrapheap
+    state = make_state(hand=(SALVAGE,), runes=("Fury", "Fury", "Order"), gear=frozenset({piece}))
+    action = PlaySpell(card_id=SALVAGE, params=(71,),
+                        rune_payment=RunePayment(energy_runes=("Fury", "Fury"), power_runes=("Order",)))
+    assert abilities.is_legal_play_spell(state, action, card)
+    [result] = abilities.resolve_spell_outcomes(state, action, card)
+    assert result.players[0].gear == frozenset()
+    assert "ogn-182-298" in result.players[0].trash
 
 
 def test_salvage_reachable_through_legal_actions():

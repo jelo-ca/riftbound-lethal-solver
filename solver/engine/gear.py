@@ -68,7 +68,6 @@ def ability_cost(card_id: str) -> tuple[int, int, Optional[Domain]]:
 
 
 TREASURE_TROVE = "ogn-186-298"  # "When this leaves the board, draw 1 and channel 1 rune exhausted."
-SCRAPHEAP = "ogn-182-298"  # "When this is played, discarded, or killed, draw 1."
 
 # Gear whose OWN printed text reacts to it leaving the board — surfaced by
 # actions.kill_gear's introduction, since until it existed nothing could
@@ -77,11 +76,16 @@ SCRAPHEAP = "ogn-182-298"  # "When this is played, discarded, or killed, draw 1.
 # unit-only); a caller offering "kill a gear" as a candidate MUST exclude
 # these card_ids rather than silently drop the reaction — restrictive, not
 # permissive, same convention as play_unit_from_trash excluding units with
-# their own UNIT_PLAY_TRIGGERS. Scrapheap's reaction is itself a no-op
-# (draw, no Main Deck) but is excluded anyway rather than special-cased,
-# since telling the two apart buys nothing; Treasure Trove's additionally
-# needs "channel 1 rune exhausted", a RunePool change out of scope here.
-GEAR_DEATH_REACTIONS = frozenset({TREASURE_TROVE, SCRAPHEAP})
+# their own UNIT_PLAY_TRIGGERS.
+#
+# Scrapheap ALSO reacts to its own death ("...or killed, draw 1") but is
+# NOT here: coverage.INERT_FOR_LETHAL clears its whole card on the
+# argument that all three of its triggers are the same no-op draw, so
+# whether kill_gear fires that reaction or not can never change the
+# answer — nothing is being silently dropped. Treasure Trove stays
+# excluded because its reaction additionally needs "channel 1 rune
+# exhausted", a real RunePool change out of scope for this pass.
+GEAR_DEATH_REACTIONS = frozenset({TREASURE_TROVE})
 
 
 def _exhaust_source(state: GameState, action: ActivateAbility) -> GameState:

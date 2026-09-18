@@ -595,12 +595,12 @@ def kill_gear(state: GameState, controller: int, gear_piece: GearInstance) -> Ga
     Deliberately no Deathknell-style hook here: unlike units, nothing
     could ever kill *another* controller's Gear before this function
     existed, so no "when your gear dies" trigger has ever needed one.
-    Two Gear cards react to their OWN death (Treasure Trove's "when this
-    leaves the board...", Scrapheap's "...or killed, draw 1") — see
-    gear.GEAR_DEATH_REACTIONS, which callers must exclude from their own
-    kill-target candidates until that hook is built, same "restrictive,
-    not permissive" convention as play_unit_from_trash excluding units
-    with their own UNIT_PLAY_TRIGGERS."""
+    Treasure Trove reacts to its OWN death ("when this leaves the
+    board...") with an effect this engine can't fire yet (it needs a
+    RunePool change) — see gear.GEAR_DEATH_REACTIONS, which callers must
+    exclude from their own kill-target candidates until that lands, same
+    "restrictive, not permissive" convention as play_unit_from_trash
+    excluding units with their own UNIT_PLAY_TRIGGERS."""
     state = replace_gear(state, controller, gear_piece, None)
     player = state.players[controller]
     return replace_player(state, controller, dataclasses.replace(
