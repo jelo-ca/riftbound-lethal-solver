@@ -1291,6 +1291,124 @@ def _sett_spend_buff_candidates(state: GameState) -> list[tuple]:
     return [()]
 
 
+UDYR_WILDMAN = "ogn-157-298"  # "Spend my buff: Choose one you've not chosen this turn — [4 modes]."
+
+# The four modes, exactly as printed, keyed by a short name that becomes
+# params[0] and the entry recorded in UnitInstance.modes_chosen_this_turn.
+UDYR_DEAL_2 = "deal2"       # "Deal 2 to a unit at a battlefield."
+UDYR_STUN = "stun"          # "Stun a unit at a battlefield."
+UDYR_READY = "ready"        # "Ready me."
+UDYR_GANKING = "ganking"    # "Give me [Ganking] this turn."
+UDYR_MODES = frozenset({UDYR_DEAL_2, UDYR_STUN, UDYR_READY, UDYR_GANKING})
+
+
+def _record_mode_chosen(state: GameState, instance_id: int, mode: str) -> GameState:
+    """Marks `mode` as picked this turn on Udyr — the bookkeeping his
+    "not chosen this turn" restriction reads. A no-op if the unit no
+    longer exists (its own "Deal 2" mode CAN target itself and, in a
+    contrived case, kill it) — nothing is left to track on a dead unit,
+    and there's no next activation for the restriction to matter to."""
+    located = find_unit_anywhere(state, instance_id)
+    if located is None:
+        return state
+    unit, zone = located
+    if mode in unit.modes_chosen_this_turn:
+        return state
+    updated = dataclasses.replace(
+        unit, modes_chosen_this_turn=unit.modes_chosen_this_turn | {mode})
+    return _replace_unit(state, unit, zone, updated)
+
+
+def _udyr_is_legal(state: GameState, action: ActivateAbility) -> bool:
+    """params = (mode,) for Ready/Ganking, (mode, target_instance_id) for
+    Deal 2/Stun, or (UDYR_STUN, target_instance_id, buff_target_id) when
+    _stun_buff_choice_active holds for that target (Radiant Dawn present
+    and the stunned unit is actually an enemy — Udyr's "a unit" is
+    unrestricted-controller, unlike Leona's "an enemy unit," so this has
+    to be checked per chosen target rather than assumed). The cost IS
+    "spend my buff" (no rune cost printed, same precondition-as-cost
+    shape as Sett's ability) — no buff, nothing to activate. "Choose one
+    you've not chosen this turn" is enforced against this SPECIFIC Udyr's
+    own modes_chosen_this_turn, since another Udyr (or this one re-buffed
+    later) tracks its own set independently."""
+    if action.rune_payment is not None or not action.params:
+        return False
+    mode = action.params[0]
+    if mode not in UDYR_MODES:
+        return False
+    located = find_unit_anywhere(state, action.source_id)
+    if located is None:
+        return False
+    source, _ = located
+    if source.controller != state.turn_player or not source.buffed:
+        return False
+    if mode in source.modes_chosen_this_turn:
+        return False
+    if mode == UDYR_DEAL_2:
+        if len(action.params) != 2:
+            return False
+        # "a unit at a battlefield" — not Base, not restricted to enemies
+        # (same reading as Iron Ballista's identical "Deal 2" wording).
+        return find_unit_at_any_battlefield(state, action.params[1]) is not None
+    if mode == UDYR_STUN:
+        if len(action.params) not in (2, 3):
+            return False
+        target_id = action.params[1]
+        if find_unit_at_any_battlefield(state, target_id) is None:
+            return False
+        buff_active = _stun_buff_choice_active(state, source.controller, target_id)
+        if len(action.params) != (3 if buff_active else 2):
+            return False
+        if buff_active:
+            friendlies = _units_controlled_by(state, source.controller)
+            if not any(u.instance_id == action.params[2] for u in friendlies):
+                return False
+        return True
+    return len(action.params) == 1  # Ready / Ganking — no target
+
+
+def _udyr_effect(state: GameState, action: ActivateAbility) -> GameState:
+    mode = action.params[0]
+    state = spend_buff(state, action.source_id)
+    if mode == UDYR_DEAL_2:
+        target_id = action.params[1]
+        _, bf_id = find_unit_at_any_battlefield(state, target_id)
+        state = combat.deal_damage_to_unit(state, bf_id, target_id, 2)
+    elif mode == UDYR_STUN:
+        state = stun_unit(state, action.params[1])
+        if len(action.params) == 3:  # Radiant Dawn's mandatory buff choice
+            state = apply_buff(state, action.params[2])
+    elif mode == UDYR_READY:
+        state = ready_unit(state, action.source_id)
+    else:  # UDYR_GANKING
+        state = grant_trait(state, action.source_id, "Ganking")
+    return _record_mode_chosen(state, action.source_id, mode)
+
+
+def _udyr_candidates(state: GameState) -> list[tuple]:
+    """Instance-agnostic, like Caitlyn's/Iron Ballista's own candidate
+    generators — the full universe of (mode[, target[, buff_target]])
+    tuples regardless of which specific Udyr (or how much of his own
+    state) will end up legal; is_legal filters per-instance from
+    action.source_id, the same division search.legal_actions already
+    relies on for every other unit ability. The controller for the
+    Radiant Dawn check is state.turn_player: unlike an ATTACK_TRIGGERS
+    entry, a unit's own ActivateAbility is only ever generated for units
+    state.turn_player controls (search.legal_actions' `all_units` filter),
+    so there's no Charm-redirect ambiguity here."""
+    targets = [u.instance_id for bf in state.battlefields for u in sorted(bf.units, key=lambda u: u.instance_id)]
+    controller = state.turn_player
+    out = [(UDYR_DEAL_2, t) for t in targets]
+    for t in targets:
+        if _stun_buff_choice_active(state, controller, t):
+            friendlies = sorted(_units_controlled_by(state, controller), key=lambda u: u.instance_id)
+            out += [(UDYR_STUN, t, f.instance_id) for f in friendlies]
+        else:
+            out.append((UDYR_STUN, t))
+    out += [(UDYR_READY,), (UDYR_GANKING,)]
+    return out
+
+
 # card_id -> (is_legal(state, action), effect(state, action), generate_candidate_params(state))
 ABILITY_EFFECTS: dict[str, tuple[
     Callable[[GameState, ActivateAbility], bool],
@@ -1301,6 +1419,7 @@ ABILITY_EFFECTS: dict[str, tuple[
     SETT_BRAWLER: (_sett_spend_buff_is_legal, _sett_spend_buff_effect, _sett_spend_buff_candidates),
     SETT_BRAWLER_ALT: (_sett_spend_buff_is_legal, _sett_spend_buff_effect, _sett_spend_buff_candidates),
     VI_DESTRUCTIVE: (_vi_destructive_is_legal, _vi_destructive_effect, _vi_destructive_candidates),
+    UDYR_WILDMAN: (_udyr_is_legal, _udyr_effect, _udyr_candidates),
 }
 
 
@@ -2036,6 +2155,26 @@ def _units_controlled_by(state: GameState, controller: int) -> list:
     return found
 
 
+def _stun_buff_choice_active(state: GameState, controller: int, stunned_target_id: int) -> bool:
+    """Whether stunning `stunned_target_id` (as `controller`) should ALSO
+    offer Radiant Dawn's mandatory buff choice: the observer must be
+    present, the stunned unit must actually be an ENEMY of `controller`
+    (Radiant Dawn's own text is "when you stun one or more ENEMY units" —
+    Leona's target is always an enemy by her own text, but a future
+    unrestricted-target stunner, e.g. Udyr's "stun A UNIT," is not), and a
+    friendly unit must exist to receive it (unreachable otherwise, same
+    "no fizzled no-op" convention as Harnessed Dragon against an empty
+    board). The single shared gate every stunner's own is_legal/candidates
+    calls, so Radiant Dawn's coverage doesn't quietly narrow the moment a
+    second stunner exists."""
+    if not _stun_observer_present(state, controller):
+        return False
+    target = find_unit_anywhere(state, stunned_target_id)
+    if target is None or target[0].controller == controller:
+        return False
+    return bool(_units_controlled_by(state, controller))
+
+
 def _attacker_and_battlefield(state: GameState, attacker_instance_id: int):
     """The attacking unit and the battlefield it's standing on, read off
     the open showdown rather than passed in — the trigger always resolves
@@ -2131,38 +2270,41 @@ def _dune_drake_effect(state: GameState, attacker_instance_id: int, trigger_para
 
 def _leona_is_legal(state: GameState, attacker_instance_id: int, trigger_params: tuple) -> bool:
     """params = (enemy_target_id,), or (enemy_target_id, buff_target_id)
-    exactly when the attacker's controller runs a "when you stun"
-    observer (Radiant Dawn) with a friendly unit available to receive the
-    buff. This engine has no resolution stack, so a compound MANDATORY
-    trigger's whole choice has to live in one trigger_params tuple — same
-    shape as every other multi-target mandatory trigger in this registry
-    (e.g. Kinkou Monk's two-target buff). The buff isn't optional on
-    Radiant Dawn's text, so when it's reachable the plain 1-tuple form
-    stops being legal, same as MANDATORY_PLAY_TRIGGERS withholding the
-    untriggered form elsewhere in this module."""
-    attacker, bf = _attacker_and_battlefield(state, attacker_instance_id)
-    friendlies = _units_controlled_by(state, attacker.controller)
-    observer_active = _stun_observer_present(state, attacker.controller) and bool(friendlies)
-    expected_len = 2 if observer_active else 1
-    if len(trigger_params) != expected_len:
+    exactly when _stun_buff_choice_active holds for that target (Radiant
+    Dawn present, with a friendly unit available to receive the buff).
+    This engine has no resolution stack, so a compound MANDATORY trigger's
+    whole choice has to live in one trigger_params tuple — same shape as
+    every other multi-target mandatory trigger in this registry (e.g.
+    Kinkou Monk's two-target buff). The buff isn't optional on Radiant
+    Dawn's text, so when it's reachable the plain 1-tuple form stops being
+    legal, same as MANDATORY_PLAY_TRIGGERS withholding the untriggered
+    form elsewhere in this module."""
+    if not trigger_params:
         return False
+    attacker, bf = _attacker_and_battlefield(state, attacker_instance_id)
     target = next((u for u in bf.units if u.instance_id == trigger_params[0]), None)
     if target is None or target.controller == attacker.controller:
         return False
-    if observer_active and not any(u.instance_id == trigger_params[1] for u in friendlies):
+    buff_active = _stun_buff_choice_active(state, attacker.controller, trigger_params[0])
+    if len(trigger_params) != (2 if buff_active else 1):
         return False
+    if buff_active:
+        friendlies = _units_controlled_by(state, attacker.controller)
+        if not any(u.instance_id == trigger_params[1] for u in friendlies):
+            return False
     return True
 
 
 def _leona_candidates(state: GameState, attacker_instance_id: int) -> list[tuple]:
     attacker, bf = _attacker_and_battlefield(state, attacker_instance_id)
-    enemy_ids = [u.instance_id for u in _enemy_units_here(attacker, bf)]
-    friendlies = _units_controlled_by(state, attacker.controller)
-    if _stun_observer_present(state, attacker.controller) and friendlies:
-        return [(enemy_id, friendly.instance_id)
-                for enemy_id in enemy_ids
-                for friendly in sorted(friendlies, key=lambda u: u.instance_id)]
-    return [(enemy_id,) for enemy_id in enemy_ids]
+    out: list[tuple] = []
+    for enemy_id in (u.instance_id for u in _enemy_units_here(attacker, bf)):
+        if _stun_buff_choice_active(state, attacker.controller, enemy_id):
+            friendlies = sorted(_units_controlled_by(state, attacker.controller), key=lambda u: u.instance_id)
+            out += [(enemy_id, f.instance_id) for f in friendlies]
+        else:
+            out.append((enemy_id,))
+    return out
 
 
 def _leona_effect(state: GameState, attacker_instance_id: int, trigger_params: tuple) -> GameState:

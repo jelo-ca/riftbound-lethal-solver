@@ -51,6 +51,15 @@ class UnitInstance:
     # same "rest of this single-turn puzzle, no expiry bookkeeping" shape
     # as `buffed` above — a puzzle never reaches a second turn.
     stunned: bool = False
+    # Udyr, Wildman: "Spend my buff: Choose one you've not chosen this
+    # turn — [4 modes]." Which of his own modes have already been picked
+    # THIS TURN, keyed by a short mode name (see abilities.py's Udyr
+    # section) — his ability can fire more than once if something re-buffs
+    # him mid-turn, and each firing must pick a mode not already used.
+    # Same per-instance, single-turn-puzzle, no-expiry-bookkeeping shape as
+    # `moved_this_turn`/`buffed` above; empty for every unit that isn't
+    # Udyr, since nothing else reads it.
+    modes_chosen_this_turn: frozenset[str] = frozenset()
 
 
 @dataclass(frozen=True)
@@ -237,6 +246,7 @@ def _canonical_unit(unit: UnitInstance) -> tuple:
         unit.moved_this_turn,
         unit.buffed,
         unit.stunned,
+        tuple(sorted(unit.modes_chosen_this_turn)),
     )
 
 
