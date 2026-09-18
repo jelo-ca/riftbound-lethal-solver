@@ -1429,6 +1429,7 @@ PIT_ROOKIE = "ogn-136-298"  # "When you play me, buff another friendly unit."
 TRIFARIAN_GLORYSEEKER = "ogn-217-298"  # [Legion] "When you play me, buff me."
 PEAK_GUARDIAN = "ogn-223-298"  # "When you play me, buff me. Then, if I am at a battlefield, buff all other friendly units there."
 STORMCLAW_URSINE = "ogn-137-298"  # [Tank] "When you play me, channel 1 rune exhausted."
+ALBUS_FERROS = "ogn-230-298"  # "When you play me, spend any number of buffs. For each buff spent, channel 1 rune exhausted."
 RECRUIT_TOKEN = "ogn-271-298"  # one of three same-stat printings (see card_pool.py); this one
 # picked as the canonical id for tokens minted by card effects.
 RECRUIT_TOKEN_CARD = CardDef(card_id=RECRUIT_TOKEN, card_type="Unit", energy_cost=0,
@@ -1532,6 +1533,51 @@ def _stormclaw_ursine_effect(state_after_play: GameState, action: PlayUnit) -> l
 
 def _stormclaw_ursine_candidates(state: GameState, base_action: PlayUnit, card: CardDef) -> list[tuple]:
     return [("channel",)]
+
+
+def _albus_ferros_is_legal(state: GameState, action: PlayUnit, card: CardDef) -> bool:
+    """trigger_params = a subset (no repeats) of currently-buffed friendly
+    units to spend, evaluated against the board AFTER Albus Ferros himself
+    is placed — same shape as Overt Operation's spend-and-ready choice,
+    minus the readying. He can never be among the choices: he just
+    entered and starts unbuffed, so "must currently be buffed" already
+    rules him out. "Any number" includes zero, so the empty subset (spend
+    nothing, channel nothing) is legal — this trigger is never mandatory."""
+    if len(set(action.trigger_params)) != len(action.trigger_params):
+        return False
+    state_after_play = apply_play_unit(state, dataclasses.replace(
+        action, trigger_params=(), trigger_payment=None), card)
+    buffed_ids = {u.instance_id for u in _friendly_units_anywhere(state_after_play) if u.buffed}
+    return all(target in buffed_ids for target in action.trigger_params)
+
+
+def _albus_ferros_effect(state_after_play: GameState, action: PlayUnit) -> list[GameState]:
+    """"For each buff spent, channel 1 rune exhausted" — one domain-less,
+    already-Exhausted rune per buff (RULING 1, project owner, 2026-09-18;
+    see state.add_runes's docstring for why "exhausted" makes each one a
+    real but narrow effect, not observable until something readies runes
+    later the same turn)."""
+    from .state import add_runes  # deferred, same reasoning as other cross-module imports here
+    for target in action.trigger_params:
+        state_after_play = spend_buff(state_after_play, target)
+    if action.trigger_params:
+        player = state_after_play.players[state_after_play.turn_player]
+        new_pool = add_runes(player.runes, (None,) * len(action.trigger_params), exhausted=True)
+        state_after_play = replace_player(state_after_play, state_after_play.turn_player,
+                                          dataclasses.replace(player, runes=new_pool))
+    return [state_after_play]
+
+
+def _albus_ferros_candidates(state: GameState, base_action: PlayUnit, card: CardDef) -> list[tuple]:
+    """Every subset of currently-buffed friendly units — same "2**N
+    independent choices" shape as Overt Operation, not "up to N"."""
+    state_after_play = apply_play_unit(state, base_action, card)
+    ids = [u.instance_id for u in sorted(_friendly_units_anywhere(state_after_play), key=lambda u: u.instance_id)
+           if u.buffed]
+    out: list[tuple] = []
+    for size in range(len(ids) + 1):
+        out.extend(itertools.combinations(ids, size))
+    return out
 
 
 def _vanguard_captain_is_legal(state: GameState, action: PlayUnit, card: CardDef) -> bool:
@@ -1911,6 +1957,7 @@ UNIT_PLAY_TRIGGERS: dict[str, tuple[
     SPECTRAL_MATRON: (_spectral_matron_is_legal, _spectral_matron_effect, _spectral_matron_candidates),
     STORMCLAW_URSINE: (_stormclaw_ursine_is_legal, _stormclaw_ursine_effect,
                         _stormclaw_ursine_candidates),
+    ALBUS_FERROS: (_albus_ferros_is_legal, _albus_ferros_effect, _albus_ferros_candidates),
 }
 
 

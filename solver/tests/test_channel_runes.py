@@ -14,23 +14,25 @@ the per-buff-spent shape (Albus Ferros).
 import dataclasses
 
 from solver.engine.abilities import (
+    ALBUS_FERROS,
     STORMCLAW_URSINE,
     is_legal_unit_play_trigger,
     resolve_unit_play_trigger_outcomes,
 )
 from solver.engine.actions import PlayUnit, generate_rune_payments
 from solver.engine.card_pool import card_def
-from solver.engine.state import BattlefieldState, GameState, PlayerState, RunePool
+from solver.engine.state import BattlefieldState, GameState, PlayerState, RunePool, UnitInstance
 from solver.search import legal_actions
 
 STORMCLAW_URSINE_CARD = card_def(STORMCLAW_URSINE)
+ALBUS_FERROS_CARD = card_def(ALBUS_FERROS)
 
 
-def make_root(hand, runes=(), cards_played_this_turn=0):
+def make_root(hand, runes=(), cards_played_this_turn=0, base_units=frozenset()):
     return GameState(
         turn_player=0,
         players=(
-            PlayerState(base_units=frozenset(), hand=hand, runes=RunePool(available=runes), score=0),
+            PlayerState(base_units=base_units, hand=hand, runes=RunePool(available=runes), score=0),
             PlayerState(base_units=frozenset(), hand=(), runes=RunePool(available=()), score=0),
         ),
         battlefields=(
@@ -77,3 +79,62 @@ def test_stormclaw_ursine_only_the_triggered_form_is_a_legal_action():
     play_unit_actions = [a for a in legal_actions(root, cards) if isinstance(a, PlayUnit)]
     assert len(play_unit_actions) == 1
     assert play_unit_actions[0].trigger_params == ("channel",)
+
+
+# --- Albus Ferros: "spend any number of buffs, channel 1 rune exhausted each" ---
+
+
+def _buffed_unit(instance_id, controller=0):
+    return UnitInstance(card_id="tok", instance_id=instance_id, controller=controller,
+                        might=1, keywords=frozenset(), exhausted=False, damage=0,
+                        is_token=True, buffed=True)
+
+
+def test_albus_ferros_declining_is_legal_and_channels_nothing():
+    """"Any number" includes zero — not mandatory, unlike Stormclaw Ursine."""
+    buffed = _buffed_unit(5)
+    runes = ("Fury",) * ALBUS_FERROS_CARD.energy_cost
+    root = make_root(hand=(ALBUS_FERROS,), runes=runes, base_units=frozenset({buffed}))
+    payment = generate_rune_payments(root.players[0].runes, ALBUS_FERROS_CARD.energy_cost,
+                                      ALBUS_FERROS_CARD.power_cost, ALBUS_FERROS_CARD.power_domain)[0]
+    action = PlayUnit(card_id=ALBUS_FERROS, target_zone="base", rune_payment=payment, trigger_params=())
+    assert is_legal_unit_play_trigger(root, action, ALBUS_FERROS_CARD)
+    outcomes = resolve_unit_play_trigger_outcomes(root, action, ALBUS_FERROS_CARD)
+    assert outcomes[0].players[0].runes.available.count(None) == 0
+    assert next(u for u in outcomes[0].players[0].base_units if u.instance_id == 5).buffed
+
+
+def test_albus_ferros_spending_two_buffs_channels_two_domain_less_runes():
+    buffed_a, buffed_b = _buffed_unit(5), _buffed_unit(6)
+    runes = ("Fury",) * ALBUS_FERROS_CARD.energy_cost
+    root = make_root(hand=(ALBUS_FERROS,), runes=runes, base_units=frozenset({buffed_a, buffed_b}))
+    payment = generate_rune_payments(root.players[0].runes, ALBUS_FERROS_CARD.energy_cost,
+                                      ALBUS_FERROS_CARD.power_cost, ALBUS_FERROS_CARD.power_domain)[0]
+    action = PlayUnit(card_id=ALBUS_FERROS, target_zone="base", rune_payment=payment,
+                       trigger_params=(5, 6))
+    assert is_legal_unit_play_trigger(root, action, ALBUS_FERROS_CARD)
+    outcomes = resolve_unit_play_trigger_outcomes(root, action, ALBUS_FERROS_CARD)
+    result_units = outcomes[0].players[0].base_units
+    assert not next(u for u in result_units if u.instance_id == 5).buffed
+    assert not next(u for u in result_units if u.instance_id == 6).buffed
+    assert outcomes[0].players[0].runes.available.count(None) == 2
+
+
+def test_albus_ferros_cannot_spend_a_buff_he_does_not_have():
+    root = make_root(hand=(ALBUS_FERROS,), runes=("Fury",) * ALBUS_FERROS_CARD.energy_cost)
+    payment = generate_rune_payments(root.players[0].runes, ALBUS_FERROS_CARD.energy_cost,
+                                      ALBUS_FERROS_CARD.power_cost, ALBUS_FERROS_CARD.power_domain)[0]
+    # No buffed unit at all on the board — instance_id 5 doesn't exist.
+    action = PlayUnit(card_id=ALBUS_FERROS, target_zone="base", rune_payment=payment,
+                       trigger_params=(5,))
+    assert not is_legal_unit_play_trigger(root, action, ALBUS_FERROS_CARD)
+
+
+def test_albus_ferros_appears_in_legal_actions_with_every_buff_subset():
+    buffed_a, buffed_b = _buffed_unit(5), _buffed_unit(6)
+    root = make_root(hand=(ALBUS_FERROS,), runes=("Fury",) * ALBUS_FERROS_CARD.energy_cost,
+                     base_units=frozenset({buffed_a, buffed_b}))
+    cards = {ALBUS_FERROS: ALBUS_FERROS_CARD}
+    play_unit_actions = [a for a in legal_actions(root, cards) if isinstance(a, PlayUnit)]
+    subsets = {a.trigger_params for a in play_unit_actions}
+    assert subsets == {(), (5,), (6,), (5, 6)}

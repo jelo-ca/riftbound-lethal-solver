@@ -315,6 +315,11 @@ HANDLED: dict[str, str] = {
     "ogn-137-298": "Stormclaw Ursine — [Tank] via traits.TRAIT_REGISTRY, mandatory "
                    "\"when you play me, channel 1 rune exhausted\" via "
                    "abilities.UNIT_PLAY_TRIGGERS and state.add_runes",
+    "ogn-230-298": "Albus Ferros — \"when you play me, spend any number of buffs. For "
+                   "each buff spent, channel 1 rune exhausted\" via "
+                   "abilities.UNIT_PLAY_TRIGGERS, the same 2**N-subset candidate shape "
+                   "as Overt Operation's spend-and-ready choice; \"any number\" includes "
+                   "zero, so this is optional rather than mandatory",
 }
 
 
