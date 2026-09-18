@@ -226,14 +226,10 @@ HANDLED: dict[str, str] = {
                    "abilities.SALVAGE/actions.kill_gear. \"A gear\" is unqualified — "
                    "either player's, same convention as Orb of Regret's unqualified "
                    "\"a unit\" (engine/gear.py's module docstring). Draw is a no-op, no "
-                   "Main Deck. Optional, so declining is always legal. Cannot target "
-                   "Treasure Trove specifically (gear.GEAR_DEATH_REACTIONS): its own "
-                   "\"when this leaves the board\" reaction needs a RunePool change out "
-                   "of scope here — restrictive, not permissive, same convention as "
-                   "play_unit_from_trash excluding trash units with their own "
-                   "UNIT_PLAY_TRIGGERS. Scrapheap has no such restriction — its own "
-                   "on-death reaction is separately proven inert (see below), so "
-                   "killing it through Salvage is unrestricted.",
+                   "Main Deck. Optional, so declining is always legal. Every Gear is now "
+                   "a legal target, Treasure Trove included (gear-cluster-2, this pass): "
+                   "actions.kill_gear fires gear.fire_gear_leaves_board_reactions itself, "
+                   "so its \"when this leaves the board\" reaction is no longer dropped.",
     # [Conquer] triggers — engine/conquer.py, hooked into
     # scoring.resolve_control_change.
     "ogn-164-298": "Sett, Brawler — \"when I'm played and when I conquer, buff me\" "
@@ -603,6 +599,18 @@ HANDLED: dict[str, str] = {
                    "paths already share) — consumed by the next spell whether or not it dealt "
                    "any damage, matching \"the next spell you play\" rather than \"the next "
                    "damage spell.\"",
+    "ogn-186-298": "Treasure Trove — Gear, \"When this leaves the board, draw 1 and channel "
+                   "1 rune exhausted. [Chaos rune], Exhaust: Kill this.\" Re-investigated "
+                   "this pass (previously excluded from Salvage's kill-target candidates as "
+                   "an unbuilt reaction — see the Salvage entry above): the rune-channel "
+                   "subsystem this needed already exists (state.add_runes), and "
+                   "gear.fire_gear_leaves_board_reactions is the new missing hook, called "
+                   "from actions.kill_gear AND this module's own Pack of Wonders bounce "
+                   "effect (both are \"leaves the board\" — a kill and a bounce). Draw is a "
+                   "no-op; the channel is real (RULING 1: domain-less, Energy-only, arrives "
+                   "already-exhausted). Its own \"[Chaos rune], Exhaust: Kill this\" is a "
+                   "plain gear.GEAR_ABILITIES entry that calls actions.kill_gear on itself, "
+                   "which correctly fires its own leaves-board reaction in turn.",
 }
 
 # Investigated alongside the choice-bearing [Conquer] cluster above and

@@ -704,6 +704,59 @@ def test_pirates_haven_reachable_through_legal_actions_via_first_mate():
     assert readied.might == 3  # +1 from Pirate's Haven
 
 
+# --- Treasure Trove: "When this leaves the board, draw 1 and channel 1
+# rune exhausted. [Chaos rune], Exhaust: Kill this." ---
+
+
+TREASURE_TROVE = gear.TREASURE_TROVE
+
+
+def test_treasure_trove_kills_itself_and_channels_a_rune():
+    from solver.engine.state import energy_capacity
+
+    state = make_state(gear_pieces=frozenset({ready_gear(TREASURE_TROVE)}),
+                        runes=("Chaos",))
+    action = _activate(TREASURE_TROVE, (), payment=RunePayment(energy_runes=(), power_runes=("Chaos",)))
+    assert gear.is_legal_gear_ability(state, action)
+    result = gear.apply_gear_ability(state, action)
+    assert result.players[0].gear == frozenset()
+    assert TREASURE_TROVE in result.players[0].trash
+    # One new domain-less rune (RULING 1) on top of the starting Chaos one,
+    # arriving already-exhausted — the original Chaos rune only spent its
+    # POWER on this ability's own cost, so its OWN Energy is untouched.
+    assert len(result.players[0].runes.available) == 2
+    assert None in result.players[0].runes.available
+    assert energy_capacity(result.players[0].runes) == 1
+
+
+def test_treasure_trove_needs_the_chaos_rune_to_activate():
+    state = make_state(gear_pieces=frozenset({ready_gear(TREASURE_TROVE)}))
+    action = _activate(TREASURE_TROVE, (), payment=None)
+    assert not gear.is_legal_gear_ability(state, action)
+
+
+def test_pack_of_wonders_bouncing_treasure_trove_also_fires_its_reaction():
+    """A bounce leaves the board same as a kill — the reaction doesn't
+    care which removal path triggered it."""
+    trove = GearInstance(card_id=TREASURE_TROVE, instance_id=51, exhausted=False)
+    state = make_state(gear_pieces=frozenset({ready_gear(gear.PACK_OF_WONDERS), trove}))
+    action = ActivateAbility(source_id=50, ability_id=gear.PACK_OF_WONDERS,
+                              params=("gear", 51), rune_payment=None)
+    assert gear.is_legal_gear_ability(state, action)
+    result = gear.apply_gear_ability(state, action)
+    assert result.players[0].hand == (TREASURE_TROVE,)
+    assert None in result.players[0].runes.available
+
+
+def test_treasure_trove_reachable_through_legal_actions():
+    state = make_state(gear_pieces=frozenset({ready_gear(TREASURE_TROVE)}), runes=("Chaos",))
+    acts = [a for a in search.legal_actions(state, {})
+            if isinstance(a, ActivateAbility) and a.ability_id == TREASURE_TROVE]
+    assert acts, "Treasure Trove's kill-this ability is not being generated"
+    result = gear.apply_gear_ability(state, acts[0])
+    assert result.players[0].gear == frozenset()
+
+
 def test_pack_of_wonders_reachable_through_legal_actions():
     """End-to-end proof through search.legal_actions, same as Ballista's
     own reachability test above — a new Gear ability is exactly the class

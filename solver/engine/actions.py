@@ -661,19 +661,17 @@ def kill_gear(state: GameState, controller: int, gear_piece: GearInstance) -> Ga
     (deaths._send_to_trash) — no printed Gear text redirects it anywhere
     else on death (contrast Ekko, Recurrent's "recycle me").
 
-    Deliberately no Deathknell-style hook here: unlike units, nothing
-    could ever kill *another* controller's Gear before this function
-    existed, so no "when your gear dies" trigger has ever needed one.
-    Treasure Trove reacts to its OWN death ("when this leaves the
-    board...") with an effect this engine can't fire yet (it needs a
-    RunePool change) — see gear.GEAR_DEATH_REACTIONS, which callers must
-    exclude from their own kill-target candidates until that lands, same
-    "restrictive, not permissive" convention as play_unit_from_trash
-    excluding units with their own UNIT_PLAY_TRIGGERS."""
+    Fires gear.fire_gear_leaves_board_reactions AFTER the removal — same
+    "react to the state its own departure produced" convention as
+    deaths.fire_death_triggers — for "when this leaves the board" text
+    (Treasure Trove). Deferred import: gear.py imports this module, so
+    importing it back at this module's top level would cycle."""
     state = replace_gear(state, controller, gear_piece, None)
     player = state.players[controller]
-    return replace_player(state, controller, dataclasses.replace(
+    state = replace_player(state, controller, dataclasses.replace(
         player, trash=player.trash + (gear_piece.card_id,)))
+    from . import gear  # deferred — see above
+    return gear.fire_gear_leaves_board_reactions(state, gear_piece.card_id, controller)
 
 
 # --- PlaySpell (generic cost/hand bookkeeping; effects live in abilities.py) --

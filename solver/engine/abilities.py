@@ -1191,14 +1191,14 @@ SALVAGE = "ogn-224-298"
 
 def _salvage_candidates(state: GameState) -> list[tuple]:
     """Declining (the empty tuple, leaving only the no-op draw) is always
-    legal. Gear with its own unbuilt on-death reaction is excluded from
-    the kill target list — see gear.GEAR_DEATH_REACTIONS — rather than
-    silently dropping that reaction on the floor."""
+    legal. Every Gear is a legal kill target now — actions.kill_gear fires
+    gear.fire_gear_leaves_board_reactions itself (Treasure Trove's own
+    "when this leaves the board" reaction is no longer dropped on the
+    floor, now that the hook and the rune-channel subsystem both exist)."""
     out: list[tuple] = [()]
     for player in state.players:
         for piece in sorted(player.gear, key=lambda g: g.instance_id):
-            if piece.card_id not in gear.GEAR_DEATH_REACTIONS:
-                out.append((piece.instance_id,))
+            out.append((piece.instance_id,))
     return out
 
 
@@ -1207,11 +1207,7 @@ def _salvage_is_legal(state: GameState, action: PlaySpell) -> bool:
         return True
     if len(action.params) != 1:
         return False
-    located = find_gear(state, action.params[0])
-    if located is None:
-        return False
-    piece, _ = located
-    return piece.card_id not in gear.GEAR_DEATH_REACTIONS
+    return find_gear(state, action.params[0]) is not None
 
 
 def _salvage_effect(state: GameState, action: PlaySpell) -> list[GameState]:
