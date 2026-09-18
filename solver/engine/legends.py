@@ -28,6 +28,7 @@ from .actions import (
     consume_runes,
     payment_is_affordable,
     find_unit,
+    find_unit_anywhere,
     is_legal_ability_move_destination,
     relocate_unit,
 )
@@ -36,11 +37,17 @@ from .state import GameState, replace_player
 LEGEND_SOURCE_ID = 0
 
 YASUO_UNFORGIVEN = "ogn-259-298"  # 2 Energy, Exhaust: Move a friendly unit to or from its base.
+BLIND_MONK = "ogn-257-298"  # 1 Energy, Exhaust: Buff a friendly unit.
+BLIND_MONK_NX = "ogn-304-298"  # same Legend, alternate printing
+BLIND_MONK_STAR = "ogn-304-star-298"  # same Legend, alternate printing
 
 # card_id -> (energy_cost, power_cost, power_domain) for the ability's
 # rune cost on top of its Exhaust cost.
 ABILITY_COSTS: dict[str, tuple[int, int, Optional[str]]] = {
     YASUO_UNFORGIVEN: (2, 0, None),
+    BLIND_MONK: (1, 0, None),
+    BLIND_MONK_NX: (1, 0, None),
+    BLIND_MONK_STAR: (1, 0, None),
 }
 
 
@@ -117,6 +124,30 @@ def _yasuo_unforgiven_candidates(state: GameState) -> list[tuple]:
     return candidates
 
 
+def _blind_monk_is_legal(state: GameState, action: ActivateAbility) -> bool:
+    """params = (target_instance_id,). "Buff a friendly unit" — no
+    restriction to a battlefield, so Base counts too. Only ever chooses
+    our own units, so no [Deflect] tax can ever be owed."""
+    if len(action.params) != 1:
+        return False
+    located = find_unit_anywhere(state, action.params[0])
+    return located is not None and located[0].controller == state.turn_player
+
+
+def _blind_monk_effect(state: GameState, action: ActivateAbility) -> list[GameState]:
+    from .abilities import apply_buff  # deferred: abilities imports this module
+    return [apply_buff(state, action.params[0])]
+
+
+def _blind_monk_candidates(state: GameState) -> list[tuple]:
+    player = state.players[state.turn_player]
+    candidates = [(u.instance_id,) for u in sorted(player.base_units, key=lambda u: u.instance_id)]
+    candidates += [(u.instance_id,) for bf in state.battlefields
+                   for u in sorted(bf.units, key=lambda u: u.instance_id)
+                   if u.controller == state.turn_player]
+    return candidates
+
+
 # card_id -> (is_legal(state, action), effect(state, action) -> list[GameState],
 #             generate_candidate_params(state))
 LEGEND_ABILITIES: dict[str, tuple[
@@ -126,6 +157,9 @@ LEGEND_ABILITIES: dict[str, tuple[
 ]] = {
     YASUO_UNFORGIVEN: (_yasuo_unforgiven_is_legal, _yasuo_unforgiven_effect,
                         _yasuo_unforgiven_candidates),
+    BLIND_MONK: (_blind_monk_is_legal, _blind_monk_effect, _blind_monk_candidates),
+    BLIND_MONK_NX: (_blind_monk_is_legal, _blind_monk_effect, _blind_monk_candidates),
+    BLIND_MONK_STAR: (_blind_monk_is_legal, _blind_monk_effect, _blind_monk_candidates),
 }
 
 

@@ -176,6 +176,27 @@ HANDLED: dict[str, str] = {
                    "gets nothing from the second trigger), \"spend my buff: give me "
                    "+4 Might\" via ABILITY_EFFECTS",
     "ogn-164a-298": "Sett, Brawler — same card as ogn-164-298, alternate art",
+    "ogn-147-298": "Wildclaw Shaman — \"you may spend a buff to buff me and ready me\" "
+                   "via UNIT_PLAY_TRIGGERS; the buff-spend target must already carry a "
+                   "buff, which also rules out targeting itself (it just entered)",
+    "ogn-151-298": "Lee Sin, Centered — \"other buffed friendly units at my battlefield "
+                   "have +2 Might\" via traits.BUFF_MIGHT_AURA_SOURCES, a co-located "
+                   "conditional Might aura alongside AURA_SOURCES' trait grants",
+    "ogn-151a-298": "Lee Sin, Centered — same card, alternate printing",
+    "ogn-153-298": "Overt Operation — \"for each friendly unit, you may spend its buff "
+                   "to ready it, then buff all friendly units\" via SPELL_EFFECTS; the "
+                   "per-unit spend choice is independent, so candidates are the full "
+                   "powerset of currently-buffed friendly units, not a capped count",
+    "ogn-240-298": "Sett, Kingpin — [Tank] handled; \"+1 Might for each buffed friendly "
+                   "unit at my battlefield\" (itself included) via "
+                   "traits.SELF_COUNT_MIGHT, a counting variant of SelfConditional's "
+                   "boolean condition — the count reads unit.buffed on each occupant, "
+                   "never Might, so the non-circularity invariant holds",
+    "ogn-240a-298": "Sett, Kingpin — same card, alternate printing",
+    "ogn-257-298": "Blind Monk — Legend, \"1 Energy, Exhaust: Buff a friendly unit\" via "
+                   "legends.LEGEND_ABILITIES, same shape as Yasuo, Unforgiven",
+    "ogn-304-298": "Blind Monk — same Legend, alternate printing",
+    "ogn-304-star-298": "Blind Monk — same Legend, alternate printing",
 }
 
 

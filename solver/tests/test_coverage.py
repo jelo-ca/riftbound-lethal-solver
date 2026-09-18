@@ -142,6 +142,25 @@ def test_being_in_card_pool_does_not_clear_a_card(monkeypatch):
     assert coverage.classify(victim) == "blocking"
 
 
+def test_being_a_registered_legend_ability_does_not_clear_it(monkeypatch):
+    """The Legend-side analogue: Yasuo, Unforgiven's ability has been a
+    complete, tested, legal_actions-reachable legends.LEGEND_ABILITIES
+    entry since before this session and is STILL "blocking" here — nobody
+    has written its coverage ledger entry yet, which is exactly the state
+    the ledger is supposed to be able to represent. Blind Monk must be
+    cleared on its own ledger entry, not because legends.py can run it."""
+    from solver.engine import legends
+
+    assert legends.is_legend_ability(legends.YASUO_UNFORGIVEN)
+    assert coverage.classify(legends.YASUO_UNFORGIVEN) == "blocking"
+
+    victim = "ogn-257-298"  # Blind Monk
+    assert legends.is_legend_ability(victim) and coverage.classify(victim) == "handled"
+    monkeypatch.delitem(coverage.HANDLED, victim)
+    assert legends.is_legend_ability(victim)  # legends.py is untouched
+    assert coverage.classify(victim) == "blocking"
+
+
 def test_every_handled_card_has_stats_available():
     """Nothing should be cleared as handled that the engine has no stats
     for — that's a different flavour of the same lie. A card in HAND with
@@ -150,8 +169,22 @@ def test_every_handled_card_has_stats_available():
     no such line existing.
 
     Stats may come from the hand-written pool OR be derived from the card
-    cache; what matters is that something can describe it."""
+    cache; what matters is that something can describe it.
+
+    Legends are the one structural exception: a Legend is never drawn or
+    played from hand (legends.py's own docstring — LegendState carries a
+    bare card_id, no cost fields at all, since it starts in its own zone
+    as part of the puzzle's initial position) and its ability's
+    reachability runs through player.legend directly in search.py, not
+    through the cards/CardDef table this test exists to guard. So the
+    exact failure mode this test checks for — "skipped by action
+    generation because nothing could describe it" — cannot happen to one,
+    and CardType has no Legend representation for card_def() to produce
+    regardless (see card_data.py's REPRESENTABLE_TYPES)."""
+    cache = json.loads(coverage.card_names.CACHE_PATH.read_text(encoding="utf-8"))
     for card_id in coverage.HANDLED:
+        if cache.get(card_id, {}).get("type") == "Legend":
+            continue
         assert card_def(card_id) is not None, \
             f"{card_id} cleared as handled but nothing can supply its stats"
 
