@@ -42,6 +42,15 @@ class UnitInstance:
     # +1 Might", "spend any number of buffs". A buff that had been added
     # straight to Might would be invisible to both.
     buffed: bool = False
+    # RULES ANSWER (project owner, 2026-09-18): a stunned unit stays on the
+    # board, alive and targetable, and its OWN death threshold is entirely
+    # unaffected — only its SIDE's damage-dealing pool for the Combat
+    # Damage Step ignores it (combat.side_damage_pool is the one place
+    # that reads this; traits.effective_might, which still governs this
+    # unit's own death threshold, never does). Binary and non-stacking,
+    # same "rest of this single-turn puzzle, no expiry bookkeeping" shape
+    # as `buffed` above — a puzzle never reaches a second turn.
+    stunned: bool = False
 
 
 @dataclass(frozen=True)
@@ -227,6 +236,7 @@ def _canonical_unit(unit: UnitInstance) -> tuple:
         unit.is_token,
         unit.moved_this_turn,
         unit.buffed,
+        unit.stunned,
     )
 
 
