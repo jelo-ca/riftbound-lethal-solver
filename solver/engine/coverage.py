@@ -595,6 +595,24 @@ CONDITIONALLY_CLEARED: dict[str, tuple[str, "object"]] = {
     "ogn-171-298": ("Mystic Poro — [Vision] only", _vision_inert_unless_karma),
     "ogn-086-298": ("Jeweled Colossus — [Shield] implemented, [Vision] dead without Karma",
                     _vision_inert_unless_karma),
+    "ogn-174-298": ("Sai Scout — [Vision] dead without Karma; \"you may play me to an open "
+                    "battlefield\" via CardDef.can_play_to_open_battlefield (auto-derived from "
+                    "the printed text, same generic mechanism as Sneaky Deckhand)",
+                    _vision_inert_unless_karma),
+    # Gemcraft Seer's printed text is "[Vision]... Other friendly units
+    # have [Vision]" (verified against the cache directly — an earlier
+    # scoping pass for this sweep described the aura as granting [Shield],
+    # which the actual printing does not say). Vision is never a coded
+    # mechanic in this engine either way (nothing reads the keyword for
+    # combat/movement), so the aura granting it to other units collapses
+    # into exactly the same "no Main Deck, unless Karma" question as her
+    # own copy — no separate aura wiring needed, unlike Taric/Captain
+    # Farron's genuinely combat-relevant [Shield]/[Assault] auras.
+    "ogn-100-298": ("Gemcraft Seer — [Vision] (own copy, dead without Karma) plus \"other "
+                    "friendly units have [Vision]\" — an aura granting the SAME "
+                    "provably-inert-unless-Karma keyword, not a combat-relevant trait, so "
+                    "the whole card reduces to the one condition",
+                    _vision_inert_unless_karma),
 }
 
 
