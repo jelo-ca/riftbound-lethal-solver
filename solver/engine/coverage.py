@@ -331,6 +331,17 @@ HANDLED: dict[str, str] = {
                    "interaction test for the case where it actually matters.",
     "ogn-300-298": "Relentless Storm — same Legend as ogn-249-298, alternate printing",
     "ogn-300-star-298": "Relentless Storm — same Legend as ogn-249-298, alternate printing",
+    # "Channel N runes exhausted. If you can't/couldn't, draw 1." — the
+    # fallback branch is dead text in THIS engine specifically: there is no
+    # Rune Deck modelled at all (RULING 1), so "channel N runes exhausted"
+    # is never something the engine can fail to do (contrast "draw," which
+    # fails because the deck is EMPTY, not absent as a concept). Always the
+    # primary clause, via abilities.SPELL_EFFECTS and state.add_runes.
+    "ogn-134-298": "Mobilize — \"Channel 1 rune exhausted. If you can't, draw 1.\" — "
+                   "the draw branch is unreachable in this model, see the comment "
+                   "above; always channels",
+    "ogn-138-298": "Catalyst of Aeons — \"Channel 2 runes exhausted. If you couldn't "
+                   "channel 2 runes this way, draw 1.\" — same reasoning as Mobilize",
 }
 
 

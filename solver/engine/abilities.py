@@ -424,6 +424,35 @@ def _rebuke_effect(state: GameState, action: PlaySpell) -> list[GameState]:
     return [return_unit_to_hand(state, bf_id, action.params[0])]
 
 
+MOBILIZE = "ogn-134-298"  # "Channel 1 rune exhausted. If you can't, draw 1."
+CATALYST_OF_AEONS = "ogn-138-298"  # "Channel 2 runes exhausted. If you couldn't channel 2 runes this way, draw 1."
+
+
+def _channel_exhausted_is_legal(state: GameState, action: PlaySpell) -> bool:
+    return action.params == ()
+
+
+def _mobilize_effect(state: GameState, action: PlaySpell) -> list[GameState]:
+    """"If you can't, draw 1" is dead text in THIS engine specifically: no
+    Rune Deck is modelled at all (RULING 1, project owner, 2026-09-18), so
+    "channel 1 rune exhausted" is never something the engine can fail to
+    do — the failure branch has no state that could trigger it, unlike
+    "draw" (which fails because the deck is empty, not absent). Always
+    resolves to the primary clause."""
+    from .state import add_runes
+    player = state.players[state.turn_player]
+    new_pool = add_runes(player.runes, (None,), exhausted=True)
+    return [replace_player(state, state.turn_player, dataclasses.replace(player, runes=new_pool))]
+
+
+def _catalyst_of_aeons_effect(state: GameState, action: PlaySpell) -> list[GameState]:
+    """Same reasoning as Mobilize, for 2 runes."""
+    from .state import add_runes
+    player = state.players[state.turn_player]
+    new_pool = add_runes(player.runes, (None, None), exhausted=True)
+    return [replace_player(state, state.turn_player, dataclasses.replace(player, runes=new_pool))]
+
+
 def _grand_strategem_is_legal(state: GameState, action: PlaySpell) -> bool:
     return action.params == ()
 
@@ -1196,6 +1225,8 @@ SPELL_EFFECTS: dict[str, tuple[
     OVERT_OPERATION: (_overt_operation_is_legal, _overt_operation_effect, _overt_operation_candidates),
     MORBID_RETURN: (_morbid_return_is_legal, _morbid_return_effect, _morbid_return_candidates),
     THE_HARROWING: (_the_harrowing_is_legal, _the_harrowing_effect, _the_harrowing_candidates),
+    MOBILIZE: (_channel_exhausted_is_legal, _mobilize_effect, lambda state: [()]),
+    CATALYST_OF_AEONS: (_channel_exhausted_is_legal, _catalyst_of_aeons_effect, lambda state: [()]),
 }
 
 

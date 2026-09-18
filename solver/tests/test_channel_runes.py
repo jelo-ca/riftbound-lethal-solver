@@ -16,11 +16,15 @@ import dataclasses
 
 from solver.engine.abilities import (
     ALBUS_FERROS,
+    CATALYST_OF_AEONS,
+    MOBILIZE,
     STORMCLAW_URSINE,
+    is_legal_play_spell,
     is_legal_unit_play_trigger,
+    resolve_spell_outcomes,
     resolve_unit_play_trigger_outcomes,
 )
-from solver.engine.actions import PlayUnit, apply_play_unit, generate_rune_payments
+from solver.engine.actions import PlaySpell, PlayUnit, apply_play_unit, generate_rune_payments
 from solver.engine.card_pool import card_def
 from solver.engine import legends
 from solver.engine.state import (
@@ -35,6 +39,8 @@ from solver.search import apply, legal_actions
 
 STORMCLAW_URSINE_CARD = card_def(STORMCLAW_URSINE)
 ALBUS_FERROS_CARD = card_def(ALBUS_FERROS)
+MOBILIZE_CARD = card_def(MOBILIZE)
+CATALYST_OF_AEONS_CARD = card_def(CATALYST_OF_AEONS)
 PLAYFUL_PHANTOM = "ogn-049-298"  # vanilla, 5 Might — HANDLED (no printed text)
 PLAYFUL_PHANTOM_CARD = card_def(PLAYFUL_PHANTOM)
 STALWART_PORO = "ogn-052-298"  # [Shield], 2 Might — HANDLED, not Mighty
@@ -266,3 +272,38 @@ def test_relentless_storm_then_ekko_makes_the_channeled_rune_real():
             == energy_capacity(declined_after_ekko.players[0].runes) + 1)
     assert channeled_after_ekko.players[0].runes.available.count(None) == 1
     assert declined_after_ekko.players[0].runes.available.count(None) == 0
+
+
+# --- Mobilize / Catalyst of Aeons: "channel N exhausted, if you can't draw 1" ---
+#
+# The "if you can't" fallback is dead text in this engine: there is no
+# Rune Deck to run out of, so channeling always succeeds (contrast "draw,"
+# which fails because a modelled deck is EMPTY — a different reason, not
+# available here since no deck exists as a concept for runes at all).
+
+
+def test_mobilize_always_takes_the_channel_branch():
+    root = make_root(hand=(MOBILIZE,), runes=("Fury", "Fury"))
+    payment = generate_rune_payments(root.players[0].runes, MOBILIZE_CARD.energy_cost,
+                                      MOBILIZE_CARD.power_cost, MOBILIZE_CARD.power_domain)[0]
+    action = PlaySpell(card_id=MOBILIZE, params=(), rune_payment=payment)
+    assert is_legal_play_spell(root, action, MOBILIZE_CARD)
+    outcomes = resolve_spell_outcomes(root, action, MOBILIZE_CARD)
+    assert len(outcomes) == 1
+    assert outcomes[0].players[0].runes.available.count(None) == 1
+    # Never drew — the only other reachable outcome would have added a
+    # card to hand, which this spell's hand (now empty) can't distinguish
+    # from "nothing happened," so the rune is the observable proof.
+    assert outcomes[0].players[0].hand == ()
+
+
+def test_catalyst_of_aeons_channels_two_domain_less_runes():
+    root = make_root(hand=(CATALYST_OF_AEONS,), runes=("Fury",) * 4)
+    payment = generate_rune_payments(root.players[0].runes, CATALYST_OF_AEONS_CARD.energy_cost,
+                                      CATALYST_OF_AEONS_CARD.power_cost,
+                                      CATALYST_OF_AEONS_CARD.power_domain)[0]
+    action = PlaySpell(card_id=CATALYST_OF_AEONS, params=(), rune_payment=payment)
+    assert is_legal_play_spell(root, action, CATALYST_OF_AEONS_CARD)
+    outcomes = resolve_spell_outcomes(root, action, CATALYST_OF_AEONS_CARD)
+    assert len(outcomes) == 1
+    assert outcomes[0].players[0].runes.available.count(None) == 2
