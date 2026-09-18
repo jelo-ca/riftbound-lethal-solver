@@ -26,6 +26,8 @@ CEMETERY_ATTENDANT = abilities.CEMETERY_ATTENDANT
 MORBID_RETURN = abilities.MORBID_RETURN
 SOULGORGER = abilities.SOULGORGER
 THE_HARROWING = abilities.THE_HARROWING
+SPECTRAL_MATRON = abilities.SPECTRAL_MATRON
+TOO_EXPENSIVE_UNIT = "ogn-215-298"  # Petty Officer — 5 Energy, over Spectral Matron's 3-cap
 DEAD_UNIT = "ogn-052-298"  # Stalwart Poro — any real Unit printing works as trash filler
 DEAD_SPELL = "ogn-004-298"  # Cleave — a real Spell printing, to prove Units-only filtering
 TRIGGERED_UNIT = "ogn-136-298"  # Pit Rookie — a real Unit WITH its own UNIT_PLAY_TRIGGERS entry
@@ -197,3 +199,32 @@ def test_the_harrowing_replays_a_unit_paying_from_what_the_spell_leaves_behind()
     assert any(u.card_id == VI for u in result.players[0].base_units)
     assert THE_HARROWING in result.players[0].trash
     assert VI not in result.players[0].trash
+
+
+# --- Spectral Matron: play a unit from trash, ignoring its WHOLE cost ---
+
+
+def test_spectral_matron_replays_a_unit_for_free():
+    card = card_def(SPECTRAL_MATRON)
+    state = make_state(hand=(SPECTRAL_MATRON,), trash=(DEAD_UNIT,), runes=("Fury",) * 4 + ("Order",) * 2)
+    cards = {SPECTRAL_MATRON: card}
+    action = next(a for a in search.legal_actions(state, cards)
+                  if isinstance(a, PlayUnit) and a.card_id == SPECTRAL_MATRON
+                  and a.trigger_params and a.trigger_params[0] == DEAD_UNIT)
+    [result] = abilities.resolve_unit_play_trigger_outcomes(state, action, card)
+    assert result.players[0].trash == ()
+    replayed = [u for u in result.players[0].base_units if u.card_id == DEAD_UNIT]
+    assert len(replayed) == 1
+    # Nothing spent on the replay: only Spectral Matron's own cost is gone.
+    assert result.players[0].runes.energy_spent == 4
+    assert result.players[0].runes.power_spent == ("Order",) * 2
+
+
+def test_spectral_matron_cannot_replay_a_unit_over_the_cost_cap():
+    card = card_def(SPECTRAL_MATRON)
+    state = make_state(hand=(SPECTRAL_MATRON,), trash=(TOO_EXPENSIVE_UNIT,),
+                        runes=("Fury",) * 4 + ("Order",) * 2)
+    cards = {SPECTRAL_MATRON: card}
+    actions = [a for a in search.legal_actions(state, cards)
+               if isinstance(a, PlayUnit) and a.card_id == SPECTRAL_MATRON and a.trigger_params]
+    assert actions == []

@@ -203,6 +203,12 @@ HANDLED: dict[str, str] = {
                    "SPELL_EFFECTS; the replayed unit's Power payment comes from what "
                    "The Harrowing's OWN cost leaves behind, same \"pay from what's "
                    "left\" shape as [Deflect]'s trigger tax.",
+    "ogn-226-298": "Spectral Matron — optional play trigger, \"play a unit costing "
+                   "<=3 Energy and <=1 Power (any domain) from your trash, ignoring "
+                   "its cost\" (project owner, 2026-09-18, on the bare rainbow icon's "
+                   "meaning). Waives the WHOLE cost, unlike Soulgorger/The Harrowing — "
+                   "reuses play_unit_from_trash with an empty RunePayment. Same "
+                   "no-own-play-trigger restriction on the replayed candidate.",
     # [Conquer] triggers — engine/conquer.py, hooked into
     # scoring.resolve_control_change.
     "ogn-164-298": "Sett, Brawler — \"when I'm played and when I conquer, buff me\" "
