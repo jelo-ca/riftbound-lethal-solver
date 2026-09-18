@@ -234,6 +234,22 @@ def ready_unit(state: GameState, instance_id: int) -> GameState:
     return _replace_unit(state, unit, zone, dataclasses.replace(unit, exhausted=False))
 
 
+def stun_unit(state: GameState, instance_id: int) -> GameState:
+    """Marks a unit stunned for the rest of the turn (UnitInstance.stunned).
+    RULES ANSWER, project owner, 2026-09-18: this does NOT remove the unit
+    from combat and does NOT touch its own Might or death threshold — it
+    only makes combat.side_damage_pool ignore it when totaling its SIDE's
+    damage-dealing pool for the Combat Damage Step. A no-op on an
+    already-stunned unit, same convention as apply_buff/ready_unit/
+    grant_trait not treating a repeat application as progress."""
+    located = find_unit_anywhere(state, instance_id)
+    assert located is not None
+    unit, zone = located
+    if unit.stunned:
+        return state
+    return _replace_unit(state, unit, zone, dataclasses.replace(unit, stunned=True))
+
+
 def _grant_might(state: GameState, instance_id: int, amount: int) -> GameState:
     """Adds `amount` to a unit's `might` wherever it stands — unconditional
     Might raises are just Might (see engine/traits.py's module docstring).
@@ -1985,6 +2001,8 @@ YASUO_REMORSEFUL = "ogn-076-298"  # "When I attack, deal damage equal to my Migh
 YASUO_REMORSEFUL_ALT = "ogn-076a-298"  # same card, alternate art printing
 CRACKSHOT_CORSAIR = "ogn-130-298"  # "When I attack, deal 1 to an enemy unit here."
 DUNE_DRAKE = "ogn-131-298"  # "When I attack, give me +2 Might this turn if there is a ready enemy unit here."
+LEONA_DETERMINED = "ogn-238-298"  # "[Shield] When I attack, stun an enemy unit here."
+LEONA_DETERMINED_ALT = "ogn-238a-298"  # same card, alternate art printing
 
 
 def _attacker_and_battlefield(state: GameState, attacker_instance_id: int):
@@ -2080,6 +2098,16 @@ def _dune_drake_effect(state: GameState, attacker_instance_id: int, trigger_para
     return state
 
 
+def _leona_effect(state: GameState, attacker_instance_id: int, trigger_params: tuple) -> GameState:
+    """"Stun an enemy unit here." Same (enemy_target_id,) shape as
+    Yasuo/Crackshot's own targeted triggers (_single_enemy_here_is_legal/
+    _single_enemy_here_candidates, reused below) — only the effect
+    differs: stun_unit rather than damage. "It doesn't deal combat damage
+    this turn" IS the stun (see combat.side_damage_pool), not a separate
+    clause to model."""
+    return stun_unit(state, trigger_params[0])
+
+
 # card_id -> (is_legal(state, attacker_instance_id, trigger_params),
 #             effect(state, attacker_instance_id, trigger_params) -> GameState,
 #             generate_candidate_params(state, attacker_instance_id))
@@ -2100,6 +2128,8 @@ ATTACK_TRIGGERS: dict[str, tuple[
     CRACKSHOT_CORSAIR: (_single_enemy_here_is_legal, _attack_trigger_flat_damage_effect,
                         _single_enemy_here_candidates),
     DUNE_DRAKE: (_dune_drake_is_legal, _dune_drake_effect, _dune_drake_candidates),
+    LEONA_DETERMINED: (_single_enemy_here_is_legal, _leona_effect, _single_enemy_here_candidates),
+    LEONA_DETERMINED_ALT: (_single_enemy_here_is_legal, _leona_effect, _single_enemy_here_candidates),
 }
 
 

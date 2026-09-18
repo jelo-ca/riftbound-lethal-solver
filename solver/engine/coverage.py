@@ -301,6 +301,18 @@ HANDLED: dict[str, str] = {
     # against co-located controllers, the same shape as En Garde.
     "ogn-055-298": "Wielder of Water — \"while I'm attacking or defending alone, +2 Might\" "
                    "via traits.SELF_CONDITIONALS with the new designation parameter",
+    # Stun (RULES ANSWER, project owner, 2026-09-18): a stunned unit's
+    # Might is ignored when summing its SIDE's damage-dealing pool for the
+    # Combat Damage Step (combat.side_damage_pool) — it stays in combat,
+    # stays targetable, and its own death threshold (traits.effective_might)
+    # is untouched. UnitInstance.stunned, same non-stacking "rest of this
+    # single-turn puzzle" shape as buffed.
+    "ogn-238-298": "Leona, Determined — [Shield] via traits.TRAIT_REGISTRY; mandatory "
+                   "\"when I attack, stun an enemy unit here\" via abilities.ATTACK_TRIGGERS "
+                   "and abilities.stun_unit, same targeted-trigger shape as Yasuo Remorseful/"
+                   "Crackshot Corsair (_single_enemy_here_is_legal/_candidates), only the "
+                   "effect differs",
+    "ogn-238a-298": "Leona, Determined — same card as ogn-238-298, alternate art",
 }
 
 
