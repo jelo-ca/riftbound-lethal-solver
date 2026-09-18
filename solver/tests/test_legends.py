@@ -194,3 +194,51 @@ def test_blind_monk_appears_in_legal_actions():
                if isinstance(a, ActivateAbility) and a.ability_id == BLIND_MONK]
     assert any(a.params == (1,) for a in actions)
     assert all(a.source_id == LEGEND_SOURCE_ID for a in actions)
+
+
+from solver.engine.legends import BOUNTY_HUNTER, HERALD_OF_THE_ARCANE  # noqa: E402
+
+
+def bounty_action(target):
+    return ActivateAbility(source_id=LEGEND_SOURCE_ID, ability_id=BOUNTY_HUNTER,
+                            params=(target,), rune_payment=None)
+
+
+def test_bounty_hunter_grants_ganking_to_any_unit():
+    ally = make_unit(1)
+    enemy = make_unit(2, controller=1)
+    state = make_state(left_units=frozenset({ally, enemy}), left_ctrl=0,
+                        legend=LegendState(BOUNTY_HUNTER))
+    assert legends.is_legal_legend_ability(state, bounty_action(2))  # unrestricted, even an enemy
+    new_state = apply(state, bounty_action(2), {})
+    target = next(u for u in new_state.battlefields[0].units if u.instance_id == 2)
+    assert "Ganking" in target.keywords
+
+
+def test_bounty_hunter_appears_in_legal_actions():
+    ally = make_unit(1)
+    state = make_state(base_units=frozenset({ally}), legend=LegendState(BOUNTY_HUNTER))
+    actions = [a for a in legal_actions(state, {})
+               if isinstance(a, ActivateAbility) and a.ability_id == BOUNTY_HUNTER]
+    assert any(a.params == (1,) for a in actions)
+
+
+def herald_action():
+    return ActivateAbility(source_id=LEGEND_SOURCE_ID, ability_id=HERALD_OF_THE_ARCANE,
+                            params=(), rune_payment=RunePayment(energy_runes=("Fury",), power_runes=()))
+
+
+def test_herald_of_the_arcane_mints_a_token_at_base():
+    state = make_state(legend=LegendState(HERALD_OF_THE_ARCANE), runes=("Fury",))
+    assert legends.is_legal_legend_ability(state, herald_action())
+    new_state = apply(state, herald_action(), {})
+    tokens = [u for u in new_state.players[0].base_units if u.card_id == "ogn-271-298"]
+    assert len(tokens) == 1
+    assert tokens[0].might == 1
+
+
+def test_herald_of_the_arcane_appears_in_legal_actions():
+    state = make_state(legend=LegendState(HERALD_OF_THE_ARCANE), runes=("Fury",))
+    actions = [a for a in legal_actions(state, {})
+               if isinstance(a, ActivateAbility) and a.ability_id == HERALD_OF_THE_ARCANE]
+    assert any(a.params == () for a in actions)

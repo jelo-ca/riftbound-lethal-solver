@@ -253,6 +253,16 @@ HANDLED: dict[str, str] = {
     "ogn-259-298": "Yasuo, Unforgiven — Legend, \"2 Energy, Exhaust: Move a friendly "
                    "unit to or from its base\" via legends.LEGEND_ABILITIES, the same "
                    "generic dispatch (search.py) that makes Blind Monk reachable",
+    "ogn-305-298": "Unforgiven — same Legend as ogn-259-298, alternate printing",
+    "ogn-305-star-298": "Unforgiven — same Legend as ogn-259-298, alternate printing",
+    "ogn-267-298": "Bounty Hunter — Legend, \"Exhaust: Give a unit [Ganking] this turn\" "
+                   "via legends.LEGEND_ABILITIES and abilities.grant_trait; unrestricted "
+                   "target, same reading as Vengeance's \"kill a unit\"",
+    "ogn-265-298": "Herald of the Arcane — Legend, \"1 Energy, Exhaust: Play a 1 Might "
+                   "Recruit unit token\" via legends.LEGEND_ABILITIES and "
+                   "mint_token_unit. Prints no zone (unlike Faithful Manufactor's "
+                   "\"here\" or Machine Evangel's \"into your base\") — restricted to "
+                   "Base pending a definitive reading; restrictive, not permissive.",
     "ogn-295-298": "Vilemaw's Lair — \"Units can't move from here to base\" via "
                    "battlefields.BattlefieldEffect(blocks_move_to_base=True), exercised "
                    "in puzzle 7 and covered directly by test_battlefields.py",
@@ -328,6 +338,11 @@ INERT_FOR_LETHAL: dict[str, str] = {
     "ogn-289-298": "Targon's Peak — \"when you conquer here, ready 2 runes AT THE "
                    "END OF THIS TURN\". Same: the readying lands after every action "
                    "that could have used it.",
+    "ogn-251-298": "Loose Cannon — Legend, \"AT THE START OF YOUR BEGINNING PHASE, "
+                   "draw 1 if you have <=1 card in hand\". The Beginning Phase is "
+                   "already resolved before the Action Phase this engine searches — "
+                   "same pre-turn non-event as Sona/Targon's Peak, and the draw would "
+                   "be a no-op anyway (no Main Deck).",
     # The six Rune cards. Runes are modelled as domains in RunePool, not as
     # cards in a zone, and the Beginning Phase that channels them is
     # already resolved before the question is asked — so a Rune card can

@@ -37,17 +37,25 @@ from .state import GameState, replace_player
 LEGEND_SOURCE_ID = 0
 
 YASUO_UNFORGIVEN = "ogn-259-298"  # 2 Energy, Exhaust: Move a friendly unit to or from its base.
+YASUO_UNFORGIVEN_NX = "ogn-305-298"  # same Legend, alternate printing
+YASUO_UNFORGIVEN_STAR = "ogn-305-star-298"  # same Legend, alternate printing
 BLIND_MONK = "ogn-257-298"  # 1 Energy, Exhaust: Buff a friendly unit.
 BLIND_MONK_NX = "ogn-304-298"  # same Legend, alternate printing
 BLIND_MONK_STAR = "ogn-304-star-298"  # same Legend, alternate printing
+BOUNTY_HUNTER = "ogn-267-298"  # Exhaust: Give a unit [Ganking] this turn.
+HERALD_OF_THE_ARCANE = "ogn-265-298"  # 1 Energy, Exhaust: Play a 1 Might Recruit unit token.
 
 # card_id -> (energy_cost, power_cost, power_domain) for the ability's
 # rune cost on top of its Exhaust cost.
 ABILITY_COSTS: dict[str, tuple[int, int, Optional[str]]] = {
     YASUO_UNFORGIVEN: (2, 0, None),
+    YASUO_UNFORGIVEN_NX: (2, 0, None),
+    YASUO_UNFORGIVEN_STAR: (2, 0, None),
     BLIND_MONK: (1, 0, None),
     BLIND_MONK_NX: (1, 0, None),
     BLIND_MONK_STAR: (1, 0, None),
+    BOUNTY_HUNTER: (0, 0, None),
+    HERALD_OF_THE_ARCANE: (1, 0, None),
 }
 
 
@@ -148,6 +156,47 @@ def _blind_monk_candidates(state: GameState) -> list[tuple]:
     return candidates
 
 
+def _bounty_hunter_is_legal(state: GameState, action: ActivateAbility) -> bool:
+    """params = (target_instance_id,). "Give a unit [Ganking]" — unrestricted
+    target, same reading as Vengeance's "kill a unit" (confirmed against
+    the real card: either player's, Base or a battlefield)."""
+    if len(action.params) != 1:
+        return False
+    return find_unit_anywhere(state, action.params[0]) is not None
+
+
+def _bounty_hunter_effect(state: GameState, action: ActivateAbility) -> list[GameState]:
+    from .abilities import grant_trait  # deferred: abilities imports this module
+    return [grant_trait(state, action.params[0], "Ganking")]
+
+
+def _bounty_hunter_candidates(state: GameState) -> list[tuple]:
+    candidates = []
+    for player in state.players:
+        candidates += [(u.instance_id,) for u in sorted(player.base_units, key=lambda u: u.instance_id)]
+    for bf in state.battlefields:
+        candidates += [(u.instance_id,) for u in sorted(bf.units, key=lambda u: u.instance_id)]
+    return candidates
+
+
+def _herald_of_the_arcane_is_legal(state: GameState, action: ActivateAbility) -> bool:
+    return action.params == ()
+
+
+def _herald_of_the_arcane_effect(state: GameState, action: ActivateAbility) -> list[GameState]:
+    """Text prints no zone ("Play a...token", not "...here" or "...into
+    your base"), unlike Faithful Manufactor/Machine Evangel which are
+    explicit either way. Restricted to Base — restrictive, not
+    permissive, pending a definitive reading."""
+    from .abilities import RECRUIT_TOKEN_CARD  # deferred: abilities imports this module
+    from .actions import mint_token_unit
+    return [mint_token_unit(state, RECRUIT_TOKEN_CARD, state.turn_player, "base")]
+
+
+def _herald_of_the_arcane_candidates(state: GameState) -> list[tuple]:
+    return [()]
+
+
 # card_id -> (is_legal(state, action), effect(state, action) -> list[GameState],
 #             generate_candidate_params(state))
 LEGEND_ABILITIES: dict[str, tuple[
@@ -157,9 +206,16 @@ LEGEND_ABILITIES: dict[str, tuple[
 ]] = {
     YASUO_UNFORGIVEN: (_yasuo_unforgiven_is_legal, _yasuo_unforgiven_effect,
                         _yasuo_unforgiven_candidates),
+    YASUO_UNFORGIVEN_NX: (_yasuo_unforgiven_is_legal, _yasuo_unforgiven_effect,
+                          _yasuo_unforgiven_candidates),
+    YASUO_UNFORGIVEN_STAR: (_yasuo_unforgiven_is_legal, _yasuo_unforgiven_effect,
+                            _yasuo_unforgiven_candidates),
     BLIND_MONK: (_blind_monk_is_legal, _blind_monk_effect, _blind_monk_candidates),
     BLIND_MONK_NX: (_blind_monk_is_legal, _blind_monk_effect, _blind_monk_candidates),
     BLIND_MONK_STAR: (_blind_monk_is_legal, _blind_monk_effect, _blind_monk_candidates),
+    BOUNTY_HUNTER: (_bounty_hunter_is_legal, _bounty_hunter_effect, _bounty_hunter_candidates),
+    HERALD_OF_THE_ARCANE: (_herald_of_the_arcane_is_legal, _herald_of_the_arcane_effect,
+                           _herald_of_the_arcane_candidates),
 }
 
 
