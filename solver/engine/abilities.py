@@ -423,6 +423,34 @@ def _stupefy_effect(state: GameState, action: PlaySpell) -> list[GameState]:
     return [_grant_might(state, action.params[0], -reduction)]
 
 
+BLOCK = "ogn-057-298"  # [Hidden][Action] "Give a unit [Shield 3] and [Tank] this turn."
+HIDDEN_BLADE = "ogn-213-298"  # [Hidden][Action] "Kill a unit at a battlefield. Its controller draws 2."
+
+# [Hidden] is established as never worth using (coverage.py's INERT_FOR_
+# LETHAL section) — hiding spends a rune now to save Energy later, which
+# is strictly worse within a single turn. Every card below also carries
+# an ordinary [Action] speed marker, so it can simply be cast normally at
+# its printed cost like any other spell; Hidden is irrelevant to whether
+# the ENGINE can reason about the effect itself, only to how it could
+# have been paid for.
+
+
+def _block_effect(state: GameState, action: PlaySpell) -> list[GameState]:
+    """Both grants use TRAIT_REGISTRY's generic numeric/bare forms
+    (Cleave already proves "Shield 3"-shaped grants work the same as
+    "Assault 3"), so this needs no new trait machinery."""
+    target = action.params[0]
+    state = grant_trait(state, target, "Shield 3")
+    return [grant_trait(state, target, "Tank")]
+
+
+def _hidden_blade_effect(state: GameState, action: PlaySpell) -> list[GameState]:
+    """"Its controller draws 2" is a no-op (no Main Deck); the kill is the
+    only observable half, same shape as Vengeance but narrowed to a unit
+    AT A BATTLEFIELD (not Base) — see _single_battlefield_target_is_legal."""
+    return [kill_unit(state, action.params[0])]
+
+
 # --- Direct-damage and removal spells -------------------------------------
 #
 # All of these are the same two shapes with different numbers, so they
@@ -1276,6 +1304,8 @@ SPELL_EFFECTS: dict[str, tuple[
     GET_EXCITED: (_get_excited_is_legal, _get_excited_effect, _get_excited_candidates),
     DISCIPLINE: (_primal_strength_is_legal, _discipline_effect, _primal_strength_candidates),
     STUPEFY: (_smoke_screen_is_legal, _stupefy_effect, _smoke_screen_candidates),
+    BLOCK: (_primal_strength_is_legal, _block_effect, _primal_strength_candidates),
+    HIDDEN_BLADE: (_single_battlefield_target_is_legal, _hidden_blade_effect, _units_at_battlefields),
 }
 
 
@@ -1509,6 +1539,8 @@ PIT_ROOKIE = "ogn-136-298"  # "When you play me, buff another friendly unit."
 CHEMTECH_ENFORCER = "ogn-003-298"  # [Assault 2] "When you play me, discard 1."
 SCRAPYARD_CHAMPION = "ogn-020-298"  # [Legion] "When you play me, discard 2, then draw 2."
 MINDSPLITTER = "ogn-192-298"  # "When you play me, choose an opponent... they discard that card."
+TEEMO_SCOUT = "ogn-197-298"  # [Hidden] "When you play me, give me +3 Might this turn."
+TEEMO_SCOUT_ALT = "ogn-197a-298"  # same card, alternate printing
 TRIFARIAN_GLORYSEEKER = "ogn-217-298"  # [Legion] "When you play me, buff me."
 PEAK_GUARDIAN = "ogn-223-298"  # "When you play me, buff me. Then, if I am at a battlefield, buff all other friendly units there."
 RECRUIT_TOKEN = "ogn-271-298"  # one of three same-stat printings (see card_pool.py); this one
@@ -1527,7 +1559,8 @@ MANDATORY_PLAY_TRIGGERS = frozenset({FAITHFUL_MANUFACTOR, VANGUARD_CAPTAIN, WHIT
                                      RIPTIDE_REX, HARNESSED_DRAGON, DANGEROUS_DUO,
                                      FIRST_MATE, KINKOU_MONK, CARNIVOROUS_SNAPVINE,
                                      SETT_BRAWLER, SETT_BRAWLER_ALT, CEMETERY_ATTENDANT,
-                                     CHEMTECH_ENFORCER, SCRAPYARD_CHAMPION, MINDSPLITTER})
+                                     CHEMTECH_ENFORCER, SCRAPYARD_CHAMPION, MINDSPLITTER,
+                                     TEEMO_SCOUT, TEEMO_SCOUT_ALT})
 
 
 def _charm_deflect_targets(state: GameState, params: tuple) -> list[tuple]:
@@ -2047,6 +2080,16 @@ def _mindsplitter_candidates(state: GameState, base_action: PlayUnit, card: Card
     return [(c,) for c in sorted(set(state_after_play.players[opponent].hand))]
 
 
+def _teemo_scout_effect(state_after_play: GameState, action: PlayUnit) -> list[GameState]:
+    """"When you play me" fires the same whether Teemo was played normally
+    or (hypothetically) from Hidden — the trigger doesn't say "from
+    Hidden" — so this is a plain mandatory self-buff, same shape as
+    Trifarian Gloryseeker/Peak Guardian's ("buff",) sentinel, just flat
+    Might via _grant_might rather than the binary apply_buff."""
+    played = _played_unit(state_after_play, action)
+    return [_grant_might(state_after_play, played.instance_id, 3)]
+
+
 # card_id -> (is_legal(state, action, card), effect(state_after_play, action) -> list[GameState],
 #             generate_candidate_params(state, base_action, card))
 UNIT_PLAY_TRIGGERS: dict[str, tuple[
@@ -2083,6 +2126,8 @@ UNIT_PLAY_TRIGGERS: dict[str, tuple[
     SCRAPYARD_CHAMPION: (_scrapyard_champion_is_legal, _scrapyard_champion_effect,
                           _scrapyard_champion_candidates),
     MINDSPLITTER: (_mindsplitter_is_legal, _mindsplitter_effect, _mindsplitter_candidates),
+    TEEMO_SCOUT: (_self_buff_is_legal, _teemo_scout_effect, _self_buff_candidates),
+    TEEMO_SCOUT_ALT: (_self_buff_is_legal, _teemo_scout_effect, _self_buff_candidates),
 }
 
 

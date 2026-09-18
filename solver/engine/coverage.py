@@ -58,6 +58,11 @@ Classification = Literal["handled", "inert", "blocking"]
 ZONE_MODEL_OUT_OF_SCOPE: dict[str, str] = {
     "ogn-191-298": "Maddened Marauder — \"move a unit from a battlefield to its "
                    "base\" is unrepresentable when the unit is the opponent's",
+    "ogn-168-298": "Fight or Flight — [Hidden][Action] \"Move a unit from a battlefield to "
+                   "its base.\" Same unrestricted \"a unit... to its base\" shape as Maddened "
+                   "Marauder — unrepresentable whenever the target is the opponent's, since "
+                   "Zone can't say whose base. [Hidden] doesn't change this: the card is "
+                   "unmodelled regardless of how it would be played.",
 }
 
 
@@ -301,6 +306,40 @@ HANDLED: dict[str, str] = {
     # against co-located controllers, the same shape as En Garde.
     "ogn-055-298": "Wielder of Water — \"while I'm attacking or defending alone, +2 Might\" "
                    "via traits.SELF_CONDITIONALS with the new designation parameter",
+    # [Hidden] cluster. [Hidden] itself is established as never worth
+    # using (see INERT_FOR_LETHAL's Pakaa Cub entry) — hiding spends a
+    # rune now to save Energy later, strictly worse in a single turn. Each
+    # card below ALSO carries an ordinary [Action] speed marker (or, for
+    # Teemo/Pack of Wonders, has a trigger that fires the same whether or
+    # not Hidden was ever used), so it can simply be cast/played/activated
+    # normally at its printed cost — Hidden changes nothing about whether
+    # the engine understands the effect, only about one (never-correct)
+    # way to have paid for it.
+    "ogn-057-298": "Block — [Hidden][Action] \"Give a unit [Shield 3] and [Tank] this turn.\" "
+                   "via abilities.SPELL_EFFECTS and grant_trait, reusing TRAIT_REGISTRY's "
+                   "generic numeric form the same way Cleave's [Assault 3] already does",
+    "ogn-213-298": "Hidden Blade — [Hidden][Action] \"Kill a unit at a battlefield. Its "
+                   "controller draws 2.\" via abilities.SPELL_EFFECTS and kill_unit; the draw "
+                   "is a no-op",
+    "ogn-197-298": "Teemo, Scout — [Hidden] mandatory \"when you play me, give me +3 Might "
+                   "this turn.\" via abilities.UNIT_PLAY_TRIGGERS; the trigger fires on being "
+                   "played at all, not specifically \"from Hidden,\" so it's a plain mandatory "
+                   "self-buff (same shape as Trifarian Gloryseeker) regardless of Hidden",
+    "ogn-197a-298": "Teemo, Scout — same card as ogn-197-298, alternate printing",
+    "ogn-181-298": "Pack of Wonders — Gear, \"Exhaust: Return another friendly gear, unit, or "
+                   "[Hidden] card to its owner's hand.\" via gear.GEAR_ABILITIES; the [Hidden] "
+                   "half of the target set is always empty since Hidden isn't modelled as a "
+                   "zone at all (design/00-overview.md), which is an empty candidate slice, "
+                   "not unmodelled state being ignored — the gear/unit halves are fully "
+                   "implemented for real, matching Zaunite Bouncer's/Arena Bar's bounce shapes",
+    "ogn-167-298": "Ember Monk — \"when you play a card from [Hidden], give me +2 Might this "
+                   "turn.\" There is no PlayFromHidden action anywhere in this engine's action "
+                   "space at all — Hidden is not modelled as a zone (design/00-overview.md), so "
+                   "no card is ever placed there and no such play can ever be generated. This "
+                   "trigger is therefore dead by CONSTRUCTION, independent of whether hiding "
+                   "would ever be strategically worth it — it doesn't reopen the \"[Hidden] is "
+                   "never correct\" argument, because the premise (a from-Hidden play existing "
+                   "at all) is already false regardless of strategy.",
     # Generic discard mechanism (actions.discard_from_hand) — a card
     # leaving hand for trash by discard, real (never a no-op: it shrinks a
     # resource-limited hand) unlike "draw," which has no Main Deck to draw
