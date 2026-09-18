@@ -66,6 +66,8 @@ def apply_move_triggers(state: GameState, moved_instance_id: int) -> GameState:
     return state
 CAITLYN_PATROLLING = "ogn-068-298"  # Exhaust: Deal damage equal to my Might to a unit at a battlefield.
 BLITZCRANK_IMPASSIVE = "ogn-067-298"  # When you play me to a battlefield, you may move an enemy unit to here.
+SETT_BRAWLER = "ogn-164-298"  # "When I'm played and when I conquer, buff me. Spend my buff: +4 Might."
+SETT_BRAWLER_ALT = "ogn-164a-298"  # same card, alternate art
 
 
 def _locate_unit(state: GameState, instance_id: int) -> Optional[str]:
@@ -815,6 +817,30 @@ def _caitlyn_candidates(state: GameState) -> list[tuple[int]]:
             for u in sorted(bf.units, key=lambda u: u.instance_id)]
 
 
+def _sett_spend_buff_is_legal(state: GameState, action: ActivateAbility) -> bool:
+    """params = (). "Spend my buff: Give me +4 Might this turn" — no
+    target, no rune cost printed, and the cost IS the precondition: no
+    buff to spend means the ability isn't there to activate."""
+    if action.params != ():
+        return False
+    located = find_unit_anywhere(state, action.source_id)
+    if located is None:
+        return False
+    source, _ = located
+    if source.controller != state.turn_player or not source.buffed:
+        return False
+    return action.rune_payment is None  # nothing but the buff is ever owed
+
+
+def _sett_spend_buff_effect(state: GameState, action: ActivateAbility) -> GameState:
+    state = spend_buff(state, action.source_id)
+    return _grant_might(state, action.source_id, 4)
+
+
+def _sett_spend_buff_candidates(state: GameState) -> list[tuple]:
+    return [()]
+
+
 # card_id -> (is_legal(state, action), effect(state, action), generate_candidate_params(state))
 ABILITY_EFFECTS: dict[str, tuple[
     Callable[[GameState, ActivateAbility], bool],
@@ -822,6 +848,8 @@ ABILITY_EFFECTS: dict[str, tuple[
     Callable[[GameState], list[tuple]],
 ]] = {
     CAITLYN_PATROLLING: (_caitlyn_is_legal, _caitlyn_effect, _caitlyn_candidates),
+    SETT_BRAWLER: (_sett_spend_buff_is_legal, _sett_spend_buff_effect, _sett_spend_buff_candidates),
+    SETT_BRAWLER_ALT: (_sett_spend_buff_is_legal, _sett_spend_buff_effect, _sett_spend_buff_candidates),
 }
 
 
@@ -979,7 +1007,8 @@ RECRUIT_TOKEN_CARD = CardDef(card_id=RECRUIT_TOKEN, card_type="Unit", energy_cos
 MANDATORY_PLAY_TRIGGERS = frozenset({FAITHFUL_MANUFACTOR, VANGUARD_CAPTAIN, WHITEFLAME_PROTECTOR,
                                      PIT_ROOKIE, TRIFARIAN_GLORYSEEKER, PEAK_GUARDIAN,
                                      RIPTIDE_REX, HARNESSED_DRAGON, DANGEROUS_DUO,
-                                     FIRST_MATE, KINKOU_MONK, CARNIVOROUS_SNAPVINE})
+                                     FIRST_MATE, KINKOU_MONK, CARNIVOROUS_SNAPVINE,
+                                     SETT_BRAWLER, SETT_BRAWLER_ALT})
 
 
 def _charm_deflect_targets(state: GameState, params: tuple) -> list[tuple]:
@@ -1165,6 +1194,14 @@ def _peak_guardian_effect(state_after_play: GameState, action: PlayUnit) -> list
             if unit.controller == me.controller and unit.instance_id != me.instance_id:
                 state = apply_buff(state, unit.instance_id)
     return [state]
+
+
+def _sett_played_effect(state_after_play: GameState, action: PlayUnit) -> list[GameState]:
+    """"When I'm played... buff me" — unconditional, unlike Gloryseeker's
+    [Legion]-gated version of the same shape. The "when I conquer" half of
+    Sett's text is a different trigger entirely (engine/conquer.py), fired
+    from scoring.resolve_control_change rather than from here."""
+    return [apply_buff(state_after_play, _played_unit(state_after_play, action).instance_id)]
 
 
 def _enemy_at_battlefield_is_legal(state: GameState, action: PlayUnit, card: CardDef) -> bool:
@@ -1370,6 +1407,8 @@ UNIT_PLAY_TRIGGERS: dict[str, tuple[
     KINKOU_MONK: (_kinkou_monk_is_legal, _kinkou_monk_effect, _kinkou_monk_candidates),
     CARNIVOROUS_SNAPVINE: (_enemy_at_battlefield_is_legal, _snapvine_effect,
                             _enemy_at_battlefield_candidates),
+    SETT_BRAWLER: (_self_buff_is_legal, _sett_played_effect, _self_buff_candidates),
+    SETT_BRAWLER_ALT: (_self_buff_is_legal, _sett_played_effect, _self_buff_candidates),
 }
 
 
