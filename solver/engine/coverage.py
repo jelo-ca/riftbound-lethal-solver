@@ -660,6 +660,12 @@ INERT_FOR_LETHAL: dict[str, str] = {
     "ogn-126-298": "Body Rune — as above",
     "ogn-166-298": "Chaos Rune — as above",
     "ogn-214-298": "Order Rune — as above",
+    "ogn-007a-298": "Fury Rune — same as ogn-007-298, alternate printing",
+    "ogn-042a-298": "Calm Rune — same as ogn-042-298, alternate printing",
+    "ogn-089a-298": "Mind Rune — same as ogn-089-298, alternate printing",
+    "ogn-126a-298": "Body Rune — same as ogn-126-298, alternate printing",
+    "ogn-166a-298": "Chaos Rune — same as ogn-166-298, alternate printing",
+    "ogn-214a-298": "Order Rune — same as ogn-214-298, alternate printing",
     # The three Reaction cards that reference an unresolved spell. They are
     # the only cards in the set that would need a resolution stack, and
     # they are dead here for a reason that has nothing to do with the
