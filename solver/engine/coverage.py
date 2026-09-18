@@ -664,6 +664,13 @@ INERT_FOR_LETHAL: dict[str, str] = {
                    "strictly worse than playing the card, and no Origins card "
                    "rewards holding fewer runes (verified across the set), so "
                    "hiding is never correct.",
+    "ogn-278-298": "Bandle Tree — Battlefield, \"You may hide an additional card here.\" "
+                   "Raises how many cards you're ALLOWED to pay Hidden's cost for at this "
+                   "battlefield — it doesn't change what hiding buys (Pakaa Cub's argument "
+                   "above: strictly worse than playing the card this turn, and nothing in "
+                   "the pool rewards holding fewer runes), so permitting a SECOND "
+                   "never-correct action is still never correct. Optional (\"you may\"), so "
+                   "declining is always legal regardless.",
     "ogn-274-298": "Sprite — [Temporary] and nothing else. It dies at the start "
                    "of your next Beginning Phase, which a single turn never "
                    "reaches.",
@@ -679,6 +686,21 @@ INERT_FOR_LETHAL: dict[str, str] = {
                    "already resolved before the Action Phase this engine searches — "
                    "same pre-turn non-event as Sona/Targon's Peak, and the draw would "
                    "be a no-op anyway (no Main Deck).",
+    "ogn-290-298": "The Arena's Greatest — Battlefield, \"At the start of each player's "
+                   "first Beginning Phase, that player gains 1 point.\" Unlike Loose "
+                   "Cannon's no-op draw, this genuinely grants something — but \"each "
+                   "player's FIRST Beginning Phase\" happens at most once per player in "
+                   "the whole game, and the position model's Beginning Phase is already "
+                   "resolved before the Action Phase this engine searches (HANDOFF.md). "
+                   "So either this is that player's first turn and the point was already "
+                   "granted during the already-resolved Beginning Phase — meaning it's "
+                   "already reflected in the starting PlayerState.score the puzzle hands "
+                   "this engine, same as any other pre-turn effect — or it isn't their "
+                   "first turn, in which case the trigger fired (or didn't) on an earlier "
+                   "turn entirely outside this single-turn search and cannot fire again. "
+                   "Either way, nothing observable can happen to score DURING the turn "
+                   "being searched — this is a fact about it having already happened (or "
+                   "already being permanently spent), not a no-op payload.",
     # The six Rune cards. Runes are modelled as domains in RunePool, not as
     # cards in a zone, and the Beginning Phase that channels them is
     # already resolved before the question is asked — so a Rune card can

@@ -75,6 +75,23 @@ def test_candlelit_sanctum_conquer_trigger_is_inert():
     assert coverage.blocking_cards(state) == []
 
 
+def test_bandle_tree_is_inert():
+    """"You may hide an additional card here" only raises the cap on a
+    never-correct action (Pakaa Cub) — permitting a second one changes
+    nothing."""
+    state = make_state(left_effect="ogn-278-298")
+    assert coverage.blocking_cards(state) == []
+
+
+def test_the_arenas_greatest_is_inert():
+    """"Each player's first Beginning Phase" grants a point that either
+    already happened (pre-turn, already resolved) or happened on an
+    earlier turn outside this single-turn search — never observably
+    during the Action Phase being searched."""
+    state = make_state(left_effect="ogn-290-298")
+    assert coverage.blocking_cards(state) == []
+
+
 def test_monastery_of_hirana_conquer_trigger_is_inert():
     """"You may spend a buff to draw 1" — a real cost for an empty draw,
     so a solver would never take the option; declining is always legal."""
