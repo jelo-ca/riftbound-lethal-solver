@@ -30,13 +30,22 @@ grammar — the player conquering a specific battlefield, not a specific
 unit conquering — and aren't wired up here yet: every battlefield-effect
 card whose conquer trigger has a real, fully-implementable effect (Zaun
 Warrens' mandatory "discard 1, then draw 1") needs a CHOICE (which card to
-discard), which needs the list-returning shape abilities.UNIT_PLAY_TRIGGERS
-uses, wired into search.py's AND/OR node machinery the same way a PlayUnit
-trigger is. Building that machinery for zero cards that can use it yet
-would be exactly the "registered but unreachable" trap — see coverage.py
-for how Zaun Warrens (and the others gated on unbuilt subsystems: Sigil of
-the Storm on rune economy, Qiyana on rune channelling, Kai'Sa Evolutionary
-and Super Mega Death Rocket! on the trash zone) are left blocking instead.
+discard). Baking that choice into MoveUnit/PlayUnit's params (2026-09-17
+scoping pass, the way ShowdownState.attack_trigger_resolved and
+PlayUnit.trigger_params already do it) turned out NOT to be enough on its
+own: a battlefield can also change control via ResolveCombat/
+ResolveShowdown (winning a fight for it), and scoring.resolve_control_change
+is the one choke point common to all of them — so a Zaun Warrens cleared
+only for the move/play paths would silently skip the discard on a
+combat-won conquest, which is worse than leaving it blocking. Doing this
+right needs resolve_control_change itself to fan out (a genuine list-
+returning return type, threaded through its ~9 call sites in abilities.py/
+legends.py/search.py) rather than a per-action-type param. Building that
+machinery for one card would be its own deliberate pass, not a side effect
+of the choice-trigger work — see coverage.py for how Zaun Warrens (and the
+others gated on unbuilt subsystems: Sigil of the Storm on rune economy,
+Qiyana on rune channelling, Kai'Sa Evolutionary and Super Mega Death
+Rocket! on the trash zone) are left blocking instead.
 
 Imports of abilities.py are deliberately deferred into the effect bodies:
 abilities.py imports scoring.py (for scoring.resolve_control_change) and
