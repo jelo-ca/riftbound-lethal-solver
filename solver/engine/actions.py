@@ -558,17 +558,17 @@ def is_legal_play_spell_cost(state: GameState, action: PlaySpell, card: CardDef)
 
 
 def apply_play_spell_cost(state: GameState, action: PlaySpell) -> GameState:
-    """Removes the card from hand and spends its runes. Does NOT apply the
-    spell's game effect — that's abilities.py's job, called after this.
-    No trash/discard zone is modeled (design/07-scope-and-cut-list.md
-    doesn't need one yet — no whitelisted card references trash); the
-    spell simply leaves the hand."""
+    """Removes the card from hand, spends its runes, and sends it to
+    trash — a resolved spell lands there same as a dying unit (project
+    owner, 2026-09-17). Does NOT apply the spell's game effect — that's
+    abilities.py's job, called after this."""
     player_index = state.turn_player
     player = state.players[player_index]
     new_hand = list(player.hand)
     new_hand.remove(action.card_id)
     new_runes = consume_runes(player.runes, action.rune_payment)
-    new_player = dataclasses.replace(player, hand=tuple(new_hand), runes=new_runes)
+    new_player = dataclasses.replace(player, hand=tuple(new_hand), runes=new_runes,
+                                     trash=player.trash + (action.card_id,))
     state = dataclasses.replace(state, cards_played_this_turn=state.cards_played_this_turn + 1)
     return replace_player(state, player_index, new_player)
 

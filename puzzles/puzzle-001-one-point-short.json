@@ -1,13 +1,13 @@
 {
   "schema_version": 2,
   "puzzle_id": "puzzle-001-one-point-short",
-  "root": "10b217934948e57d",
+  "root": "8c5e09b37d889caa",
   "solution": {
-    "1636faac0b92cfe0": "a6",
-    "10b217934948e57d": "a1"
+    "e2124260e155ca0c": "a6",
+    "8c5e09b37d889caa": "a1"
   },
   "nodes": {
-    "10b217934948e57d": {
+    "8c5e09b37d889caa": {
       "turn_player": 0,
       "players": [
         {
@@ -43,7 +43,8 @@
           "runes_power_spent": [],
           "score": 7,
           "legend": null,
-          "gear": []
+          "gear": [],
+          "trash": []
         },
         {
           "base_units": [],
@@ -53,7 +54,8 @@
           "runes_power_spent": [],
           "score": 0,
           "legend": null,
-          "gear": []
+          "gear": [],
+          "trash": []
         }
       ],
       "battlefields": [
@@ -74,7 +76,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "1636faac0b92cfe0": {
+    "e2124260e155ca0c": {
       "turn_player": 0,
       "players": [
         {
@@ -98,7 +100,8 @@
           "runes_power_spent": [],
           "score": 7,
           "legend": null,
-          "gear": []
+          "gear": [],
+          "trash": []
         },
         {
           "base_units": [],
@@ -108,7 +111,8 @@
           "runes_power_spent": [],
           "score": 0,
           "legend": null,
-          "gear": []
+          "gear": [],
+          "trash": []
         }
       ],
       "battlefields": [
@@ -144,7 +148,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "3c92133200a1d159": {
+    "6bb08c6ad214f27b": {
       "turn_player": 0,
       "players": [
         {
@@ -168,7 +172,8 @@
           "runes_power_spent": [],
           "score": 7,
           "legend": null,
-          "gear": []
+          "gear": [],
+          "trash": []
         },
         {
           "base_units": [],
@@ -178,7 +183,8 @@
           "runes_power_spent": [],
           "score": 0,
           "legend": null,
-          "gear": []
+          "gear": [],
+          "trash": []
         }
       ],
       "battlefields": [
@@ -214,7 +220,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "7f98c016d0cc2396": {
+    "9c4a5bbbaf57ee6a": {
       "turn_player": 0,
       "players": [
         {
@@ -238,7 +244,8 @@
           "runes_power_spent": [],
           "score": 7,
           "legend": null,
-          "gear": []
+          "gear": [],
+          "trash": []
         },
         {
           "base_units": [],
@@ -248,7 +255,8 @@
           "runes_power_spent": [],
           "score": 0,
           "legend": null,
-          "gear": []
+          "gear": [],
+          "trash": []
         }
       ],
       "battlefields": [
@@ -284,7 +292,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "eef79d3f875fea52": {
+    "e3c855fc72d8b686": {
       "turn_player": 0,
       "players": [
         {
@@ -308,7 +316,8 @@
           "runes_power_spent": [],
           "score": 7,
           "legend": null,
-          "gear": []
+          "gear": [],
+          "trash": []
         },
         {
           "base_units": [],
@@ -318,7 +327,8 @@
           "runes_power_spent": [],
           "score": 0,
           "legend": null,
-          "gear": []
+          "gear": [],
+          "trash": []
         }
       ],
       "battlefields": [
@@ -354,7 +364,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "61fb1b7de8fc2a97": {
+    "4d8273a2537d0b76": {
       "turn_player": 0,
       "players": [
         {
@@ -365,7 +375,8 @@
           "runes_power_spent": [],
           "score": 7,
           "legend": null,
-          "gear": []
+          "gear": [],
+          "trash": []
         },
         {
           "base_units": [],
@@ -375,7 +386,8 @@
           "runes_power_spent": [],
           "score": 0,
           "legend": null,
-          "gear": []
+          "gear": [],
+          "trash": []
         }
       ],
       "battlefields": [
@@ -423,7 +435,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "b00766937c73b6cc": {
+    "cbd3366cf07367b8": {
       "turn_player": 0,
       "players": [
         {
@@ -434,7 +446,8 @@
           "runes_power_spent": [],
           "score": 8,
           "legend": null,
-          "gear": []
+          "gear": [],
+          "trash": []
         },
         {
           "base_units": [],
@@ -444,7 +457,8 @@
           "runes_power_spent": [],
           "score": 0,
           "legend": null,
-          "gear": []
+          "gear": [],
+          "trash": []
         }
       ],
       "battlefields": [
@@ -494,7 +508,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "75ee1135b8490f99": {
+    "c5c8023757127279": {
       "turn_player": 0,
       "players": [
         {
@@ -505,7 +519,8 @@
           "runes_power_spent": [],
           "score": 8,
           "legend": null,
-          "gear": []
+          "gear": [],
+          "trash": []
         },
         {
           "base_units": [],
@@ -515,7 +530,8 @@
           "runes_power_spent": [],
           "score": 0,
           "legend": null,
-          "gear": []
+          "gear": [],
+          "trash": []
         }
       ],
       "battlefields": [
@@ -565,7 +581,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "897a43a3acf9d78b": {
+    "b7dfb35bd198772c": {
       "turn_player": 0,
       "players": [
         {
@@ -576,7 +592,8 @@
           "runes_power_spent": [],
           "score": 7,
           "legend": null,
-          "gear": []
+          "gear": [],
+          "trash": []
         },
         {
           "base_units": [],
@@ -586,7 +603,8 @@
           "runes_power_spent": [],
           "score": 0,
           "legend": null,
-          "gear": []
+          "gear": [],
+          "trash": []
         }
       ],
       "battlefields": [
@@ -636,7 +654,7 @@
     }
   },
   "edges": {
-    "10b217934948e57d": [
+    "8c5e09b37d889caa": [
       {
         "action": {
           "id": "a1",
@@ -649,7 +667,7 @@
           "instance_id": 1
         },
         "to": [
-          "1636faac0b92cfe0"
+          "e2124260e155ca0c"
         ],
         "adversarial": false
       },
@@ -665,7 +683,7 @@
           "instance_id": 1
         },
         "to": [
-          "3c92133200a1d159"
+          "6bb08c6ad214f27b"
         ],
         "adversarial": false
       },
@@ -681,7 +699,7 @@
           "instance_id": 2
         },
         "to": [
-          "7f98c016d0cc2396"
+          "9c4a5bbbaf57ee6a"
         ],
         "adversarial": false
       },
@@ -697,12 +715,12 @@
           "instance_id": 2
         },
         "to": [
-          "eef79d3f875fea52"
+          "e3c855fc72d8b686"
         ],
         "adversarial": false
       }
     ],
-    "1636faac0b92cfe0": [
+    "e2124260e155ca0c": [
       {
         "action": {
           "id": "a5",
@@ -715,7 +733,7 @@
           "instance_id": 2
         },
         "to": [
-          "61fb1b7de8fc2a97"
+          "4d8273a2537d0b76"
         ],
         "adversarial": false
       },
@@ -731,12 +749,12 @@
           "instance_id": 2
         },
         "to": [
-          "b00766937c73b6cc"
+          "cbd3366cf07367b8"
         ],
         "adversarial": false
       }
     ],
-    "3c92133200a1d159": [
+    "6bb08c6ad214f27b": [
       {
         "action": {
           "id": "a7",
@@ -749,7 +767,7 @@
           "instance_id": 2
         },
         "to": [
-          "75ee1135b8490f99"
+          "c5c8023757127279"
         ],
         "adversarial": false
       },
@@ -765,12 +783,12 @@
           "instance_id": 2
         },
         "to": [
-          "897a43a3acf9d78b"
+          "b7dfb35bd198772c"
         ],
         "adversarial": false
       }
     ],
-    "7f98c016d0cc2396": [
+    "9c4a5bbbaf57ee6a": [
       {
         "action": {
           "id": "a9",
@@ -783,7 +801,7 @@
           "instance_id": 1
         },
         "to": [
-          "61fb1b7de8fc2a97"
+          "4d8273a2537d0b76"
         ],
         "adversarial": false
       },
@@ -799,12 +817,12 @@
           "instance_id": 1
         },
         "to": [
-          "75ee1135b8490f99"
+          "c5c8023757127279"
         ],
         "adversarial": false
       }
     ],
-    "eef79d3f875fea52": [
+    "e3c855fc72d8b686": [
       {
         "action": {
           "id": "a11",
@@ -817,7 +835,7 @@
           "instance_id": 1
         },
         "to": [
-          "b00766937c73b6cc"
+          "cbd3366cf07367b8"
         ],
         "adversarial": false
       },
@@ -833,16 +851,16 @@
           "instance_id": 1
         },
         "to": [
-          "897a43a3acf9d78b"
+          "b7dfb35bd198772c"
         ],
         "adversarial": false
       }
     ]
   },
   "terminal": {
-    "61fb1b7de8fc2a97": "dead_end",
-    "b00766937c73b6cc": "win",
-    "75ee1135b8490f99": "win",
-    "897a43a3acf9d78b": "dead_end"
+    "4d8273a2537d0b76": "dead_end",
+    "cbd3366cf07367b8": "win",
+    "c5c8023757127279": "win",
+    "b7dfb35bd198772c": "dead_end"
   }
 }

@@ -91,6 +91,9 @@ def render_player(player: PlayerState) -> dict:
         # different would be indistinguishable to a consumer replaying it.
         "gear": [{"card_id": g.card_id, "instance_id": g.instance_id, "exhausted": g.exhausted}
                  for g in sorted(player.gear, key=lambda g: g.instance_id)],
+        # In canonical_key as a multiset, so rendered the same way — not
+        # deduplicated.
+        "trash": sorted(player.trash),
     }
 
 
