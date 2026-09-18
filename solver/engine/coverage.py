@@ -301,6 +301,33 @@ HANDLED: dict[str, str] = {
     # against co-located controllers, the same shape as En Garde.
     "ogn-055-298": "Wielder of Water — \"while I'm attacking or defending alone, +2 Might\" "
                    "via traits.SELF_CONDITIONALS with the new designation parameter",
+    # Reaction-speed sweep (this pass). See abilities.py's "More [Reaction]
+    # spells" section for the implementations.
+    "ogn-033-298": "Shakedown — [Reaction] \"Choose an enemy unit. Deal 6 to it unless "
+                   "its controller has you draw 2.\" The \"unless\" is the TARGET's "
+                   "controller's choice — the opponent, who never acts — so the option "
+                   "is never exercised and the primary effect (6 damage) is unconditional. "
+                   "Implemented via abilities.SPELL_EFFECTS as plain flat damage to an "
+                   "enemy unit at a battlefield.",
+    "ogn-048-298": "Meditation — [Reaction] \"As an additional cost to play this, you may "
+                   "exhaust a friendly unit. If you do, draw 2. Otherwise, draw 1.\" Both "
+                   "draw amounts are no-ops (no Main Deck), but the optional cost is a "
+                   "real, independent state change: gear.ARENA_BAR's ability requires an "
+                   "EXHAUSTED friendly unit to target, so paying this cost on a unit that "
+                   "doesn't need to act again this turn (a defender, say) can make it "
+                   "eligible for Arena Bar's buff. Implemented via abilities.SPELL_EFFECTS "
+                   "with the exhaust as an optional targeted param; declining it is always "
+                   "legal.",
+    "ogn-108-298": "Convergent Mutation — [Reaction] \"Choose a friendly unit. This turn, "
+                   "increase its Might to the Might of another friendly unit.\" via "
+                   "abilities.SPELL_EFFECTS, reading traits.effective_might for both units "
+                   "and applying the delta only when the reference is actually higher — "
+                   "\"increase\" has no effect when it isn't.",
+    "ogn-127-298": "Cannon Barrage — [Reaction] \"Deal 2 to all enemy units in combat.\" "
+                   "\"In combat\" is read as \"at the battlefield hosting the currently "
+                   "open showdown\" (state.showdown) — the only place this engine's model "
+                   "has two controllers' units present at once. Legal only while a "
+                   "showdown is open; implemented via abilities.SPELL_EFFECTS.",
 }
 
 

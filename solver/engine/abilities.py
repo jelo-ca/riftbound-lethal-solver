@@ -1167,6 +1167,158 @@ def resolve_spell_outcomes_with_reaction(state: GameState, action: PlaySpell, ca
     return [SPELL_KILL_REACTIONS[watcher](base_outcome, zone, payment)]
 
 
+# --- More [Reaction] spells ------------------------------------------------
+
+SHAKEDOWN = "ogn-033-298"  # [Reaction] "Choose an enemy unit. Deal 6 to it
+# unless its controller has you draw 2." The "unless" clause is a choice
+# belonging to the target's controller — the opponent, who never acts in
+# this engine. An option nobody ever exercises never happens, so the
+# primary effect is unconditional here: 6 damage, always. (Even if it
+# somehow did fire, drawing 2 with no Main Deck is a no-op, so the two
+# branches aren't even observably different — but the branch that's
+# actually live is the damage, not the draw.)
+
+
+def _shakedown_is_legal(state: GameState, action: PlaySpell) -> bool:
+    """Damage needs a battlefield to resolve at (same convention as
+    Hextech Ray/Falling Comet), and the text itself restricts the choice
+    to an ENEMY unit."""
+    if len(action.params) != 1:
+        return False
+    located = find_unit_at_any_battlefield(state, action.params[0])
+    return located is not None and located[0].controller != state.turn_player
+
+
+def _shakedown_effect(state: GameState, action: PlaySpell) -> list[GameState]:
+    _, bf_id = find_unit_at_any_battlefield(state, action.params[0])
+    return [combat.deal_damage_to_unit(state, bf_id, action.params[0], 6)]
+
+
+def _shakedown_candidates(state: GameState) -> list[tuple]:
+    return [(u.instance_id,) for bf in state.battlefields
+            for u in sorted(bf.units, key=lambda u: u.instance_id)
+            if u.controller != state.turn_player]
+
+
+MEDITATION = "ogn-048-298"  # [Reaction] "As an additional cost to play this,
+# you may exhaust a friendly unit. If you do, draw 2. Otherwise, draw 1."
+#
+# Both draw amounts are no-ops (no Main Deck), so on its own the card is
+# worthless. But the additional cost isn't just a tax on the draw — "you
+# may exhaust a friendly unit" is a real, independently-useful state
+# change: gear.ARENA_BAR's activated ability requires an EXHAUSTED
+# friendly unit to target, and nothing else in the turn produces one for
+# free except a unit that already acted. Paying Meditation's cost on a
+# unit that doesn't need to act again this turn (most usefully a
+# defender, which doesn't need to be ready to fight) is a real way to
+# make it eligible for Arena Bar's buff at essentially no downside — so
+# the card is implemented for that cost, not for its draw.
+
+
+def _meditation_is_legal(state: GameState, action: PlaySpell) -> bool:
+    if action.params == ():
+        return True  # decline the optional cost — always legal
+    if len(action.params) != 1:
+        return False
+    located = find_unit_anywhere(state, action.params[0])
+    # "Exhaust" as a cost requires something ready to exhaust, same as
+    # every other Exhaust cost in the pool (gear._source_is_usable, etc.).
+    return (located is not None and located[0].controller == state.turn_player
+            and not located[0].exhausted)
+
+
+def _meditation_effect(state: GameState, action: PlaySpell) -> list[GameState]:
+    if not action.params:
+        return [state]
+    unit, zone = find_unit_anywhere(state, action.params[0])
+    return [_replace_unit(state, unit, zone, dataclasses.replace(unit, exhausted=True))]
+
+
+def _meditation_candidates(state: GameState) -> list[tuple]:
+    out: list[tuple] = [()]
+    out += [(u.instance_id,) for u in sorted(state.players[state.turn_player].base_units,
+                                              key=lambda u: u.instance_id) if not u.exhausted]
+    out += [(u.instance_id,) for bf in state.battlefields
+            for u in sorted(bf.units, key=lambda u: u.instance_id)
+            if u.controller == state.turn_player and not u.exhausted]
+    return out
+
+
+CONVERGENT_MUTATION = "ogn-108-298"  # [Reaction] "Choose a friendly unit.
+# This turn, increase its Might to the Might of another friendly unit."
+
+
+def _convergent_mutation_is_legal(state: GameState, action: PlaySpell) -> bool:
+    if len(action.params) != 2:
+        return False
+    target_id, reference_id = action.params
+    if target_id == reference_id:
+        return False  # the reference must be ANOTHER friendly unit
+    target = find_unit_anywhere(state, target_id)
+    reference = find_unit_anywhere(state, reference_id)
+    return (target is not None and reference is not None
+            and target[0].controller == state.turn_player
+            and reference[0].controller == state.turn_player)
+
+
+def _convergent_mutation_effect(state: GameState, action: PlaySpell) -> list[GameState]:
+    """"Increase" — read literally: if the reference isn't actually
+    higher (effective Might, so Shield/battlefield bonuses count), there
+    is nothing to raise TO, and the card does nothing. The delta is
+    computed off EFFECTIVE Might but applied through _grant_might (which
+    only ever touches raw might) — safe because nothing else feeding
+    effective_might for either unit reads Might back (traits.py's
+    non-circularity invariant), so raising raw might by exactly the
+    effective gap lands the target's new effective Might on the nose."""
+    target_id, reference_id = action.params
+    target = find_unit_anywhere(state, target_id)
+    reference = find_unit_anywhere(state, reference_id)
+    target_might = traits.effective_might(state, target[0], target[1], None)
+    reference_might = traits.effective_might(state, reference[0], reference[1], None)
+    if reference_might <= target_might:
+        return [state]
+    return [_grant_might(state, target_id, reference_might - target_might)]
+
+
+def _convergent_mutation_candidates(state: GameState) -> list[tuple]:
+    ours = [u.instance_id for u in sorted(state.players[state.turn_player].base_units,
+                                           key=lambda u: u.instance_id)]
+    ours += [u.instance_id for bf in state.battlefields
+             for u in sorted(bf.units, key=lambda u: u.instance_id)
+             if u.controller == state.turn_player]
+    return [(a, b) for a in ours for b in ours if a != b]
+
+
+CANNON_BARRAGE = "ogn-127-298"  # [Reaction] "Deal 2 to all enemy units in
+# combat." "In combat" is this engine's one concept of two controllers'
+# units coexisting at the same battlefield at once: an open showdown
+# (state.showdown, combat.py's Contested status). No open showdown means
+# no unit anywhere is "in combat," so the card is only legal to cast
+# while one is open — see combat.open_showdown/resolve_showdown, whose
+# participants are read live off the showdown's battlefield by
+# controller, exactly what this reads too.
+
+
+def _cannon_barrage_is_legal(state: GameState, action: PlaySpell) -> bool:
+    return action.params == () and state.showdown is not None
+
+
+def _cannon_barrage_effect(state: GameState, action: PlaySpell) -> list[GameState]:
+    bf = next(b for b in state.battlefields if b.battlefield_id == state.showdown.battlefield_id)
+    targets = [u.instance_id for u in sorted(bf.units, key=lambda u: u.instance_id)
+               if u.controller != state.turn_player]
+    for target_id in targets:
+        located = find_unit_at_any_battlefield(state, target_id)
+        if located is None:
+            continue  # already dead — an earlier target's Deathknell got there first
+        state = combat.deal_damage_to_unit(state, located[1], target_id, 2)
+    return [state]
+
+
+def _cannon_barrage_candidates(state: GameState) -> list[tuple]:
+    return [()]
+
+
 # card_id -> (is_legal(state, action), effect(state, action) -> list[GameState],
 #             generate_candidate_params(state))
 SPELL_EFFECTS: dict[str, tuple[
@@ -1196,6 +1348,11 @@ SPELL_EFFECTS: dict[str, tuple[
     OVERT_OPERATION: (_overt_operation_is_legal, _overt_operation_effect, _overt_operation_candidates),
     MORBID_RETURN: (_morbid_return_is_legal, _morbid_return_effect, _morbid_return_candidates),
     THE_HARROWING: (_the_harrowing_is_legal, _the_harrowing_effect, _the_harrowing_candidates),
+    SHAKEDOWN: (_shakedown_is_legal, _shakedown_effect, _shakedown_candidates),
+    MEDITATION: (_meditation_is_legal, _meditation_effect, _meditation_candidates),
+    CONVERGENT_MUTATION: (_convergent_mutation_is_legal, _convergent_mutation_effect,
+                           _convergent_mutation_candidates),
+    CANNON_BARRAGE: (_cannon_barrage_is_legal, _cannon_barrage_effect, _cannon_barrage_candidates),
 }
 
 
