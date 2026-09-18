@@ -158,6 +158,15 @@ class PlayerState:
     # puzzle authored before Legends existed, and any sampled position
     # that didn't draw one.
     legend: Optional[LegendState] = None
+    # A tuple, not a frozenset: two dead copies of the same card_id are
+    # distinct trash entries, and a set would collapse them. Always empty
+    # at position setup (2026-09-17, project owner) — the engine never
+    # assumes turn history, same convention as "no Main Deck" — and fills
+    # live during the turn as units die or spells resolve (deaths.py's
+    # fire_death_triggers, abilities.apply_play_spell_cost). Tokens
+    # (UnitInstance.is_token) do NOT go to trash: they cease to exist
+    # rather than occupying a zone, since they were never a printed card.
+    trash: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -242,6 +251,11 @@ def _canonical_player(player: PlayerState) -> tuple:
         # excluded from units: two structurally identical Gear pieces are
         # the same position regardless of which counter values they drew.
         tuple(sorted((g.card_id, g.exhausted) for g in player.gear)),
+        # NOT deduplicated — two dead copies of the same card_id are two
+        # distinct trash entries (Rhasa/Dr. Mundo count them; a "return a
+        # unit from trash" choice has two to pick from), so this sorts a
+        # multiset rather than a set.
+        tuple(sorted(player.trash)),
     )
 
 

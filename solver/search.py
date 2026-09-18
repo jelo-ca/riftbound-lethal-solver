@@ -199,6 +199,22 @@ def legal_actions(state: GameState, cards: dict[str, CardDef]) -> list[Action]:
             if is_legal_play_gear(state, action, card):
                 result.append(action)
 
+    # PlayGear "when you play this" trigger candidates — same shape as the
+    # PlayUnit trigger loop below, minus the [Deflect] tax machinery (no
+    # registered Gear trigger targets an enemy unit).
+    for base_action in [a for a in result if isinstance(a, PlayGear)]:
+        entry = abilities.GEAR_PLAY_TRIGGERS.get(base_action.card_id)
+        if entry is None:
+            continue
+        card = cards[base_action.card_id]
+        _, _, generate_trigger_candidates = entry
+        if base_action.card_id in abilities.MANDATORY_GEAR_TRIGGERS:
+            result.remove(base_action)
+        for trigger_params in generate_trigger_candidates(state, base_action, card):
+            triggered = dataclasses.replace(base_action, trigger_params=trigger_params)
+            if abilities.is_legal_gear_play_trigger(state, triggered, card):
+                result.append(triggered)
+
     # Gear abilities: same ActivateAbility action as a unit's, sourced from
     # the player's gear rather than a body on the board. Costs come from
     # gear.ability_cost, since several charge runes on top of the Exhaust.
@@ -346,6 +362,10 @@ def apply(state: GameState, action: Action, cards: dict[str, CardDef]) -> GameSt
         )
 
     if isinstance(action, PlayGear):
+        if action.trigger_params:
+            raise NotImplementedError(
+                "apply: PlayGear with trigger_params can have multiple outcomes — see search.solve()"
+            )
         # Gear has no target and enters nobody's battlefield, so playing it
         # can't change control or trigger combat — no scoring to resolve.
         return apply_play_gear(state, action, cards[action.card_id])
@@ -411,6 +431,9 @@ def _dfs(state: GameState, remaining: int, cards: dict[str, CardDef],
                                      remaining, cards, ttable)
         elif isinstance(action, PlayUnit) and action.trigger_params:
             outcomes = abilities.resolve_unit_play_trigger_outcomes(state, action, cards[action.card_id])
+            result = _and_or_search(state, action, outcomes, remaining, cards, ttable)
+        elif isinstance(action, PlayGear) and action.trigger_params:
+            outcomes = abilities.resolve_gear_play_trigger_outcomes(state, action, cards[action.card_id])
             result = _and_or_search(state, action, outcomes, remaining, cards, ttable)
         elif isinstance(action, PlaySpell):
             try:
@@ -530,6 +553,8 @@ def _count_solutions(state: GameState, remaining: int, cards: dict[str, CardDef]
             outcomes = resolve_showdown_outcomes(state, action)
         elif isinstance(action, PlayUnit) and action.trigger_params:
             outcomes = abilities.resolve_unit_play_trigger_outcomes(state, action, cards[action.card_id])
+        elif isinstance(action, PlayGear) and action.trigger_params:
+            outcomes = abilities.resolve_gear_play_trigger_outcomes(state, action, cards[action.card_id])
         elif isinstance(action, PlaySpell):
             try:
                 outcomes = abilities.resolve_spell_outcomes(state, action, cards[action.card_id])

@@ -108,13 +108,31 @@ DEATH_TRIGGERS: dict[str, Callable[[GameState, UnitInstance, Zone], GameState]] 
     EKKO_RECURRENT: _ekko_effect,
 }
 
+# Cards whose own death text redirects the dying card somewhere OTHER
+# than trash — excluded from the blanket "dead cards land in trash" rule
+# below. Ekko's "recycle me" means back to the (nonexistent) Main Deck,
+# not the trash a card like Cemetery Attendant could return him from.
+RECYCLED_ON_DEATH = frozenset({EKKO_RECURRENT})
+
+
+def _send_to_trash(state: GameState, unit: UnitInstance) -> GameState:
+    """Every dying card lands in its controller's trash — except a token
+    (never a printed card; it ceases to exist rather than occupying a
+    zone) or a card whose own text redirects it elsewhere on death."""
+    if unit.is_token or unit.card_id in RECYCLED_ON_DEATH:
+        return state
+    player = state.players[unit.controller]
+    return replace_player(state, unit.controller,
+                          dataclasses.replace(player, trash=player.trash + (unit.card_id,)))
+
 
 def fire_death_triggers(state: GameState, dead: list[tuple[UnitInstance, Zone]]) -> GameState:
-    """Resolve every registered Deathknell among `dead`, in instance_id
-    order. Call AFTER the dead have been removed from the board — a
-    trigger reads the state its own death produced, not the one before
-    it."""
+    """Send each dead unit to trash, then resolve any registered
+    Deathknell among `dead`, in instance_id order. Call AFTER the dead
+    have been removed from the board — a trigger reads the state its own
+    death produced, not the one before it."""
     for unit, zone in sorted(dead, key=lambda pair: pair[0].instance_id):
+        state = _send_to_trash(state, unit)
         effect = DEATH_TRIGGERS.get(unit.card_id)
         if effect is not None:
             state = effect(state, unit, zone)

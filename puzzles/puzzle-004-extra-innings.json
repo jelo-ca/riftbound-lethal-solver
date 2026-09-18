@@ -1,12 +1,12 @@
 {
   "schema_version": 2,
   "puzzle_id": "puzzle-004-extra-innings",
-  "root": "2290bd10d853d300",
+  "root": "9e235d34d74098d3",
   "solution": {
-    "2290bd10d853d300": "a2"
+    "9e235d34d74098d3": "a2"
   },
   "nodes": {
-    "2290bd10d853d300": {
+    "9e235d34d74098d3": {
       "turn_player": 0,
       "players": [
         {
@@ -23,7 +23,8 @@
           "runes_power_spent": [],
           "score": 7,
           "legend": null,
-          "gear": []
+          "gear": [],
+          "trash": []
         },
         {
           "base_units": [],
@@ -33,7 +34,8 @@
           "runes_power_spent": [],
           "score": 0,
           "legend": null,
-          "gear": []
+          "gear": [],
+          "trash": []
         }
       ],
       "battlefields": [
@@ -69,7 +71,7 @@
       "cards_played_this_turn": 0,
       "showdown": null
     },
-    "a2d5aa35cab8b440": {
+    "da8b5857b74c24f3": {
       "turn_player": 0,
       "players": [
         {
@@ -99,7 +101,10 @@
           ],
           "score": 7,
           "legend": null,
-          "gear": []
+          "gear": [],
+          "trash": [
+            "ogn-173-298"
+          ]
         },
         {
           "base_units": [],
@@ -109,7 +114,8 @@
           "runes_power_spent": [],
           "score": 0,
           "legend": null,
-          "gear": []
+          "gear": [],
+          "trash": []
         }
       ],
       "battlefields": [
@@ -132,7 +138,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "a69c9acd9a7e4239": {
+    "284e2e50298f993e": {
       "turn_player": 0,
       "players": [
         {
@@ -149,7 +155,10 @@
           ],
           "score": 8,
           "legend": null,
-          "gear": []
+          "gear": [],
+          "trash": [
+            "ogn-173-298"
+          ]
         },
         {
           "base_units": [],
@@ -159,7 +168,8 @@
           "runes_power_spent": [],
           "score": 0,
           "legend": null,
-          "gear": []
+          "gear": [],
+          "trash": []
         }
       ],
       "battlefields": [
@@ -196,7 +206,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "1793dccf351f494b": {
+    "b60f2867d7f573b8": {
       "turn_player": 0,
       "players": [
         {
@@ -213,7 +223,10 @@
           ],
           "score": 7,
           "legend": null,
-          "gear": []
+          "gear": [],
+          "trash": [
+            "ogn-173-298"
+          ]
         },
         {
           "base_units": [],
@@ -223,7 +236,8 @@
           "runes_power_spent": [],
           "score": 0,
           "legend": null,
-          "gear": []
+          "gear": [],
+          "trash": []
         }
       ],
       "battlefields": [
@@ -259,7 +273,7 @@
       "cards_played_this_turn": 1,
       "showdown": null
     },
-    "c689df55ab7ba5ff": {
+    "e3eccc928f30f363": {
       "turn_player": 0,
       "players": [
         {
@@ -276,7 +290,10 @@
           ],
           "score": 8,
           "legend": null,
-          "gear": []
+          "gear": [],
+          "trash": [
+            "ogn-173-298"
+          ]
         },
         {
           "base_units": [],
@@ -286,7 +303,8 @@
           "runes_power_spent": [],
           "score": 0,
           "legend": null,
-          "gear": []
+          "gear": [],
+          "trash": []
         }
       ],
       "battlefields": [
@@ -325,7 +343,7 @@
     }
   },
   "edges": {
-    "2290bd10d853d300": [
+    "9e235d34d74098d3": [
       {
         "action": {
           "id": "a1",
@@ -338,7 +356,7 @@
           "instance_id": null
         },
         "to": [
-          "a2d5aa35cab8b440"
+          "da8b5857b74c24f3"
         ],
         "adversarial": false
       },
@@ -354,12 +372,12 @@
           "instance_id": null
         },
         "to": [
-          "a69c9acd9a7e4239"
+          "284e2e50298f993e"
         ],
         "adversarial": false
       }
     ],
-    "a2d5aa35cab8b440": [
+    "da8b5857b74c24f3": [
       {
         "action": {
           "id": "a3",
@@ -372,7 +390,7 @@
           "instance_id": 1
         },
         "to": [
-          "1793dccf351f494b"
+          "b60f2867d7f573b8"
         ],
         "adversarial": false
       },
@@ -388,15 +406,15 @@
           "instance_id": 1
         },
         "to": [
-          "c689df55ab7ba5ff"
+          "e3eccc928f30f363"
         ],
         "adversarial": false
       }
     ]
   },
   "terminal": {
-    "a69c9acd9a7e4239": "win",
-    "1793dccf351f494b": "dead_end",
-    "c689df55ab7ba5ff": "win"
+    "284e2e50298f993e": "win",
+    "b60f2867d7f573b8": "dead_end",
+    "e3eccc928f30f363": "win"
   }
 }

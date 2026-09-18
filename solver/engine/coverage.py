@@ -165,9 +165,35 @@ HANDLED: dict[str, str] = {
     "ogn-149-298": "Carnivorous Snapvine — play trigger, simultaneous mutual damage "
                    "with itself as one side, so it can trade itself for a bigger body",
     "ogn-124-298": "Arena Bar — Gear, \"Exhaust: buff an EXHAUSTED friendly unit\"",
+    "ogn-212-298": "Forge of the Future — Gear, mandatory \"when you play this, play a "
+                   "1 Might Recruit token at your base\" via abilities.GEAR_PLAY_TRIGGERS "
+                   "(the first Gear play-trigger; PlayGear gained its own trigger_params "
+                   "field for it). Its \"Kill this: Recycle up to 4 cards from trashes\" "
+                   "is inert by argument, not code: \"recycle\" a card means returning it "
+                   "to the Main Deck (established by Vision/Ekko's identical reading), "
+                   "which is a no-op with no deck, and nothing in the pool reacts to a "
+                   "Gear dying — so activating it costs a permanent for zero benefit, "
+                   "and a solver never would. Optional, so declining it is always legal.",
     "ogn-125-298": "Bilgewater Bully — \"while I'm buffed, I have [Ganking]\" via "
                    "traits.SELF_CONDITIONALS; the grant reaches movement legality "
                    "because effective_keywords now delegates to resolved_traits",
+    # Trash zone (state.PlayerState.trash) — starts empty at position
+    # setup, fills live during the turn as units die or spells resolve.
+    # See state.py's field comment and deaths.fire_death_triggers.
+    "ogn-109-298": "Dr. Mundo, Expert — Might scales with trash size via "
+                   "traits.TRASH_COUNT_MIGHT. \"At the start of your Beginning Phase, "
+                   "recycle 3 from your trash\" fires before the Action Phase this "
+                   "engine searches, and trash starts empty, so it's a pre-turn "
+                   "non-event",
+    "ogn-036-298": "Vi, Destructive — \"Recycle 1 from your trash: give me +1 Might "
+                   "this turn\" via ABILITY_EFFECTS; the recycled card IS the cost, "
+                   "same shape as Sett Brawler's spend-a-buff ability",
+    "ogn-165-298": "Cemetery Attendant — mandatory \"when you play me, return a unit "
+                   "from your trash to your hand\" via UNIT_PLAY_TRIGGERS; unreachable "
+                   "(not offered) rather than a fizzled no-op when trash has no units, "
+                   "same convention as Harnessed Dragon against an empty board",
+    "ogn-170-298": "Morbid Return — [Action] \"return a unit from your trash to your "
+                   "hand\" via SPELL_EFFECTS",
     # [Conquer] triggers — engine/conquer.py, hooked into
     # scoring.resolve_control_change.
     "ogn-164-298": "Sett, Brawler — \"when I'm played and when I conquer, buff me\" "
