@@ -328,6 +328,21 @@ HANDLED: dict[str, str] = {
                    "the damage amount is read off the DISCARDED card's own printed Energy cost "
                    "(card_pool.card_def), so which card is discarded is a real, scored choice, "
                    "not free to ignore the way a no-op draw is",
+    # "Draw" or "if killed, draw" is a no-op (no Main Deck) with nothing
+    # else worth modelling on top; each reduces to an existing generic
+    # spell shape (abilities.FLAT_DAMAGE_SPELLS / the unrestricted-target
+    # Might-grant pattern), same convention as Watchful Sentry's draw.
+    "ogn-005-298": "Disintegrate — [Action] \"Deal 3 to a unit at a battlefield.\" via "
+                   "abilities.FLAT_DAMAGE_SPELLS; \"if this kills it, draw 1\" is a no-op "
+                   "regardless of the kill (no Main Deck)",
+    "ogn-024-298": "Void Seeker — [Action] \"Deal 4 to a unit at a battlefield.\" via "
+                   "abilities.FLAT_DAMAGE_SPELLS; \"draw 1\" is a no-op",
+    "ogn-058-298": "Discipline — [Reaction] \"Give a unit +2 Might this turn.\" via "
+                   "abilities.SPELL_EFFECTS, same unrestricted-anywhere target shape as "
+                   "Primal Strength; \"draw 1\" is a no-op",
+    "ogn-095-298": "Stupefy — [Reaction] \"Give a unit -1 Might this turn, to a minimum of 1 "
+                   "Might.\" via abilities.SPELL_EFFECTS, same shape as Smoke Screen; \"draw 1\" "
+                   "is a no-op",
     "ogn-192-298": "Mindsplitter — mandatory \"when you play me, choose an opponent, they reveal "
                    "their hand, choose a card from it, they discard it\" via UNIT_PLAY_TRIGGERS and "
                    "actions.discard_from_hand applied to the OPPONENT's hand/controller — reusing "
@@ -354,6 +369,9 @@ INERT_FOR_LETHAL: dict[str, str] = {
                    "draw is empty; the discard only shrinks our own hand, which "
                    "a solver would never choose and which cannot create lethal.",
     "ogn-083-298": "Consult the Past — Draw 2. No deck.",
+    "ogn-087-298": "Lecturing Yordle — [Tank] (generic TRAIT_REGISTRY keyword) plus a mandatory "
+                   "\"when you play me, draw 1\"; the only non-keyword text is that draw, a "
+                   "no-op with no Main Deck, so nothing is left half-covered",
     "ogn-099-298": "Garbage Grabber — an activated ability whose whole effect is "
                    "Draw 1. With no deck it does nothing, so it is never worth "
                    "activating regardless of its trash cost.",

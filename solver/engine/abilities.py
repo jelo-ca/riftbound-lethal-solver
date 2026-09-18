@@ -404,6 +404,25 @@ def _smoke_screen_candidates(state: GameState) -> list[tuple]:
     return candidates
 
 
+DISCIPLINE = "ogn-058-298"  # [Reaction] "Give a unit +2 Might this turn. Draw 1."
+STUPEFY = "ogn-095-298"  # [Reaction] "Give a unit -1 Might this turn, to a minimum of 1 Might. Draw 1."
+
+
+def _discipline_effect(state: GameState, action: PlaySpell) -> list[GameState]:
+    """Draw 1 is a no-op (no Main Deck) — see coverage.py — so this
+    reduces to Primal Strength's exact shape, just +2 instead of +7."""
+    return [_grant_might(state, action.params[0], 2)]
+
+
+def _stupefy_effect(state: GameState, action: PlaySpell) -> list[GameState]:
+    """-1 Might with the printed floor of 1, same shape as Smoke Screen's
+    -4/floor-1 (also a no-op draw on top)."""
+    located = find_unit_anywhere(state, action.params[0])
+    unit, _ = located
+    reduction = min(1, max(0, unit.might - 1))
+    return [_grant_might(state, action.params[0], -reduction)]
+
+
 # --- Direct-damage and removal spells -------------------------------------
 #
 # All of these are the same two shapes with different numbers, so they
@@ -414,9 +433,16 @@ FALLING_COMET = "ogn-085-298"  # [Action] "Deal 6 to a unit at a battlefield."
 FALLING_STAR = "ogn-029-298"  # "Deal 3 to a unit. Deal 3 to a unit."
 REBUKE = "ogn-172-298"  # [Action] "Return a unit at a battlefield to its owner's hand."
 GRAND_STRATEGEM = "ogn-233-298"  # [Action] "Give friendly units +5 Might this turn."
+DISINTEGRATE = "ogn-005-298"  # [Action] "Deal 3 to a unit at a battlefield. If this kills it, draw 1."
+VOID_SEEKER = "ogn-024-298"  # [Action] "Deal 4 to a unit at a battlefield. Draw 1."
 
-# card_id -> damage dealt to a single unit at a battlefield.
-FLAT_DAMAGE_SPELLS: dict[str, int] = {HEXTECH_RAY: 3, FALLING_COMET: 6}
+# card_id -> damage dealt to a single unit at a battlefield. Disintegrate's
+# "if this kills it, draw 1" and Void Seeker's unconditional "draw 1" are
+# both no-ops regardless of the kill (no Main Deck) — see coverage.py —
+# so both spells reduce to exactly this shape, same as Hextech Ray/Falling
+# Comet.
+FLAT_DAMAGE_SPELLS: dict[str, int] = {HEXTECH_RAY: 3, FALLING_COMET: 6,
+                                       DISINTEGRATE: 3, VOID_SEEKER: 4}
 
 
 def _units_at_battlefields(state: GameState) -> list[tuple]:
@@ -1232,6 +1258,8 @@ SPELL_EFFECTS: dict[str, tuple[
     SMOKE_SCREEN: (_smoke_screen_is_legal, _smoke_screen_effect, _smoke_screen_candidates),
     HEXTECH_RAY: (_single_battlefield_target_is_legal, _flat_damage_effect, _units_at_battlefields),
     FALLING_COMET: (_single_battlefield_target_is_legal, _flat_damage_effect, _units_at_battlefields),
+    DISINTEGRATE: (_single_battlefield_target_is_legal, _flat_damage_effect, _units_at_battlefields),
+    VOID_SEEKER: (_single_battlefield_target_is_legal, _flat_damage_effect, _units_at_battlefields),
     FALLING_STAR: (_falling_star_is_legal, _falling_star_effect, _falling_star_candidates),
     REBUKE: (_single_battlefield_target_is_legal, _rebuke_effect, _units_at_battlefields),
     GRAND_STRATEGEM: (_grand_strategem_is_legal, _grand_strategem_effect, lambda state: [()]),
@@ -1246,6 +1274,8 @@ SPELL_EFFECTS: dict[str, tuple[
     MORBID_RETURN: (_morbid_return_is_legal, _morbid_return_effect, _morbid_return_candidates),
     THE_HARROWING: (_the_harrowing_is_legal, _the_harrowing_effect, _the_harrowing_candidates),
     GET_EXCITED: (_get_excited_is_legal, _get_excited_effect, _get_excited_candidates),
+    DISCIPLINE: (_primal_strength_is_legal, _discipline_effect, _primal_strength_candidates),
+    STUPEFY: (_smoke_screen_is_legal, _stupefy_effect, _smoke_screen_candidates),
 }
 
 

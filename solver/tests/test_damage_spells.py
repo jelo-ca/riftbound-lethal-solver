@@ -8,6 +8,8 @@ softens it, and any death it causes fires that unit's [Deathknell].
 
 from solver.engine import abilities
 from solver.engine.abilities import (
+    DISCIPLINE,
+    DISINTEGRATE,
     FALLING_COMET,
     FALLING_STAR,
     GRAND_STRATEGEM,
@@ -15,6 +17,8 @@ from solver.engine.abilities import (
     HEXTECH_RAY,
     REBUKE,
     RIPTIDE_REX,
+    STUPEFY,
+    VOID_SEEKER,
 )
 from solver.engine.actions import PlaySpell, PlayUnit, RunePayment
 from solver.engine.card_pool import card_def
@@ -71,6 +75,41 @@ def test_hextech_ray_deals_three():
 def test_falling_comet_kills_a_six_might_unit():
     st = state_with(left=frozenset({unit(1, might=6)}), hand=(FALLING_COMET,))
     assert 1 not in ids_at(cast(FALLING_COMET, (1,), st))
+
+
+def test_disintegrate_deals_three_regardless_of_the_kill():
+    """"If this kills it, draw 1" is a no-op either way (no Main Deck) —
+    the spell reduces to a plain 3-damage instance whether or not the hit
+    is lethal."""
+    st = state_with(left=frozenset({unit(1, might=4)}), hand=(DISINTEGRATE,),
+                     runes=("Fury",) * 4)
+    out = cast(DISINTEGRATE, (1,), st)
+    assert next(u for u in out.battlefields[0].units if u.instance_id == 1).damage == 3
+
+
+def test_disintegrate_can_kill_a_three_might_unit():
+    st = state_with(left=frozenset({unit(1, might=3)}), hand=(DISINTEGRATE,), runes=("Fury",) * 4)
+    assert 1 not in ids_at(cast(DISINTEGRATE, (1,), st))
+
+
+def test_void_seeker_deals_four():
+    st = state_with(left=frozenset({unit(1, might=5)}), hand=(VOID_SEEKER,), runes=("Fury",) * 4)
+    out = cast(VOID_SEEKER, (1,), st)
+    assert next(u for u in out.battlefields[0].units if u.instance_id == 1).damage == 4
+
+
+def test_discipline_gives_plus_two_might_to_any_unit():
+    """Unrestricted target, same reading as Primal Strength's "a unit" —
+    can target an enemy too, though buffing your own is the normal case."""
+    st = state_with(left=frozenset({unit(1, might=3)}), hand=(DISCIPLINE,), runes=("Fury",) * 2)
+    out = cast(DISCIPLINE, (1,), st)
+    assert next(u for u in out.battlefields[0].units if u.instance_id == 1).might == 5
+
+
+def test_stupefy_reduces_might_with_a_floor_of_one():
+    st = state_with(left=frozenset({unit(1, might=1)}), hand=(STUPEFY,), runes=("Fury",) * 1)
+    out = cast(STUPEFY, (1,), st)
+    assert next(u for u in out.battlefields[0].units if u.instance_id == 1).might == 1
 
 
 def test_falling_star_can_aim_both_instances_at_one_unit():
