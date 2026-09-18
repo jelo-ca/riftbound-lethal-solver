@@ -351,6 +351,69 @@ def _seal_candidates(state: GameState) -> list[tuple]:
     return [()]
 
 
+# --- Sun Disc: "[Legion] Exhaust: The next unit you play this turn enters
+# ready." ---
+#
+# [Legion]'s gate lives in the EFFECT, not is_legal — same convention as
+# Dangerous Duo/Trifarian Gloryseeker (abilities.py): activating a Gear
+# ability for no effect is a legal, merely bad, play, not an illegal one.
+
+SUN_DISC = "ogn-021-298"
+
+
+def _sun_disc_is_legal(state: GameState, action: ActivateAbility) -> bool:
+    return action.params == () and _source_is_usable(state, action)
+
+
+def _sun_disc_effect(state: GameState, action: ActivateAbility) -> GameState:
+    state = _exhaust_source(state, action)
+    # [Legion]: this ability is itself an ACTIVATION, not a play, so it
+    # never bumps cards_played_this_turn the way a played Legion card
+    # counts its own play as one of the two abilities.legion_condition_met
+    # checks for. The >0 threshold here is that helper's own documented
+    # "cost-time Legion" case — at least one OTHER card must already have
+    # been played this turn.
+    if state.cards_played_this_turn == 0:
+        return state  # Exhausted for nothing — [Legion] not met.
+    located = find_gear(state, action.source_id)
+    assert located is not None
+    _, controller = located
+    player = state.players[controller]
+    return replace_player(state, controller, dataclasses.replace(player, next_unit_enters_ready=True))
+
+
+def _sun_disc_candidates(state: GameState) -> list[tuple]:
+    return [()]
+
+
+# --- Ravenborn Tome: "Exhaust: The next spell you play this turn deals 1
+# Bonus Damage." ---
+#
+# See coverage.py's entry and abilities._bonus_damage for where the
+# resulting PlayerState.next_spell_bonus_damage flag is actually read and
+# consumed — this ability only sets it.
+
+RAVENBORN_TOME = "ogn-032-298"
+
+
+def _ravenborn_tome_is_legal(state: GameState, action: ActivateAbility) -> bool:
+    return action.params == () and _source_is_usable(state, action)
+
+
+def _ravenborn_tome_effect(state: GameState, action: ActivateAbility) -> GameState:
+    state = _exhaust_source(state, action)
+    located = find_gear(state, action.source_id)
+    assert located is not None
+    _, controller = located
+    player = state.players[controller]
+    return replace_player(state, controller, dataclasses.replace(
+        player, next_spell_bonus_damage=player.next_spell_bonus_damage + 1))
+
+
+def _ravenborn_tome_candidates(state: GameState) -> list[tuple]:
+    return [()]
+
+
 GEAR_ABILITIES: dict[str, tuple[
     Callable[[GameState, ActivateAbility], bool],
     Callable[[GameState, ActivateAbility], GameState],
@@ -367,6 +430,8 @@ GEAR_ABILITIES: dict[str, tuple[
     SEAL_OF_STRENGTH: (_seal_is_legal, _seal_effect, _seal_candidates),
     SEAL_OF_DISCORD: (_seal_is_legal, _seal_effect, _seal_candidates),
     SEAL_OF_UNITY: (_seal_is_legal, _seal_effect, _seal_candidates),
+    SUN_DISC: (_sun_disc_is_legal, _sun_disc_effect, _sun_disc_candidates),
+    RAVENBORN_TOME: (_ravenborn_tome_is_legal, _ravenborn_tome_effect, _ravenborn_tome_candidates),
 }
 
 

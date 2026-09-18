@@ -247,6 +247,24 @@ class PlayerState:
     # (UnitInstance.is_token) do NOT go to trash: they cease to exist
     # rather than occupying a zone, since they were never a printed card.
     trash: tuple[str, ...] = ()
+    # Sun Disc (ogn-021-298): "[Legion] Exhaust: The next unit you play this
+    # turn enters ready." A one-shot flag rather than a queue — the card
+    # names a single upcoming play, not a standing effect — consumed by
+    # the very next actions.apply_play_unit call for this player,
+    # accelerated or not (accelerating already enters ready on its own;
+    # the flag is still spent, since "the next unit" already named that
+    # play regardless of whether it changed anything observable).
+    next_unit_enters_ready: bool = False
+    # Ravenborn Tome (ogn-032-298): "Exhaust: The next spell you play this
+    # turn deals 1 Bonus Damage." Same one-shot-flag shape as
+    # next_unit_enters_ready above, but an int (not bool) since "Bonus
+    # Damage" is additive per instance, not merely present/absent — see
+    # abilities._bonus_damage and coverage.py's entry for exactly which
+    # SPELL_EFFECTS functions read it. Cleared once per spell PLAY
+    # (abilities.resolve_spell_outcomes), not per damage instance, so
+    # multiple instances from the same spell (Falling Star's two, say)
+    # each get the bonus.
+    next_spell_bonus_damage: int = 0
 
 
 @dataclass(frozen=True)
@@ -388,6 +406,12 @@ def _canonical_player(player: PlayerState) -> tuple:
         # unit from trash" choice has two to pick from), so this sorts a
         # multiset rather than a set.
         tuple(sorted(player.trash)),
+        # Both one-shot flags narrow what the SAME next action produces
+        # (Sun Disc's readying, Ravenborn Tome's damage bonus), so two
+        # otherwise-identical positions differing only here are genuinely
+        # different — same reasoning as the spend-trackers above.
+        player.next_unit_enters_ready,
+        player.next_spell_bonus_damage,
     )
 
 

@@ -435,6 +435,13 @@ def apply_play_unit(state: GameState, action: PlayUnit, card: CardDef) -> GameSt
     player_index = state.turn_player
     player = state.players[player_index]
 
+    # Sun Disc (ogn-021-298): "The next unit you play this turn enters
+    # ready." A one-shot flag, consumed by THIS play regardless of whether
+    # it ends up changing anything (an accelerated play already entered
+    # ready on its own) — see PlayerState.next_unit_enters_ready's field
+    # comment.
+    entering_ready = action.accelerated or player.next_unit_enters_ready
+
     new_unit = UnitInstance(
         card_id=card.card_id,
         instance_id=next_instance_id(state),
@@ -442,8 +449,9 @@ def apply_play_unit(state: GameState, action: PlayUnit, card: CardDef) -> GameSt
         might=card.might if card.might is not None else 0,
         keywords=card.keywords,
         # rule 143.4.a: units enter the board exhausted — unless [Accelerate]'s
-        # additional cost was paid, which is the entire point of the keyword.
-        exhausted=not action.accelerated,
+        # additional cost was paid (or Sun Disc's one-shot flag applies),
+        # which is the entire point of the keyword/effect.
+        exhausted=not entering_ready,
         damage=0,
         is_token=False,
     )
@@ -461,12 +469,14 @@ def apply_play_unit(state: GameState, action: PlayUnit, card: CardDef) -> GameSt
             base_units=player.base_units | {new_unit},
             hand=tuple(new_hand),
             runes=new_runes,
+            next_unit_enters_ready=False,
         )
         state = replace_player(state, player_index, new_player)
         state = observers.fire_observer_play_triggers(state, new_unit)
         return _apply_legend_observer_reaction(state, action, player_index)
 
-    new_player = dataclasses.replace(player, hand=tuple(new_hand), runes=new_runes)
+    new_player = dataclasses.replace(player, hand=tuple(new_hand), runes=new_runes,
+                                     next_unit_enters_ready=False)
     state = replace_player(state, player_index, new_player)
     bf = _battlefield(state, action.target_zone)
     # rule 466.7.b: playing to an open battlefield (via can_play_to_open_

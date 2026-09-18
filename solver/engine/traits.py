@@ -25,7 +25,7 @@ convention — see findings.md's keyword-vocabulary cache scan).
 from __future__ import annotations
 
 import dataclasses
-from typing import Literal, Optional
+from typing import Callable, Literal, Optional
 
 from . import battlefields
 from .state import GameState, UnitInstance
@@ -168,6 +168,25 @@ AURA_SOURCES: dict[str, AuraDef] = {
 }
 
 
+SPIRITS_REFUGE = "ogn-063-298"  # Gear: "Friendly buffed units have [Deflect] if they didn't already."
+
+# card_id -> (condition(unit) -> bool, grants) for a trait grant sourced
+# from a GEAR the receiving unit's OWN controller holds, unscoped by
+# position — unlike AURA_SOURCES (a co-located UNIT's grant, battlefield-
+# only) or BUFF_MIGHT_AURA_SOURCES (Might, not a trait, also battlefield-
+# only). Gear never occupies a battlefield (engine/gear.py's module
+# docstring), so a Gear-sourced grant can't be positional the way Taric's
+# is — it has to reach every friendly unit everywhere, Base included, or
+# it wouldn't match what "friendly buffed units have [Deflect]" actually
+# says. The condition reads unit.buffed (plain state), never Might, so the
+# module's non-circularity invariant holds the same way SELF_CONDITIONALS'
+# does. A second Gear-sourced conditional grant costs one line here, same
+# as AURA_SOURCES' own comment promises for a second co-located one.
+GEAR_CONDITIONAL_GRANTS: dict[str, tuple[Callable[["UnitInstance"], bool], frozenset[str]]] = {
+    SPIRITS_REFUGE: (lambda unit: unit.buffed, frozenset({"Deflect"})),
+}
+
+
 LEE_SIN_CENTERED = "ogn-151-298"  # "Other buffed friendly units at my battlefield have +2 Might."
 LEE_SIN_CENTERED_ALT = "ogn-151a-298"  # same card, alternate printing
 
@@ -246,6 +265,17 @@ def resolved_traits(state: GameState, unit: UnitInstance, zone: Zone,
     own = SELF_CONDITIONALS.get(unit.card_id)
     if own is not None and own.condition(state, unit, zone, designation):
         traits |= own.grants
+
+    # Gear-sourced grants (GEAR_CONDITIONAL_GRANTS) are unscoped by
+    # position — checked here, before the "base" early return, so a
+    # buffed unit sitting at Base still gets Spirit's Refuge's [Deflect]
+    # the same as one at a battlefield.
+    for gear_piece in state.players[unit.controller].gear:
+        entry = GEAR_CONDITIONAL_GRANTS.get(gear_piece.card_id)
+        if entry is not None:
+            condition, grants = entry
+            if condition(unit):
+                traits |= grants
 
     if zone == "base":
         return frozenset(traits)

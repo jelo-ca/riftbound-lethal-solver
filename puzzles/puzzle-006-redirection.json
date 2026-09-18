@@ -1,13 +1,13 @@
 {
   "schema_version": 2,
   "puzzle_id": "puzzle-006-redirection",
-  "root": "3265a65ed13e7d0c",
+  "root": "93f8d534ccbdac50",
   "solution": {
-    "c64cc5fe091e74b3": "a13",
-    "3265a65ed13e7d0c": "a5"
+    "44268751a43004d3": "a13",
+    "93f8d534ccbdac50": "a5"
   },
   "nodes": {
-    "3265a65ed13e7d0c": {
+    "93f8d534ccbdac50": {
       "turn_player": 0,
       "players": [
         {
@@ -28,7 +28,9 @@
           "score": 7,
           "legend": null,
           "gear": [],
-          "trash": []
+          "trash": [],
+          "next_unit_enters_ready": false,
+          "next_spell_bonus_damage": 0
         },
         {
           "base_units": [],
@@ -39,7 +41,9 @@
           "score": 0,
           "legend": null,
           "gear": [],
-          "trash": []
+          "trash": [],
+          "next_unit_enters_ready": false,
+          "next_spell_bonus_damage": 0
         }
       ],
       "battlefields": [
@@ -94,7 +98,7 @@
       "showdown": null,
       "pending_conquer_choice": null
     },
-    "9b965469842fc0f4": {
+    "d7b421fe9f3a37cc": {
       "turn_player": 0,
       "players": [
         {
@@ -132,7 +136,9 @@
           "score": 7,
           "legend": null,
           "gear": [],
-          "trash": []
+          "trash": [],
+          "next_unit_enters_ready": false,
+          "next_spell_bonus_damage": 0
         },
         {
           "base_units": [],
@@ -143,7 +149,9 @@
           "score": 0,
           "legend": null,
           "gear": [],
-          "trash": []
+          "trash": [],
+          "next_unit_enters_ready": false,
+          "next_spell_bonus_damage": 0
         }
       ],
       "battlefields": [
@@ -198,7 +206,7 @@
       "showdown": null,
       "pending_conquer_choice": null
     },
-    "4a0e6e0cb4de1f7b": {
+    "8ee34df1c81454bc": {
       "turn_player": 0,
       "players": [
         {
@@ -219,7 +227,9 @@
           "score": 7,
           "legend": null,
           "gear": [],
-          "trash": []
+          "trash": [],
+          "next_unit_enters_ready": false,
+          "next_spell_bonus_damage": 0
         },
         {
           "base_units": [],
@@ -230,7 +240,9 @@
           "score": 0,
           "legend": null,
           "gear": [],
-          "trash": []
+          "trash": [],
+          "next_unit_enters_ready": false,
+          "next_spell_bonus_damage": 0
         }
       ],
       "battlefields": [
@@ -301,7 +313,7 @@
       "showdown": null,
       "pending_conquer_choice": null
     },
-    "3166433cbbb206f1": {
+    "65a58edaf971af60": {
       "turn_player": 0,
       "players": [
         {
@@ -337,7 +349,9 @@
           "score": 7,
           "legend": null,
           "gear": [],
-          "trash": []
+          "trash": [],
+          "next_unit_enters_ready": false,
+          "next_spell_bonus_damage": 0
         },
         {
           "base_units": [],
@@ -348,7 +362,9 @@
           "score": 0,
           "legend": null,
           "gear": [],
-          "trash": []
+          "trash": [],
+          "next_unit_enters_ready": false,
+          "next_spell_bonus_damage": 0
         }
       ],
       "battlefields": [
@@ -388,7 +404,7 @@
       "showdown": null,
       "pending_conquer_choice": null
     },
-    "99d486b255477ec1": {
+    "63e694b1bc285d66": {
       "turn_player": 0,
       "players": [
         {
@@ -411,7 +427,9 @@
           "gear": [],
           "trash": [
             "ogn-010-298"
-          ]
+          ],
+          "next_unit_enters_ready": false,
+          "next_spell_bonus_damage": 0
         },
         {
           "base_units": [],
@@ -422,7 +440,9 @@
           "score": 0,
           "legend": null,
           "gear": [],
-          "trash": []
+          "trash": [],
+          "next_unit_enters_ready": false,
+          "next_spell_bonus_damage": 0
         }
       ],
       "battlefields": [
@@ -462,7 +482,7 @@
       "showdown": null,
       "pending_conquer_choice": null
     },
-    "c64cc5fe091e74b3": {
+    "44268751a43004d3": {
       "turn_player": 0,
       "players": [
         {
@@ -483,7 +503,9 @@
           "score": 7,
           "legend": null,
           "gear": [],
-          "trash": []
+          "trash": [],
+          "next_unit_enters_ready": false,
+          "next_spell_bonus_damage": 0
         },
         {
           "base_units": [],
@@ -496,7 +518,9 @@
           "gear": [],
           "trash": [
             "ogn-218-298"
-          ]
+          ],
+          "next_unit_enters_ready": false,
+          "next_spell_bonus_damage": 0
         }
       ],
       "battlefields": [
@@ -552,7 +576,7 @@
       "showdown": null,
       "pending_conquer_choice": null
     },
-    "488c8350bdc5c4fe": {
+    "ba94f7796497afc4": {
       "turn_player": 0,
       "players": [
         {
@@ -604,7 +628,9 @@
           "score": 7,
           "legend": null,
           "gear": [],
-          "trash": []
+          "trash": [],
+          "next_unit_enters_ready": false,
+          "next_spell_bonus_damage": 0
         },
         {
           "base_units": [],
@@ -615,7 +641,9 @@
           "score": 0,
           "legend": null,
           "gear": [],
-          "trash": []
+          "trash": [],
+          "next_unit_enters_ready": false,
+          "next_spell_bonus_damage": 0
         }
       ],
       "battlefields": [
@@ -655,7 +683,7 @@
       "showdown": null,
       "pending_conquer_choice": null
     },
-    "564fdfb3e344701e": {
+    "d97b28ea824e303c": {
       "turn_player": 0,
       "players": [
         {
@@ -695,7 +723,9 @@
           "gear": [],
           "trash": [
             "ogn-010-298"
-          ]
+          ],
+          "next_unit_enters_ready": false,
+          "next_spell_bonus_damage": 0
         },
         {
           "base_units": [],
@@ -706,7 +736,9 @@
           "score": 0,
           "legend": null,
           "gear": [],
-          "trash": []
+          "trash": [],
+          "next_unit_enters_ready": false,
+          "next_spell_bonus_damage": 0
         }
       ],
       "battlefields": [
@@ -746,7 +778,7 @@
       "showdown": null,
       "pending_conquer_choice": null
     },
-    "e713f45320bb2472": {
+    "0d2ef1161986ad5a": {
       "turn_player": 0,
       "players": [
         {
@@ -782,7 +814,9 @@
           "score": 7,
           "legend": null,
           "gear": [],
-          "trash": []
+          "trash": [],
+          "next_unit_enters_ready": false,
+          "next_spell_bonus_damage": 0
         },
         {
           "base_units": [],
@@ -793,7 +827,9 @@
           "score": 0,
           "legend": null,
           "gear": [],
-          "trash": []
+          "trash": [],
+          "next_unit_enters_ready": false,
+          "next_spell_bonus_damage": 0
         }
       ],
       "battlefields": [
@@ -850,7 +886,7 @@
       "showdown": null,
       "pending_conquer_choice": null
     },
-    "3b505aaf9268650e": {
+    "e26075019935f51f": {
       "turn_player": 0,
       "players": [
         {
@@ -873,7 +909,9 @@
           "gear": [],
           "trash": [
             "ogn-010-298"
-          ]
+          ],
+          "next_unit_enters_ready": false,
+          "next_spell_bonus_damage": 0
         },
         {
           "base_units": [],
@@ -884,7 +922,9 @@
           "score": 0,
           "legend": null,
           "gear": [],
-          "trash": []
+          "trash": [],
+          "next_unit_enters_ready": false,
+          "next_spell_bonus_damage": 0
         }
       ],
       "battlefields": [
@@ -941,7 +981,7 @@
       "showdown": null,
       "pending_conquer_choice": null
     },
-    "286aabed5b4f837b": {
+    "1989167365a695ab": {
       "turn_player": 0,
       "players": [
         {
@@ -977,7 +1017,9 @@
           "score": 7,
           "legend": null,
           "gear": [],
-          "trash": []
+          "trash": [],
+          "next_unit_enters_ready": false,
+          "next_spell_bonus_damage": 0
         },
         {
           "base_units": [],
@@ -990,7 +1032,9 @@
           "gear": [],
           "trash": [
             "ogn-218-298"
-          ]
+          ],
+          "next_unit_enters_ready": false,
+          "next_spell_bonus_damage": 0
         }
       ],
       "battlefields": [
@@ -1032,7 +1076,7 @@
       "showdown": null,
       "pending_conquer_choice": null
     },
-    "d7e25d6e96838cdb": {
+    "a076742af187537f": {
       "turn_player": 0,
       "players": [
         {
@@ -1053,7 +1097,9 @@
           "score": 8,
           "legend": null,
           "gear": [],
-          "trash": []
+          "trash": [],
+          "next_unit_enters_ready": false,
+          "next_spell_bonus_damage": 0
         },
         {
           "base_units": [],
@@ -1066,7 +1112,9 @@
           "gear": [],
           "trash": [
             "ogn-218-298"
-          ]
+          ],
+          "next_unit_enters_ready": false,
+          "next_spell_bonus_damage": 0
         }
       ],
       "battlefields": [
@@ -1126,7 +1174,7 @@
     }
   },
   "edges": {
-    "3265a65ed13e7d0c": [
+    "93f8d534ccbdac50": [
       {
         "action": {
           "id": "a1",
@@ -1139,7 +1187,7 @@
           "instance_id": null
         },
         "to": [
-          "9b965469842fc0f4"
+          "d7b421fe9f3a37cc"
         ],
         "adversarial": false
       },
@@ -1155,7 +1203,7 @@
           "instance_id": null
         },
         "to": [
-          "4a0e6e0cb4de1f7b"
+          "8ee34df1c81454bc"
         ],
         "adversarial": false
       },
@@ -1171,7 +1219,7 @@
           "instance_id": 1
         },
         "to": [
-          "3166433cbbb206f1"
+          "65a58edaf971af60"
         ],
         "adversarial": false
       },
@@ -1187,7 +1235,7 @@
           "instance_id": 1
         },
         "to": [
-          "99d486b255477ec1"
+          "63e694b1bc285d66"
         ],
         "adversarial": false
       },
@@ -1203,12 +1251,12 @@
           "instance_id": null
         },
         "to": [
-          "c64cc5fe091e74b3"
+          "44268751a43004d3"
         ],
         "adversarial": false
       }
     ],
-    "9b965469842fc0f4": [
+    "d7b421fe9f3a37cc": [
       {
         "action": {
           "id": "a6",
@@ -1221,7 +1269,7 @@
           "instance_id": 1
         },
         "to": [
-          "488c8350bdc5c4fe"
+          "ba94f7796497afc4"
         ],
         "adversarial": false
       },
@@ -1237,12 +1285,12 @@
           "instance_id": 1
         },
         "to": [
-          "564fdfb3e344701e"
+          "d97b28ea824e303c"
         ],
         "adversarial": false
       }
     ],
-    "4a0e6e0cb4de1f7b": [
+    "8ee34df1c81454bc": [
       {
         "action": {
           "id": "a8",
@@ -1255,7 +1303,7 @@
           "instance_id": 1
         },
         "to": [
-          "e713f45320bb2472"
+          "0d2ef1161986ad5a"
         ],
         "adversarial": false
       },
@@ -1271,12 +1319,12 @@
           "instance_id": 1
         },
         "to": [
-          "3b505aaf9268650e"
+          "e26075019935f51f"
         ],
         "adversarial": false
       }
     ],
-    "3166433cbbb206f1": [
+    "65a58edaf971af60": [
       {
         "action": {
           "id": "a10",
@@ -1289,12 +1337,12 @@
           "instance_id": null
         },
         "to": [
-          "488c8350bdc5c4fe"
+          "ba94f7796497afc4"
         ],
         "adversarial": false
       }
     ],
-    "99d486b255477ec1": [
+    "63e694b1bc285d66": [
       {
         "action": {
           "id": "a11",
@@ -1307,12 +1355,12 @@
           "instance_id": null
         },
         "to": [
-          "564fdfb3e344701e"
+          "d97b28ea824e303c"
         ],
         "adversarial": false
       }
     ],
-    "c64cc5fe091e74b3": [
+    "44268751a43004d3": [
       {
         "action": {
           "id": "a12",
@@ -1325,7 +1373,7 @@
           "instance_id": 1
         },
         "to": [
-          "286aabed5b4f837b"
+          "1989167365a695ab"
         ],
         "adversarial": false
       },
@@ -1341,18 +1389,18 @@
           "instance_id": 1
         },
         "to": [
-          "d7e25d6e96838cdb"
+          "a076742af187537f"
         ],
         "adversarial": false
       }
     ]
   },
   "terminal": {
-    "488c8350bdc5c4fe": "dead_end",
-    "564fdfb3e344701e": "dead_end",
-    "e713f45320bb2472": "dead_end",
-    "3b505aaf9268650e": "dead_end",
-    "286aabed5b4f837b": "dead_end",
-    "d7e25d6e96838cdb": "win"
+    "ba94f7796497afc4": "dead_end",
+    "d97b28ea824e303c": "dead_end",
+    "0d2ef1161986ad5a": "dead_end",
+    "e26075019935f51f": "dead_end",
+    "1989167365a695ab": "dead_end",
+    "a076742af187537f": "win"
   }
 }

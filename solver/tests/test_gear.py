@@ -10,10 +10,13 @@ easiest to get backwards:
     "This enters exhausted" precisely because that isn't the default.
 """
 
+import dataclasses
+
 from solver.engine import gear
 from solver.engine.actions import (
     ActivateAbility,
     PlayGear,
+    PlaySpell,
     RunePayment,
     apply_play_gear,
     is_legal_play_gear,
@@ -459,6 +462,246 @@ def test_pack_of_wonders_returns_another_friendly_gear_not_itself():
     remaining_ids = {g.card_id for g in out.players[0].gear}
     assert remaining_ids == {gear.PACK_OF_WONDERS}
     assert out.players[0].hand == (gear.ORB_OF_REGRET,)
+
+
+# --- Spirit's Refuge: "When you play this, buff a friendly unit."
+# "Friendly buffed units have [Deflect] if they didn't already." ---
+
+
+SPIRITS_REFUGE = abilities.SPIRITS_REFUGE
+
+
+def test_spirits_refuge_buffs_the_chosen_friendly_unit_on_play():
+    card = card_def(SPIRITS_REFUGE)
+    unit = make_unit(1, controller=0)
+    state = make_state(hand=(SPIRITS_REFUGE,), runes=("Calm",) * 3,
+                        base_units=frozenset({unit}))
+    action = PlayGear(card_id=SPIRITS_REFUGE, trigger_params=(1,),
+                       rune_payment=RunePayment(energy_runes=("Calm", "Calm"),
+                                                 power_runes=("Calm",)))
+    assert abilities.is_legal_gear_play_trigger(state, action, card)
+    [result] = abilities.resolve_gear_play_trigger_outcomes(state, action, card)
+    assert next(iter(result.players[0].base_units)).buffed is True
+
+
+def test_spirits_refuge_cannot_target_an_enemy_unit():
+    """"A FRIENDLY unit" — unlike Whiteflame's unrestricted "a unit"."""
+    card = card_def(SPIRITS_REFUGE)
+    enemy = make_unit(1, controller=1)
+    state = make_state(hand=(SPIRITS_REFUGE,), runes=("Calm",) * 3,
+                        left_units=frozenset({enemy}), left_ctrl=1)
+    action = PlayGear(card_id=SPIRITS_REFUGE, trigger_params=(1,),
+                       rune_payment=RunePayment(energy_runes=("Calm", "Calm"),
+                                                 power_runes=("Calm",)))
+    assert not abilities.is_legal_gear_play_trigger(state, action, card)
+
+
+def test_spirits_refuge_grants_deflect_to_any_buffed_friendly_unit():
+    """The second clause is a board-wide conditional grant sourced from the
+    Gear, not from the unit the play trigger buffed — it has to reach a
+    SEPARATE unit that was buffed some other way (here, just constructed
+    already-buffed), including one sitting at Base, where Gear (never
+    positional) still reaches it."""
+    from solver.engine.traits import resolved_traits
+
+    buffed_unit = dataclasses.replace(make_unit(1, controller=0), buffed=True)
+    state = make_state(gear_pieces=frozenset({ready_gear(SPIRITS_REFUGE)}),
+                        base_units=frozenset({buffed_unit}))
+    assert "Deflect" in resolved_traits(state, buffed_unit, "base")
+
+
+def test_no_spirits_refuge_means_no_deflect_from_being_buffed():
+    from solver.engine.traits import resolved_traits
+
+    buffed_unit = dataclasses.replace(make_unit(1, controller=0), buffed=True)
+    state = make_state(base_units=frozenset({buffed_unit}))
+    assert "Deflect" not in resolved_traits(state, buffed_unit, "base")
+
+
+def test_spirits_refuge_reachable_through_legal_actions():
+    unit = make_unit(1, controller=0)
+    state = make_state(hand=(SPIRITS_REFUGE,), runes=("Calm",) * 3,
+                        base_units=frozenset({unit}))
+    plays = [a for a in search.legal_actions(state, {SPIRITS_REFUGE: card_def(SPIRITS_REFUGE)})
+             if getattr(a, "card_id", None) == SPIRITS_REFUGE]
+    assert plays, "Spirit's Refuge is not being generated"
+    assert all(a.trigger_params == (1,) for a in plays)  # mandatory — no bare play
+
+
+# --- Sun Disc: "[Legion] Exhaust: The next unit you play this turn enters
+# ready." ---
+
+
+SUN_DISC = gear.SUN_DISC
+
+
+def test_sun_disc_sets_the_flag_when_legion_is_met():
+    state = make_state(gear_pieces=frozenset({ready_gear(SUN_DISC)}))
+    state = dataclasses.replace(state, cards_played_this_turn=1)
+    action = _activate(SUN_DISC, ())
+    assert gear.is_legal_gear_ability(state, action)
+    result = gear.apply_gear_ability(state, action)
+    assert result.players[0].next_unit_enters_ready is True
+    assert next(iter(result.players[0].gear)).exhausted is True
+
+
+def test_sun_disc_does_nothing_without_legion():
+    """[Legion] not met — the Exhaust is legal but produces no effect, same
+    convention as Dangerous Duo/Trifarian Gloryseeker."""
+    state = make_state(gear_pieces=frozenset({ready_gear(SUN_DISC)}))
+    action = _activate(SUN_DISC, ())
+    assert gear.is_legal_gear_ability(state, action)  # legal, just wasted
+    result = gear.apply_gear_ability(state, action)
+    assert result.players[0].next_unit_enters_ready is False
+
+
+def test_sun_disc_makes_the_next_played_unit_enter_ready():
+    from solver.engine.actions import PlayUnit, apply_play_unit
+    from solver.engine.cards import CardDef
+
+    plain = CardDef(card_id="p", card_type="Unit", energy_cost=1, power_cost=0, might=2)
+    state = make_state(gear_pieces=frozenset({ready_gear(SUN_DISC)}), hand=("p",),
+                        runes=("Fury",))
+    state = dataclasses.replace(state, cards_played_this_turn=1)
+    flagged = gear.apply_gear_ability(state, _activate(SUN_DISC, ()))
+    assert flagged.players[0].next_unit_enters_ready is True
+
+    play = PlayUnit(card_id="p", target_zone="base",
+                     rune_payment=RunePayment(energy_runes=("Fury",), power_runes=()))
+    result = apply_play_unit(flagged, play, plain)
+    placed = next(iter(result.players[0].base_units))
+    assert placed.exhausted is False
+    assert result.players[0].next_unit_enters_ready is False  # consumed
+
+
+def test_sun_disc_reachable_through_legal_actions():
+    state = make_state(gear_pieces=frozenset({ready_gear(SUN_DISC)}))
+    state = dataclasses.replace(state, cards_played_this_turn=1)
+    acts = [a for a in search.legal_actions(state, {})
+            if isinstance(a, ActivateAbility) and a.ability_id == SUN_DISC]
+    assert acts, "Sun Disc is not being generated"
+    result = gear.apply_gear_ability(state, acts[0])
+    assert result.players[0].next_unit_enters_ready is True
+
+
+# --- Ravenborn Tome: "Exhaust: The next spell you play this turn deals 1
+# Bonus Damage." ---
+
+
+RAVENBORN_TOME = gear.RAVENBORN_TOME
+
+
+def test_ravenborn_tome_sets_the_bonus_damage_flag():
+    state = make_state(gear_pieces=frozenset({ready_gear(RAVENBORN_TOME)}))
+    action = _activate(RAVENBORN_TOME, ())
+    assert gear.is_legal_gear_ability(state, action)
+    result = gear.apply_gear_ability(state, action)
+    assert result.players[0].next_spell_bonus_damage == 1
+    assert next(iter(result.players[0].gear)).exhausted is True
+
+
+def test_ravenborn_tome_adds_one_to_the_next_spells_damage_and_is_consumed():
+    """Hextech Ray: "Deal 3 to a unit at a battlefield" — 3 becomes 4, and
+    a second spell afterward gets no further bonus."""
+    hextech_ray = "ogn-009-298"  # 1 Energy, 1 Fury Power: "Deal 3 to a unit at a battlefield."
+    target = make_unit(1, controller=1, might=9)
+    state = make_state(gear_pieces=frozenset({ready_gear(RAVENBORN_TOME)}),
+                        hand=(hextech_ray,), runes=("Fury", "Fury"),
+                        left_units=frozenset({target}), left_ctrl=1)
+    flagged = gear.apply_gear_ability(state, _activate(RAVENBORN_TOME, ()))
+    assert flagged.players[0].next_spell_bonus_damage == 1
+
+    action = PlaySpell(card_id=hextech_ray, params=(1,),
+                        rune_payment=RunePayment(energy_runes=("Fury",), power_runes=("Fury",)))
+    [result] = abilities.resolve_spell_outcomes(flagged, action, card_def(hextech_ray))
+    hit = next(iter(result.battlefields[0].units))
+    assert hit.damage == 4  # 3 printed + 1 Bonus Damage
+    assert result.players[0].next_spell_bonus_damage == 0  # consumed by this one spell
+
+
+def test_ravenborn_tome_bonus_applies_to_both_sides_of_challenge():
+    """Challenge routes through the SHARED _mutual_damage helper (also used
+    by Carnivorous Snapvine's UNIT_PLAY_TRIGGERS effect, which must NOT see
+    the bonus — _mutual_damage's `bonus` parameter defaults to 0 and only
+    Challenge's SPELL_EFFECTS caller passes one). Both simultaneous damage
+    instances get +1 when the flag is set."""
+    challenge = "ogn-128-298"  # 2 Energy, 1 Body Power
+    ours = make_unit(1, controller=0, might=5)
+    theirs = make_unit(2, controller=1, might=5)
+    state = make_state(gear_pieces=frozenset({ready_gear(RAVENBORN_TOME)}),
+                        hand=(challenge,), runes=("Body", "Body", "Body"),
+                        left_units=frozenset({ours, theirs}))
+    flagged = gear.apply_gear_ability(state, _activate(RAVENBORN_TOME, ()))
+    action = PlaySpell(card_id=challenge, params=(1, 2),
+                        rune_payment=RunePayment(energy_runes=("Body", "Body"), power_runes=("Body",)))
+    [result] = abilities.resolve_spell_outcomes(flagged, action, card_def(challenge))
+    # Both 5-Might units deal 5+1=6 to each other — lethal against a
+    # 5-Might body, which the printed 5-for-5 trade alone would not be.
+    assert result.battlefields[0].units == frozenset()
+    assert result.players[0].next_spell_bonus_damage == 0
+
+
+def test_ravenborn_tome_reachable_through_legal_actions():
+    state = make_state(gear_pieces=frozenset({ready_gear(RAVENBORN_TOME)}))
+    acts = [a for a in search.legal_actions(state, {})
+            if isinstance(a, ActivateAbility) and a.ability_id == RAVENBORN_TOME]
+    assert acts, "Ravenborn Tome is not being generated"
+    result = gear.apply_gear_ability(state, acts[0])
+    assert result.players[0].next_spell_bonus_damage == 1
+
+
+# --- Pirate's Haven: "When you ready a friendly unit, give it +1 Might
+# this turn." ---
+
+
+PIRATES_HAVEN = abilities.PIRATES_HAVEN
+
+
+def test_pirates_haven_buffs_a_unit_actually_readied():
+    exhausted_unit = make_unit(1, controller=0, might=3, exhausted=True)
+    state = make_state(gear_pieces=frozenset({ready_gear(PIRATES_HAVEN)}),
+                        base_units=frozenset({exhausted_unit}))
+    result = abilities.ready_unit(state, 1)
+    placed = next(iter(result.players[0].base_units))
+    assert placed.exhausted is False
+    assert placed.might == 4  # +1 Might from Pirate's Haven
+
+
+def test_pirates_haven_does_nothing_on_an_already_ready_unit():
+    """"When you ready" — readying an already-ready unit is not a second
+    readying, same no-op convention as ready_unit itself."""
+    ready_unit_ = make_unit(1, controller=0, might=3, exhausted=False)
+    state = make_state(gear_pieces=frozenset({ready_gear(PIRATES_HAVEN)}),
+                        base_units=frozenset({ready_unit_}))
+    result = abilities.ready_unit(state, 1)
+    assert next(iter(result.players[0].base_units)).might == 3
+
+
+def test_without_pirates_haven_readying_grants_no_might():
+    exhausted_unit = make_unit(1, controller=0, might=3, exhausted=True)
+    state = make_state(base_units=frozenset({exhausted_unit}))
+    result = abilities.ready_unit(state, 1)
+    assert next(iter(result.players[0].base_units)).might == 3
+
+
+def test_pirates_haven_reachable_through_legal_actions_via_first_mate():
+    """First Mate's own play trigger ("ready another unit") is the
+    end-to-end path — abilities.ready_unit is not itself an action, so the
+    proof is that a REGISTERED reader of it is reachable with Pirate's
+    Haven present."""
+    first_mate = abilities.FIRST_MATE
+    exhausted_ally = make_unit(1, controller=0, might=2, exhausted=True)
+    state = make_state(gear_pieces=frozenset({ready_gear(PIRATES_HAVEN)}),
+                        hand=(first_mate,), runes=("Fury",) * 3,
+                        base_units=frozenset({exhausted_ally}))
+    cards = {first_mate: card_def(first_mate)}
+    plays = [a for a in search.legal_actions(state, cards)
+             if getattr(a, "card_id", None) == first_mate and a.trigger_params == (1,)]
+    assert plays, "First Mate's ready-another-unit trigger is not reachable"
+    [result] = abilities.resolve_unit_play_trigger_outcomes(state, plays[0], cards[first_mate])
+    readied = next(u for u in result.players[0].base_units if u.instance_id == 1)
+    assert readied.exhausted is False
+    assert readied.might == 3  # +1 from Pirate's Haven
 
 
 def test_pack_of_wonders_reachable_through_legal_actions():

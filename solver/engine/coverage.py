@@ -552,6 +552,57 @@ HANDLED: dict[str, str] = {
     "ogn-163-298": "Seal of Strength — Gear, \"Exhaust: Add 1 Body rune\", same shape",
     "ogn-204-298": "Seal of Discord — Gear, \"Exhaust: Add 1 Chaos rune\", same shape",
     "ogn-245-298": "Seal of Unity — Gear, \"Exhaust: Add 1 Order rune\", same shape",
+    # Gear-cluster-2 (this pass). See gear.py/abilities.py/traits.py for the
+    # per-card sections these entries point at.
+    "ogn-063-298": "Spirit's Refuge — Gear, \"When you play this, buff a friendly unit.\" via "
+                   "abilities.GEAR_PLAY_TRIGGERS (the second registrant after Forge of the "
+                   "Future); \"Friendly buffed units have [Deflect] if they didn't already\" "
+                   "via traits.GEAR_CONDITIONAL_GRANTS, a new Gear-sourced, position-unscoped "
+                   "conditional trait grant (Gear never occupies a battlefield, so this can't "
+                   "be a co-located AURA_SOURCES-style grant) — checked in "
+                   "traits.resolved_traits for every friendly unit, base included, not just "
+                   "whichever one the play trigger buffed.",
+    "ogn-021-298": "Sun Disc — Gear, \"[Legion] Exhaust: The next unit you play this turn "
+                   "enters ready.\" via gear.GEAR_ABILITIES. [Legion]'s gate lives in the "
+                   "EFFECT (no effect at all if cards_played_this_turn is 0 when activated), "
+                   "not in is_legal — same convention as Dangerous Duo/Trifarian Gloryseeker: "
+                   "activating a Gear ability for nothing is a legal, merely bad, play. The "
+                   ">0 threshold (not abilities.legion_condition_met's >1) is that helper's "
+                   "own documented \"cost-time Legion\" case: Sun Disc's Exhaust is an "
+                   "ACTIVATED ability, not itself a play, so it never bumps "
+                   "cards_played_this_turn the way a played card counts its own play as one "
+                   "of the two. The one-shot \"next unit enters ready\" is a new "
+                   "PlayerState.next_unit_enters_ready flag, consumed by the very next "
+                   "actions.apply_play_unit call for that player (any unit, accelerated or "
+                   "not) regardless of whether it actually changed anything observable.",
+    "ogn-143-298": "Pirate's Haven — Gear, \"When you ready a friendly unit, give it +1 "
+                   "Might this turn.\" Hooked directly into abilities.ready_unit — the one "
+                   "shared operation every registered readying effect already routes through "
+                   "(First Mate, Wildclaw Shaman, Overt Operation, Udyr's Ready mode), so no "
+                   "call site needed touching. Fires only on a REAL exhausted-to-ready "
+                   "transition (ready_unit's own no-op guard), matching \"when you ready\" — "
+                   "readying an already-ready unit is not a second readying.",
+    "ogn-032-298": "Ravenborn Tome — Gear, \"Exhaust: The next spell you play this turn "
+                   "deals 1 Bonus Damage. (Each instance of damage the spell deals is "
+                   "increased by 1.)\" \"Bonus Damage\" (also printed on Void Gate, "
+                   "ogn-296-298, a Battlefield outside this pass's scope — a parallel agent "
+                   "was working Battlefield cards concurrently and may have built shared "
+                   "infrastructure for it; this entry's PlayerState.next_spell_bonus_damage "
+                   "is scoped narrowly to Ravenborn Tome's OWN one-shot \"next spell\" "
+                   "reading and does not assume or depend on whatever Void Gate needed) reads "
+                   "here as: a one-shot flag (gear.GEAR_ABILITIES' activation sets it), added "
+                   "to EVERY damage instance the next PlaySpell's registered effect deals — "
+                   "abilities._bonus_damage is read at each of the SPELL_EFFECTS damage call "
+                   "sites that deal damage at all (_flat_damage_effect, _falling_star_effect, "
+                   "_singularity_effect, _unchecked_power_effect, _flurry_effect, "
+                   "_shakedown_effect, _cannon_barrage_effect, _get_excited_effect, and "
+                   "_mutual_damage's Challenge caller only — Carnivorous Snapvine's own call "
+                   "into _mutual_damage is a UNIT_PLAY_TRIGGERS effect, not a spell, and "
+                   "passes no bonus), then unconditionally cleared once per spell play in "
+                   "resolve_spell_outcomes (the single choke point both PlaySpell resolution "
+                   "paths already share) — consumed by the next spell whether or not it dealt "
+                   "any damage, matching \"the next spell you play\" rather than \"the next "
+                   "damage spell.\"",
 }
 
 # Investigated alongside the choice-bearing [Conquer] cluster above and
