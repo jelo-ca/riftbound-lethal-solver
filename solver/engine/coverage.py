@@ -194,6 +194,15 @@ HANDLED: dict[str, str] = {
                    "same convention as Harnessed Dragon against an empty board",
     "ogn-170-298": "Morbid Return — [Action] \"return a unit from your trash to your "
                    "hand\" via SPELL_EFFECTS",
+    "ogn-196-298": "Soulgorger — optional play trigger, \"play a unit from your trash, "
+                   "ignoring its Energy cost\" via actions.play_unit_from_trash. "
+                   "Restricted to trash units with NO UNIT_PLAY_TRIGGERS entry of their "
+                   "own (play_unit_from_trash never dispatches a replayed unit's own "
+                   "\"when you play me\" text) — restrictive, not permissive.",
+    "ogn-198-298": "The Harrowing — [Action] same effect as Soulgorger, via "
+                   "SPELL_EFFECTS; the replayed unit's Power payment comes from what "
+                   "The Harrowing's OWN cost leaves behind, same \"pay from what's "
+                   "left\" shape as [Deflect]'s trigger tax.",
     # [Conquer] triggers — engine/conquer.py, hooked into
     # scoring.resolve_control_change.
     "ogn-164-298": "Sett, Brawler — \"when I'm played and when I conquer, buff me\" "

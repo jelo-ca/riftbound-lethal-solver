@@ -463,6 +463,53 @@ def mint_token_unit(state: GameState, card: CardDef, controller: int, zone: Zone
     return replace_battlefield(state, new_bf)
 
 
+def play_unit_from_trash(state: GameState, card: CardDef, controller: int, zone: Zone,
+                          power_payment: RunePayment) -> GameState:
+    """Plays `card` from `controller`'s trash instead of hand — Energy
+    cost is waived by whichever printed effect grants this (Soulgorger,
+    The Harrowing); only Power is ever owed, paid via `power_payment`.
+    Callers restrict `zone` to Base or a battlefield ALREADY controlled by
+    `controller` (neither card can play to an open battlefield), so this
+    never establishes control and never needs scoring.resolve_control_change.
+
+    Enters exhausted, same as any other unit (rule 143.4.a) — neither
+    card that uses this prints [Accelerate], so no ready-entry variant is
+    offered. Does NOT dispatch the played card's own "when you play me"
+    trigger: callers restrict candidates to card_ids absent from
+    abilities.UNIT_PLAY_TRIGGERS, so a replayed unit with its own trigger
+    is never offered through this path rather than silently dropping its
+    effect. DOES fire the observer hook (engine/observers.py), since
+    replaying a card from trash is a real play, unlike mint_token_unit's
+    tokens."""
+    from . import observers  # deferred — see observers.py's module docstring
+    player = state.players[controller]
+    new_trash = list(player.trash)
+    new_trash.remove(card.card_id)
+    new_unit = UnitInstance(
+        card_id=card.card_id,
+        instance_id=next_instance_id(state),
+        controller=controller,
+        might=card.might if card.might is not None else 0,
+        keywords=card.keywords,
+        exhausted=True,
+        damage=0,
+        is_token=False,
+    )
+    new_runes = consume_runes(player.runes, power_payment)
+    state = dataclasses.replace(state, cards_played_this_turn=state.cards_played_this_turn + 1)
+    if zone == "base":
+        new_player = dataclasses.replace(player, trash=tuple(new_trash), runes=new_runes,
+                                         base_units=player.base_units | {new_unit})
+        state = replace_player(state, controller, new_player)
+        return observers.fire_observer_play_triggers(state, new_unit)
+    new_player = dataclasses.replace(player, trash=tuple(new_trash), runes=new_runes)
+    state = replace_player(state, controller, new_player)
+    bf = _battlefield(state, zone)
+    new_bf = dataclasses.replace(bf, units=bf.units | {new_unit})
+    state = replace_battlefield(state, new_bf)
+    return observers.fire_observer_play_triggers(state, new_unit)
+
+
 # --- PlayGear -------------------------------------------------------------
 
 

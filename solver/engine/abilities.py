@@ -19,12 +19,14 @@ from .actions import (
     PlaySpell,
     PlayUnit,
     ResolveAttackTrigger,
+    RunePayment,
     apply_play_gear,
     apply_play_spell_cost,
     apply_play_unit,
     find_unit,
     find_unit_anywhere,
     find_unit_at_any_battlefield,
+    generate_rune_payments,
     is_legal_ability_move_destination,
     is_legal_play_gear,
     is_legal_play_spell_cost,
@@ -34,6 +36,7 @@ from .actions import (
     mint_token_unit,
     next_instance_id,
     payment_is_affordable,
+    play_unit_from_trash,
     relocate_unit,
     replace_battlefield,
     return_unit_to_hand,
@@ -892,6 +895,108 @@ def _vi_destructive_candidates(state: GameState) -> list[tuple]:
     return [(card_id,) for card_id in sorted(set(state.players[state.turn_player].trash))]
 
 
+# "Play a unit from your trash, ignoring its Energy cost. (You must still
+# pay its Power cost.)" — Soulgorger (a play trigger) and The Harrowing (a
+# spell) share the exact same effect body. Restricted to trash units with
+# NO registered UNIT_PLAY_TRIGGERS entry — see play_unit_from_trash's
+# docstring for why: this path never dispatches the replayed unit's own
+# "when you play me" text, so a board where that would matter stays
+# refused on THIS card's clause rather than silently dropping a real
+# effect. Restrictive, not permissive — the same direction as
+# conquer.py's "who conquered" narrowing.
+SOULGORGER = "ogn-196-298"
+THE_HARROWING = "ogn-198-298"
+
+
+def _trash_replay_candidate_zones(state: GameState, controller: int) -> list[str]:
+    """Base, or a battlefield ALREADY controlled by `controller` — neither
+    card can play to an OPEN battlefield, so this never establishes
+    control (play_unit_from_trash relies on that)."""
+    return ["base"] + [bf.battlefield_id for bf in state.battlefields if bf.controller == controller]
+
+
+def _trash_replay_candidates(state: GameState, controller: int) -> list[tuple]:
+    """(card_id, zone, power_payment) triples — cost is Power only,
+    Energy waived by the printed effect."""
+    from .card_pool import card_def
+    out = []
+    for card_id in _units_in_trash(state, controller):
+        if card_id in UNIT_PLAY_TRIGGERS:
+            continue
+        card = card_def(card_id)
+        for zone in _trash_replay_candidate_zones(state, controller):
+            for payment in generate_rune_payments(state.players[controller].runes, 0,
+                                                    card.power_cost, card.power_domain):
+                out.append((card_id, zone, payment))
+    return out
+
+
+def _morbid_return_style_is_legal(state: GameState, controller: int, params: tuple) -> bool:
+    if len(params) != 3:
+        return False
+    card_id, zone, payment = params
+    if card_id in UNIT_PLAY_TRIGGERS:
+        return False
+    if card_id not in _units_in_trash(state, controller):
+        return False
+    if zone not in _trash_replay_candidate_zones(state, controller):
+        return False
+    from .card_pool import card_def
+    card = card_def(card_id)
+    if len(payment.energy_runes) != 0 or len(payment.power_runes) != card.power_cost:
+        return False
+    if card.power_cost and any(d != card.power_domain for d in payment.power_runes):
+        return False
+    return payment_is_affordable(state.players[controller].runes, payment)
+
+
+def _trash_replay_effect(state: GameState, card_id: str, zone: str, payment: RunePayment) -> GameState:
+    from .card_pool import card_def
+    return play_unit_from_trash(state, card_def(card_id), state.turn_player, zone, payment)
+
+
+def _soulgorger_is_legal(state: GameState, action: PlayUnit, card: CardDef) -> bool:
+    """Optional ("you may") — trigger_params == () is a legitimate
+    decline, same as Blitzcrank/Zaunite Bouncer."""
+    if action.trigger_params == ():
+        return True
+    state_after_play = apply_play_unit(state, dataclasses.replace(
+        action, trigger_params=(), trigger_payment=None), card)
+    return _morbid_return_style_is_legal(state_after_play, state.turn_player, action.trigger_params)
+
+
+def _soulgorger_candidates(state: GameState, base_action: PlayUnit, card: CardDef) -> list[tuple]:
+    state_after_play = apply_play_unit(state, base_action, card)
+    return _trash_replay_candidates(state_after_play, state.turn_player)
+
+
+def _soulgorger_effect(state_after_play: GameState, action: PlayUnit) -> list[GameState]:
+    if not action.trigger_params:
+        return [state_after_play]
+    card_id, zone, payment = action.trigger_params
+    return [_trash_replay_effect(state_after_play, card_id, zone, payment)]
+
+
+def _the_harrowing_is_legal(state: GameState, action: PlaySpell) -> bool:
+    """The trash-unit's Power payment must come from what THE HARROWING's
+    OWN cost (action.rune_payment) leaves behind — same "pay from what's
+    left" shape as [Deflect]'s trigger tax (trigger_deflect_tax)."""
+    player = state.players[state.turn_player]
+    remaining = replace_player(state, state.turn_player,
+                               dataclasses.replace(player, runes=consume_runes(
+                                   player.runes, action.rune_payment)))
+    return _morbid_return_style_is_legal(remaining, state.turn_player, action.params)
+
+
+def _the_harrowing_candidates(state: GameState) -> list[tuple]:
+    return _trash_replay_candidates(state, state.turn_player)
+
+
+def _the_harrowing_effect(state: GameState, action: PlaySpell) -> list[GameState]:
+    card_id, zone, payment = action.params
+    return [_trash_replay_effect(state, card_id, zone, payment)]
+
+
 # card_id -> (is_legal(state, action), effect(state, action) -> list[GameState],
 #             generate_candidate_params(state))
 SPELL_EFFECTS: dict[str, tuple[
@@ -920,6 +1025,7 @@ SPELL_EFFECTS: dict[str, tuple[
     EN_GARDE: (_friendly_unit_is_legal, _en_garde_effect, _friendly_unit_candidates),
     OVERT_OPERATION: (_overt_operation_is_legal, _overt_operation_effect, _overt_operation_candidates),
     MORBID_RETURN: (_morbid_return_is_legal, _morbid_return_effect, _morbid_return_candidates),
+    THE_HARROWING: (_the_harrowing_is_legal, _the_harrowing_effect, _the_harrowing_candidates),
 }
 
 
@@ -1608,6 +1714,7 @@ UNIT_PLAY_TRIGGERS: dict[str, tuple[
     WILDCLAW_SHAMAN: (_wildclaw_shaman_is_legal, _wildclaw_shaman_effect, _wildclaw_shaman_candidates),
     CEMETERY_ATTENDANT: (_cemetery_attendant_is_legal, _cemetery_attendant_effect,
                           _cemetery_attendant_candidates),
+    SOULGORGER: (_soulgorger_is_legal, _soulgorger_effect, _soulgorger_candidates),
 }
 
 
