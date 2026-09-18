@@ -177,6 +177,23 @@ HANDLED: dict[str, str] = {
     "ogn-125-298": "Bilgewater Bully — \"while I'm buffed, I have [Ganking]\" via "
                    "traits.SELF_CONDITIONALS; the grant reaches movement legality "
                    "because effective_keywords now delegates to resolved_traits",
+    # Trash zone (state.PlayerState.trash) — starts empty at position
+    # setup, fills live during the turn as units die or spells resolve.
+    # See state.py's field comment and deaths.fire_death_triggers.
+    "ogn-109-298": "Dr. Mundo, Expert — Might scales with trash size via "
+                   "traits.TRASH_COUNT_MIGHT. \"At the start of your Beginning Phase, "
+                   "recycle 3 from your trash\" fires before the Action Phase this "
+                   "engine searches, and trash starts empty, so it's a pre-turn "
+                   "non-event",
+    "ogn-036-298": "Vi, Destructive — \"Recycle 1 from your trash: give me +1 Might "
+                   "this turn\" via ABILITY_EFFECTS; the recycled card IS the cost, "
+                   "same shape as Sett Brawler's spend-a-buff ability",
+    "ogn-165-298": "Cemetery Attendant — mandatory \"when you play me, return a unit "
+                   "from your trash to your hand\" via UNIT_PLAY_TRIGGERS; unreachable "
+                   "(not offered) rather than a fizzled no-op when trash has no units, "
+                   "same convention as Harnessed Dragon against an empty board",
+    "ogn-170-298": "Morbid Return — [Action] \"return a unit from your trash to your "
+                   "hand\" via SPELL_EFFECTS",
     # [Conquer] triggers — engine/conquer.py, hooked into
     # scoring.resolve_control_change.
     "ogn-164-298": "Sett, Brawler — \"when I'm played and when I conquer, buff me\" "

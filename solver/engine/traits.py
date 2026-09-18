@@ -186,6 +186,20 @@ SELF_COUNT_MIGHT: dict[str, int] = {
     SETT_KINGPIN_ALT: 1,
 }
 
+DR_MUNDO = "ogn-109-298"  # "My Might is increased by the number of cards in your trash."
+
+# card_id -> Might gained per card in the unit's OWN CONTROLLER's trash —
+# global, not positional (contrast SELF_COUNT_MIGHT, which only counts at
+# the unit's own battlefield). Reads state.players[...].trash's length,
+# never Might, so the non-circularity invariant holds. Dr. Mundo's other
+# clause ("at the start of your Beginning Phase, recycle 3 from your
+# trash") fires before the Action Phase this engine searches and trash
+# starts empty at position setup, so it's a pre-turn non-event — nothing
+# to recycle, nothing to model.
+TRASH_COUNT_MIGHT: dict[str, int] = {
+    DR_MUNDO: 1,
+}
+
 
 def parse_trait(trait: str) -> tuple[str, Optional[int]]:
     """`"Shield 2"` -> `("Shield", 2)`; `"Shield"` -> `("Shield", None)` —
@@ -288,6 +302,10 @@ def effective_might(state: GameState, unit: UnitInstance, zone: Zone,
     own = SELF_CONDITIONALS.get(unit.card_id)
     if own is not None and own.condition(state, unit, zone, designation):
         bonus += own.might_delta
+
+    per_trashed = TRASH_COUNT_MIGHT.get(unit.card_id)
+    if per_trashed is not None:
+        bonus += per_trashed * len(state.players[unit.controller].trash)
 
     effect_id = None if zone == "base" else (
         bf.effect_id if (bf := _battlefield(state, zone)) else None

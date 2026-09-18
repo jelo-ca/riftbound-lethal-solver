@@ -794,6 +794,104 @@ def _overt_operation_candidates(state: GameState) -> list[tuple]:
 # domain is real.
 
 
+# --- Trash zone: return-to-hand and recycle-as-cost cards -----------------
+#
+# state.py's trash is a plain tuple of card_ids — "removing" one from it
+# for either mechanic below means dropping ONE matching occurrence, not
+# deduplicating, since two dead copies of the same card are two separate
+# entries.
+
+def _units_in_trash(state: GameState, controller: int) -> list[str]:
+    """Distinct card_ids in `controller`'s trash that are actually Unit
+    printings — "return a unit from your trash" can't target a spell that
+    landed there. Deferred import: card_pool.py imports this module."""
+    from .card_pool import card_def
+    return sorted({card_id for card_id in state.players[controller].trash
+                   if (d := card_def(card_id)) is not None and d.card_type == "Unit"})
+
+
+def _remove_one_from_trash(state: GameState, controller: int, card_id: str) -> GameState:
+    player = state.players[controller]
+    trash = list(player.trash)
+    trash.remove(card_id)
+    return replace_player(state, controller, dataclasses.replace(player, trash=tuple(trash)))
+
+
+def _return_unit_from_trash_to_hand(state: GameState, controller: int, card_id: str) -> GameState:
+    state = _remove_one_from_trash(state, controller, card_id)
+    player = state.players[controller]
+    return replace_player(state, controller,
+                          dataclasses.replace(player, hand=player.hand + (card_id,)))
+
+
+CEMETERY_ATTENDANT = "ogn-165-298"  # "When you play me, return a unit from your trash to your hand."
+MORBID_RETURN = "ogn-170-298"  # [Action] "Return a unit from your trash to your hand."
+
+
+def _cemetery_attendant_is_legal(state: GameState, action: PlayUnit, card: CardDef) -> bool:
+    """Mandatory, but only reachable when a target exists — same
+    "no legal target means the triggered form can't be offered" shape as
+    Harnessed Dragon/Riptide Rex against an empty board."""
+    if len(action.trigger_params) != 1:
+        return False
+    state_after_play = apply_play_unit(state, dataclasses.replace(
+        action, trigger_params=(), trigger_payment=None), card)
+    return action.trigger_params[0] in _units_in_trash(state_after_play, state.turn_player)
+
+
+def _cemetery_attendant_candidates(state: GameState, base_action: PlayUnit, card: CardDef) -> list[tuple]:
+    state_after_play = apply_play_unit(state, base_action, card)
+    return [(card_id,) for card_id in _units_in_trash(state_after_play, state.turn_player)]
+
+
+def _cemetery_attendant_effect(state_after_play: GameState, action: PlayUnit) -> list[GameState]:
+    return [_return_unit_from_trash_to_hand(state_after_play, state_after_play.turn_player,
+                                             action.trigger_params[0])]
+
+
+def _morbid_return_is_legal(state: GameState, action: PlaySpell) -> bool:
+    if len(action.params) != 1:
+        return False
+    return action.params[0] in _units_in_trash(state, state.turn_player)
+
+
+def _morbid_return_candidates(state: GameState) -> list[tuple]:
+    return [(card_id,) for card_id in _units_in_trash(state, state.turn_player)]
+
+
+def _morbid_return_effect(state: GameState, action: PlaySpell) -> list[GameState]:
+    return [_return_unit_from_trash_to_hand(state, state.turn_player, action.params[0])]
+
+
+VI_DESTRUCTIVE = "ogn-036-298"  # [Ganking] "Recycle 1 from your trash: Give me +1 Might this turn."
+
+
+def _vi_destructive_is_legal(state: GameState, action: ActivateAbility) -> bool:
+    """params = (card_id,) — the trash entry recycled to pay the cost. No
+    rune cost printed; the recycled card IS the cost, same shape as Sett
+    Brawler's "spend my buff" ability."""
+    if len(action.params) != 1:
+        return False
+    located = find_unit_anywhere(state, action.source_id)
+    if located is None:
+        return False
+    source, _ = located
+    if source.controller != state.turn_player:
+        return False
+    if action.rune_payment is not None:
+        return False
+    return action.params[0] in state.players[state.turn_player].trash
+
+
+def _vi_destructive_effect(state: GameState, action: ActivateAbility) -> GameState:
+    state = _remove_one_from_trash(state, state.turn_player, action.params[0])
+    return _grant_might(state, action.source_id, 1)
+
+
+def _vi_destructive_candidates(state: GameState) -> list[tuple]:
+    return [(card_id,) for card_id in sorted(set(state.players[state.turn_player].trash))]
+
+
 # card_id -> (is_legal(state, action), effect(state, action) -> list[GameState],
 #             generate_candidate_params(state))
 SPELL_EFFECTS: dict[str, tuple[
@@ -821,6 +919,7 @@ SPELL_EFFECTS: dict[str, tuple[
     CHALLENGE: (_challenge_is_legal, _challenge_effect, _challenge_candidates),
     EN_GARDE: (_friendly_unit_is_legal, _en_garde_effect, _friendly_unit_candidates),
     OVERT_OPERATION: (_overt_operation_is_legal, _overt_operation_effect, _overt_operation_candidates),
+    MORBID_RETURN: (_morbid_return_is_legal, _morbid_return_effect, _morbid_return_candidates),
 }
 
 
@@ -909,6 +1008,7 @@ ABILITY_EFFECTS: dict[str, tuple[
     CAITLYN_PATROLLING: (_caitlyn_is_legal, _caitlyn_effect, _caitlyn_candidates),
     SETT_BRAWLER: (_sett_spend_buff_is_legal, _sett_spend_buff_effect, _sett_spend_buff_candidates),
     SETT_BRAWLER_ALT: (_sett_spend_buff_is_legal, _sett_spend_buff_effect, _sett_spend_buff_candidates),
+    VI_DESTRUCTIVE: (_vi_destructive_is_legal, _vi_destructive_effect, _vi_destructive_candidates),
 }
 
 
@@ -1067,7 +1167,7 @@ MANDATORY_PLAY_TRIGGERS = frozenset({FAITHFUL_MANUFACTOR, VANGUARD_CAPTAIN, WHIT
                                      PIT_ROOKIE, TRIFARIAN_GLORYSEEKER, PEAK_GUARDIAN,
                                      RIPTIDE_REX, HARNESSED_DRAGON, DANGEROUS_DUO,
                                      FIRST_MATE, KINKOU_MONK, CARNIVOROUS_SNAPVINE,
-                                     SETT_BRAWLER, SETT_BRAWLER_ALT})
+                                     SETT_BRAWLER, SETT_BRAWLER_ALT, CEMETERY_ATTENDANT})
 
 
 def _charm_deflect_targets(state: GameState, params: tuple) -> list[tuple]:
@@ -1506,6 +1606,8 @@ UNIT_PLAY_TRIGGERS: dict[str, tuple[
     SETT_BRAWLER: (_self_buff_is_legal, _sett_played_effect, _self_buff_candidates),
     SETT_BRAWLER_ALT: (_self_buff_is_legal, _sett_played_effect, _self_buff_candidates),
     WILDCLAW_SHAMAN: (_wildclaw_shaman_is_legal, _wildclaw_shaman_effect, _wildclaw_shaman_candidates),
+    CEMETERY_ATTENDANT: (_cemetery_attendant_is_legal, _cemetery_attendant_effect,
+                          _cemetery_attendant_candidates),
 }
 
 
