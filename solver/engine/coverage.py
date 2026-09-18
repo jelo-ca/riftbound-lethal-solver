@@ -217,6 +217,15 @@ HANDLED: dict[str, str] = {
                    "it's real for damage spells too, not just outright-kill ones — "
                    "restricted to spells whose own resolution is a single outcome "
                    "(true of every registered spell today).",
+    "ogn-224-298": "Salvage — [Action] \"You may kill a gear. Draw 1.\" via "
+                   "abilities.SALVAGE/actions.kill_gear. \"A gear\" is unqualified — "
+                   "either player's, same convention as Orb of Regret's unqualified "
+                   "\"a unit\" (engine/gear.py's module docstring). Draw is a no-op, no "
+                   "Main Deck. Optional, so declining is always legal. Cannot target a "
+                   "Gear with its own unbuilt on-death reaction (Treasure Trove, "
+                   "Scrapheap — see gear.GEAR_DEATH_REACTIONS): restrictive, not "
+                   "permissive, same convention as play_unit_from_trash excluding "
+                   "trash units with their own UNIT_PLAY_TRIGGERS.",
     # [Conquer] triggers — engine/conquer.py, hooked into
     # scoring.resolve_control_change.
     "ogn-164-298": "Sett, Brawler — \"when I'm played and when I conquer, buff me\" "
