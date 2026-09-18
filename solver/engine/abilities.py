@@ -15,15 +15,18 @@ from typing import Callable, Optional
 from . import combat, scoring, traits
 from .actions import (
     ActivateAbility,
+    PlayGear,
     PlaySpell,
     PlayUnit,
     ResolveAttackTrigger,
+    apply_play_gear,
     apply_play_spell_cost,
     apply_play_unit,
     find_unit,
     find_unit_anywhere,
     find_unit_at_any_battlefield,
     is_legal_ability_move_destination,
+    is_legal_play_gear,
     is_legal_play_spell_cost,
     is_legal_play_unit,
     consume_runes,
@@ -1504,6 +1507,63 @@ UNIT_PLAY_TRIGGERS: dict[str, tuple[
     SETT_BRAWLER_ALT: (_self_buff_is_legal, _sett_played_effect, _self_buff_candidates),
     WILDCLAW_SHAMAN: (_wildclaw_shaman_is_legal, _wildclaw_shaman_effect, _wildclaw_shaman_candidates),
 }
+
+
+# --- Gear "when you play this" triggers -----------------------------------
+#
+# Same shape as UNIT_PLAY_TRIGGERS, mirrored onto PlayGear (which gained
+# its own trigger_params field for this). apply_play_gear's docstring
+# already anticipated this split — board mechanics there, trigger effects
+# here — the same way apply_play_unit leaves triggers to this module.
+
+FORGE_OF_THE_FUTURE = "ogn-212-298"  # "When you play this, play a 1 Might Recruit unit token at your base."
+
+
+def _forge_of_the_future_is_legal(state: GameState, action: PlayGear, card: CardDef) -> bool:
+    """No target/choice — trigger_params is a fixed sentinel, never empty
+    (see MANDATORY_GEAR_TRIGGERS)."""
+    return action.trigger_params == ("mint",)
+
+
+def _forge_of_the_future_effect(state_after_play: GameState, action: PlayGear) -> list[GameState]:
+    return [_mint_recruit_tokens(state_after_play, "base", state_after_play.turn_player, 1)]
+
+
+def _forge_of_the_future_candidates(state: GameState, base_action: PlayGear, card: CardDef) -> list[tuple]:
+    return [("mint",)]
+
+
+# card_ids whose "when you play this" Gear trigger has no decision to
+# make — the PlayGear analogue of MANDATORY_PLAY_TRIGGERS. legal_actions()
+# withholds the bare trigger_params=() form for these.
+MANDATORY_GEAR_TRIGGERS = frozenset({FORGE_OF_THE_FUTURE})
+
+# card_id -> (is_legal(state, action, card), effect(state_after_play, action) -> list[GameState],
+#             generate_candidate_params(state, base_action, card))
+GEAR_PLAY_TRIGGERS: dict[str, tuple[
+    Callable[[GameState, PlayGear, CardDef], bool],
+    Callable[[GameState, PlayGear], list[GameState]],
+    Callable[[GameState, PlayGear, CardDef], list[tuple]],
+]] = {
+    FORGE_OF_THE_FUTURE: (_forge_of_the_future_is_legal, _forge_of_the_future_effect,
+                           _forge_of_the_future_candidates),
+}
+
+
+def is_legal_gear_play_trigger(state: GameState, action: PlayGear, card: CardDef) -> bool:
+    if not is_legal_play_gear(state, action, card):
+        return False
+    entry = GEAR_PLAY_TRIGGERS.get(action.card_id)
+    if entry is None:
+        return action.trigger_params == ()
+    is_legal_trigger, _, _ = entry
+    return is_legal_trigger(state, action, card)
+
+
+def resolve_gear_play_trigger_outcomes(state: GameState, action: PlayGear, card: CardDef) -> list[GameState]:
+    state_after_play = apply_play_gear(state, action, card)
+    _, effect, _ = GEAR_PLAY_TRIGGERS[action.card_id]
+    return effect(state_after_play, action)
 
 
 # --- "When I attack" triggers ---------------------------------------------

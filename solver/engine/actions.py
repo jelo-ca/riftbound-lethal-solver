@@ -173,6 +173,11 @@ class PlayGear:
     """
     card_id: str
     rune_payment: RunePayment
+    # Same convention as PlayUnit.trigger_params, for Gear with a
+    # registered "when you play this" trigger (abilities.GEAR_PLAY_TRIGGERS).
+    # Empty tuple = no trigger registered, or the player declined an
+    # optional one.
+    trigger_params: tuple = ()
 
 
 @dataclass(frozen=True)

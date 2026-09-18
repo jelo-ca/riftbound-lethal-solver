@@ -165,6 +165,15 @@ HANDLED: dict[str, str] = {
     "ogn-149-298": "Carnivorous Snapvine — play trigger, simultaneous mutual damage "
                    "with itself as one side, so it can trade itself for a bigger body",
     "ogn-124-298": "Arena Bar — Gear, \"Exhaust: buff an EXHAUSTED friendly unit\"",
+    "ogn-212-298": "Forge of the Future — Gear, mandatory \"when you play this, play a "
+                   "1 Might Recruit token at your base\" via abilities.GEAR_PLAY_TRIGGERS "
+                   "(the first Gear play-trigger; PlayGear gained its own trigger_params "
+                   "field for it). Its \"Kill this: Recycle up to 4 cards from trashes\" "
+                   "is inert by argument, not code: \"recycle\" a card means returning it "
+                   "to the Main Deck (established by Vision/Ekko's identical reading), "
+                   "which is a no-op with no deck, and nothing in the pool reacts to a "
+                   "Gear dying — so activating it costs a permanent for zero benefit, "
+                   "and a solver never would. Optional, so declining it is always legal.",
     "ogn-125-298": "Bilgewater Bully — \"while I'm buffed, I have [Ganking]\" via "
                    "traits.SELF_CONDITIONALS; the grant reaches movement legality "
                    "because effective_keywords now delegates to resolved_traits",

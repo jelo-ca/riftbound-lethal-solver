@@ -88,6 +88,58 @@ def test_gear_that_says_it_enters_exhausted_does():
     assert next(iter(result.players[0].gear)).exhausted is True
 
 
+# --- Gear "when you play this" triggers: Forge of the Future ---
+#
+# The first Gear play-trigger — Forge of the Future's mandatory "play a
+# 1 Might Recruit token at your base." Stats come from card_pool.card_def,
+# never hand-written (non-negotiable #2).
+
+
+from solver import search
+from solver.engine import abilities
+from solver.engine.card_pool import card_def
+
+FORGE = abilities.FORGE_OF_THE_FUTURE
+
+
+def test_forge_of_the_future_mints_a_token_on_play():
+    card = card_def(FORGE)
+    state = make_state(hand=(FORGE,), runes=("Fury", "Fury"))
+    action = PlayGear(card_id=FORGE, trigger_params=("mint",),
+                       rune_payment=RunePayment(energy_runes=("Fury", "Fury"), power_runes=()))
+    assert abilities.is_legal_gear_play_trigger(state, action, card)
+    [result] = abilities.resolve_gear_play_trigger_outcomes(state, action, card)
+    assert any(g.card_id == FORGE for g in result.players[0].gear)
+    tokens = [u for u in result.players[0].base_units if u.card_id == abilities.RECRUIT_TOKEN]
+    assert len(tokens) == 1
+    assert tokens[0].might == 1
+
+
+def test_the_bare_play_form_is_not_offered_since_the_trigger_is_mandatory():
+    card = card_def(FORGE)
+    state = make_state(hand=(FORGE,), runes=("Fury", "Fury"))
+    cards = {FORGE: card}
+    actions = [a for a in search.legal_actions(state, cards) if getattr(a, "card_id", None) == FORGE]
+    assert all(a.trigger_params == ("mint",) for a in actions)
+
+
+def test_forge_of_the_future_reachable_through_legal_actions():
+    """search.legal_actions -> search.apply's NotImplementedError path (a
+    triggered PlayGear, like a triggered PlayUnit, has to route through
+    solve()'s list-returning outcomes) — the guard against "registered but
+    unreachable"."""
+    card = card_def(FORGE)
+    state = make_state(hand=(FORGE,), runes=("Fury", "Fury"))
+    cards = {FORGE: card}
+    play = next(a for a in search.legal_actions(state, cards)
+                if getattr(a, "card_id", None) == FORGE)
+    assert play.trigger_params == ("mint",)
+    outcomes = abilities.resolve_gear_play_trigger_outcomes(state, play, card)
+    assert len(outcomes) == 1
+    tokens = [u for u in outcomes[0].players[0].base_units if u.card_id == abilities.RECRUIT_TOKEN]
+    assert len(tokens) == 1
+
+
 def test_playing_gear_counts_as_playing_a_card():
     """Legion and anything else keying off cards_played_this_turn has to
     see it."""
