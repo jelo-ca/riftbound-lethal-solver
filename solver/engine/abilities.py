@@ -997,6 +997,63 @@ def _the_harrowing_effect(state: GameState, action: PlaySpell) -> list[GameState
     return [_trash_replay_effect(state, card_id, zone, payment)]
 
 
+# Spectral Matron: "play a unit costing no more than 3 Energy and no more
+# than [rainbow, bare] from your trash, ignoring its cost" — a bare
+# rainbow icon reads as 1 Power of any domain (project owner,
+# 2026-09-18), matching [Deflect]'s rainbow-rune notation elsewhere.
+# Distinct from Soulgorger/The Harrowing: the WHOLE cost is waived here,
+# not just Energy, so play_unit_from_trash is called with an EMPTY
+# payment (consume_runes is a no-op against it) rather than a real one —
+# same helper, no new mechanism, just a different call.
+SPECTRAL_MATRON = "ogn-226-298"
+
+
+def _spectral_matron_eligible(card: CardDef) -> bool:
+    return card.energy_cost <= 3 and card.power_cost <= 1
+
+
+def _spectral_matron_candidates(state: GameState, base_action: PlayUnit, card: CardDef) -> list[tuple]:
+    from .card_pool import card_def
+    state_after_play = apply_play_unit(state, base_action, card)
+    controller = state.turn_player
+    out = []
+    for card_id in _units_in_trash(state_after_play, controller):
+        if card_id in UNIT_PLAY_TRIGGERS:
+            continue
+        if not _spectral_matron_eligible(card_def(card_id)):
+            continue
+        for zone in _trash_replay_candidate_zones(state_after_play, controller):
+            out.append((card_id, zone))
+    return out
+
+
+def _spectral_matron_is_legal(state: GameState, action: PlayUnit, card: CardDef) -> bool:
+    """Optional ("you may")."""
+    if action.trigger_params == ():
+        return True
+    if len(action.trigger_params) != 2:
+        return False
+    from .card_pool import card_def
+    state_after_play = apply_play_unit(state, dataclasses.replace(
+        action, trigger_params=(), trigger_payment=None), card)
+    card_id, zone = action.trigger_params
+    controller = state.turn_player
+    if card_id in UNIT_PLAY_TRIGGERS or card_id not in _units_in_trash(state_after_play, controller):
+        return False
+    if not _spectral_matron_eligible(card_def(card_id)):
+        return False
+    return zone in _trash_replay_candidate_zones(state_after_play, controller)
+
+
+def _spectral_matron_effect(state_after_play: GameState, action: PlayUnit) -> list[GameState]:
+    if not action.trigger_params:
+        return [state_after_play]
+    from .card_pool import card_def
+    card_id, zone = action.trigger_params
+    return [play_unit_from_trash(state_after_play, card_def(card_id), state_after_play.turn_player,
+                                  zone, RunePayment(energy_runes=(), power_runes=()))]
+
+
 # card_id -> (is_legal(state, action), effect(state, action) -> list[GameState],
 #             generate_candidate_params(state))
 SPELL_EFFECTS: dict[str, tuple[
@@ -1715,6 +1772,7 @@ UNIT_PLAY_TRIGGERS: dict[str, tuple[
     CEMETERY_ATTENDANT: (_cemetery_attendant_is_legal, _cemetery_attendant_effect,
                           _cemetery_attendant_candidates),
     SOULGORGER: (_soulgorger_is_legal, _soulgorger_effect, _soulgorger_candidates),
+    SPECTRAL_MATRON: (_spectral_matron_is_legal, _spectral_matron_effect, _spectral_matron_candidates),
 }
 
 
