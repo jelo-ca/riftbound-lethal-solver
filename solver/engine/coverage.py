@@ -330,6 +330,39 @@ HANDLED: dict[str, str] = {
     "ogn-112a-298": "Kai'Sa, Evolutionary — same card as ogn-112-298, alternate art",
 }
 
+# Investigated alongside the choice-bearing [Conquer] cluster above and
+# left BLOCKING, on purpose — not merely not-yet-done:
+#
+# ogn-252-298 Super Mega Death Rocket! — "Deal 5 to a unit. When you
+# conquer, you may discard 1 to return this from your trash to your
+# hand." Its conquer trigger is NOT this card conquering (it's a Spell,
+# never a unit that could stand at a battlefield) and NOT a specific
+# battlefield being conquered (its text names no battlefield) — it
+# watches "you, the controller, conquered ANYTHING, from wherever this
+# happens to be sitting," a THIRD event grammar neither
+# CONQUER_TRIGGERS_WITH_CHOICE (unit-keyed) nor BATTLEFIELD_CONQUER_
+# TRIGGERS (battlefield-keyed) can express — closer in shape to
+# deaths.units_killed_between/SPELL_KILL_REACTIONS' "watch a generic
+# event from trash" than to anything in conquer.py. Building that third
+# grammar for one card was judged out of scope for this pass (per the
+# task's own call: force a fit only if it's clean). Left blocking whole
+# — even though "deal 5 to a unit" alone would be a trivial addition to
+# the existing flat-damage-spell shape (Hextech Ray/Falling Comet), a
+# half-read card is exactly as dangerous as an unread one.
+#
+# ogn-269-298/ogn-310-298/ogn-310-star-298 The Boss — "When a buffed unit
+# you control would die, you may pay [rainbow] and exhaust me to spend
+# its buff and recall it exhausted instead (send it to base; not a
+# move). When you conquer, ready me." The conquer half is trivial (a
+# deterministic CONQUER_TRIGGERS entry, no choice needed) and would have
+# been free to add via this cluster's machinery. Left blocking anyway:
+# the OTHER clause is a death-REPLACEMENT effect ("would die... instead")
+# — a mechanism (interrupting removal before it happens, not reacting
+# after) that doesn't exist anywhere in this engine and is explicitly out
+# of scope for this pass. Per coverage.py's own rule, a half-covered card
+# stays BLOCKING; clearing just the conquer clause here would be exactly
+# the kind of partial-credit claim this ledger exists to prevent.
+
 
 # card_id -> why its text cannot change whether lethal exists this turn.
 # These are rules judgements, not derivations; each one needs an argument
